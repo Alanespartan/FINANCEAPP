@@ -1,0 +1,52 @@
+{
+    "extends": "../tsconfig.base.json",
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "lib": [
+            "ES2018",
+            "DOM",
+            "DOM.Iterable",
+            "ScriptHost"
+        ],
+
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+
+        "baseUrl": ".",
+        "paths": {
+            "@common/*":   [ "../common/*" ],
+            "@components/*": [ "./src/components/*"],
+            "@backend/*":  [ "../backend/*"]
+        },
+
+        /* VITE CONFIG */
+        "resolveJsonModule": true,
+        "useDefineForClassFields": true,
+
+        "jsx": "preserve",
+        "noImplicitThis": true,
+        "strict": true,
+
+        "isolatedModules": true,
+        "preserveValueImports": true,
+        "importsNotUsedAsValues": "error",
+        
+        // Recommended
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "env.d.ts",
+        "src/**/*.ts",
+        "src/**/*.vue"
+    ],
+    "exclude": [
+        "node_modules"
+    ],
+    "references": [
+        { "path": "../common" },
+        { "path": "./tsconfig.config.json" },
+    ]
+}
