@@ -25,5 +25,7 @@ if(process.env.CERT && process.env.KEY) {
         logger.warn("Running in production without HTTPS (locally).");
         logger.warn("Consider using a SSL certificate by setting up KEY and CERT env variables.");
     }
-    console.log(`Finance App ${version} server is running on 0.0.0.0:${port}`);
+    app.listen(port, () => {
+        console.log(`Finance App ${version} server is running on 0.0.0.0:${port}`);
+    })
 }
