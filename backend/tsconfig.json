@@ -1,0 +1,30 @@
+{
+    "extends": "../tsconfig.base.json",
+    "compilerOptions": {
+        "module": "CommonJS",
+        "target": "ES6",
+
+        "outDir": "dist",
+        "baseUrl": ".",
+        "paths": {
+            "@common/*": [ "../common/*" ],
+            "@errors":   [ "./src/lib/errors"]
+        },
+        
+        "skipLibCheck": true
+    },
+    "tsc-alias": {
+        "replacers": {
+            "projectRefReplacer": {
+                "enabled": true,
+                "file": "./projectRefReplacer.js"
+            }
+        }
+    },
+    "include": [
+        "./src"
+    ],
+    "references": [
+        { "path": "../common" }
+    ]
+}
