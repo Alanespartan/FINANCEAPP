@@ -1,4 +1,4 @@
-import { LogLevel } from "enums/logs";
+import { LogLevel } from "../enums/logs";
 
 export class Logger {
     private static globalLogger = new Logger();
