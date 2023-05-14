@@ -4,11 +4,12 @@
   "description": "Finance personal web app",
   "main": "dist/server.js",
   "scripts": {
-    "lint": "eslint --ext \".ts,.js\" --ignore-path -gitignore .",
-    "lint:fix": "eslint --ext \".ts,.js\" --fix --ignore-path -gitignore .",
-    "build": "tsc --build --pretty && tsc-alias",
+    "lint:fix":     "eslint --ext \".ts,.js\" --fix --ignore-path .gitignore .",
+    "lint":         "eslint --ext \".ts,.js\" --ignore-path .gitignore .",
+    "prebuild":     "npm run lint",
+    "build":        "tsc --build --pretty && tsc-alias",
     "build:nolint": "tsc --build --pretty && tsc-alias -v",
-    "start": "npm run build && node ."
+    "start":        "npm run build && node ."
   },
   "author": "Arturo Cruz",
   "contributors": [],
@@ -41,7 +42,7 @@
     "@types/node-cron": "^3.0.7",
     "@types/tough-cookie": "^4.0.2",
     "@types/uuid": "^8.3.4",
-    "@typescript-eslint/eslint-plugin": "5.27.0",
+    "@typescript-eslint/eslint-plugin": "^5.27.0",
     "@typescript-eslint/parser": "^5.27.5",
     "chai": "^4.3.6",
     "eslint": "^8.16.0",
