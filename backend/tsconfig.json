@@ -8,7 +8,9 @@
         "baseUrl": ".",
         "paths": {
             "@common/*": [ "../common/*" ],
-            "@errors":   [ "./src/lib/errors"]
+            "@errors":   [ "./src/lib/errors"],
+            "@tools/*":  [ "./src/routes/v1/tools/*"],
+            "@src/*":    [ "./src/*"]
         },
         
         "skipLibCheck": true

@@ -1,8 +1,8 @@
 import { AgentOptions } from "https";
-import { Url } from "url";
+import { URL } from "url";
 
 import axiosGlobal, { AxiosError, AxiosResponse, Method } from "axios";
-import { HttpCookieAgent, HttpsCookieAgent, CookieAgentOptions } from "http-cookie-agent";
+import { HttpCookieAgent, HttpsCookieAgent, CookieAgentOptions } from "http-cookie-agent/http";
 import { CookieJar } from "tough-cookie";
 
 import { SessionError, AuthenticationError } from "@errors";

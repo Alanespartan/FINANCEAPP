@@ -1,6 +1,6 @@
-import { MyRouter } from "src/routes/MyRouter";
-import { handleLoginRequest } from "src/lib/auth/login";
-import { handleLogoutRequest } from "src/lib/auth/logout";
+import { MyRouter } from "../../MyRouter";
+import { handleLoginRequest } from "@src/lib/auth/login";
+import { handleLogoutRequest } from "@src/lib/auth/logout";
 
 const router = new MyRouter();
 

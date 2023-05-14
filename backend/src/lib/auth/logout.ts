@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { ConnectionStore } from "src/session/connectionStore";
+import { ConnectionStore } from "@src/session/connectionStore";
 
 /**
  * Logs a user out.

@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const normalizePath = require("normalize-path");
 
-const { newStringRegex } = require("tsc-alias/dist/utils/import-path-resolver");
+const { newStringRegex } = require("tsc-alias/dist/utils/import-path-resolver.js");
 
 /** @typedef {{path: string, absPath: string, configFile: string, config: any}} IProjectReference */
 
@@ -12,7 +12,7 @@ let referencedProjects = [];
 
 /** @param {{path: string}} refobj */
 function resolveProjectReference(refobj) {
-    const absPath = path.resolve(refobj);
+    const absPath = path.resolve(refobj.path);
     const configFile = path.join(absPath, "tsconfig.json");
     return {
         path: refobj.path,
