@@ -1,4 +1,4 @@
-export interface RequestError {
+export interface IRequestError {
     code: number;
     resMessage: ResMessage;
     message: string;
