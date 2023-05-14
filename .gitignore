@@ -6,6 +6,7 @@ backend/node_modules
 backend/dist
 backend/package-lock.json
 common/lib
+package-lock.json
 
 .env
 npm-debug.log*
