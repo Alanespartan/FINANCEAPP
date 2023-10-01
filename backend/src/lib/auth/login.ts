@@ -45,7 +45,8 @@ export const handleLoginRequest: RequestHandler = async (req, res) => {
             req.session.finance = {
                 email: user.email,
                 firstName: user.firstName,
-                lastName: user.lastName
+                lastName: user.lastName,
+                userId: user.id
             }
             ConnectionStore.setConnection(req.sessionID, user.id);
             return res.status(200).json({ status: "login successful" });
