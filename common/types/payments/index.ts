@@ -1,3 +1,5 @@
+import { MSIOptions } from "types/cards";
+
 /* What did I pay for */
 export interface ExpenseType {
     id: string;
@@ -16,9 +18,7 @@ export interface Expense {
 /* Used to pay an expense */
 export interface PaymentType {
     id: string; // user can create as many payment types as he wants
-    name: string; // TDC NU - TDD BBVA - CASH - Mercado Pago - Otro
-    isCard: boolean;
-    isCash: boolean;
+    alias: string; // TDC NU - TDD BBVA - CASH - Mercado Pago - Otro
 }
 
 export interface PaymentOptions {
@@ -26,6 +26,13 @@ export interface PaymentOptions {
     type: ExpenseType;
     paymentDate: Date;
     method: PaymentType; // todo define this
+    isCard: boolean;
+    isCash: boolean;
+    cardOptions?: {
+        cardNumber: string; // e.g. 4421 1598 3034 1304
+        isCredit: boolean;
+        msi?: MSIOptions
+    }
     comment?: string;
 }
 

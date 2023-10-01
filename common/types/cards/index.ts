@@ -1,3 +1,9 @@
+export enum CardTypes {
+    DEBIT   = 1,
+    CREDIT  = 2,
+    VOUCHER = 3
+}
+
 export interface Bank {
     name: string;
     // contact information
@@ -11,9 +17,9 @@ export interface CardOptions {
     expires: Date;
     issuer: Bank;
     balance: number;
+    limit?: number;
 }
 
 export interface MSIOptions {
-    useMsi: boolean;
     months: number;
 }

@@ -1,6 +1,8 @@
-import { Card, CreditCard, DebitCard } from "../lib/cards";
-import { Expense, PaymentOptions } from "@common/types/payments";
-import { randomUUID } from "crypto";
+import { CardOptions }                 from "@common/types/cards";
+import { CardTypes }                   from "@common/types/cards";
+import { Expense, PaymentOptions }     from "@common/types/payments";
+import { CreditCard, DebitCard } from "../lib/cards";
+import { randomUUID }                  from "crypto";
 
 export class UserController {
     // mimic a database storage
@@ -21,7 +23,7 @@ export class UserController {
     }
 }
 
-type AvailableCards = Card | DebitCard | CreditCard;
+type AvailableCards = DebitCard | CreditCard;
 
 export class User {
     public readonly id: string;
@@ -60,20 +62,81 @@ export class User {
             paymentDate: options.paymentDate,
             comment:     options.comment
         } as Expense;
+
+        const paymentMethod = options.method;
         
-        if(options.method.isCash) {
+        if(paymentMethod.isCash) {
             this.cash -= options.amount;
-        } else if(options.method.isCard) {
-            const selectedCard = this.cards.filter((card) => card.alias === options.method.name)[0];
-            selectedCard
+        } else if(paymentMethod.isCard && paymentMethod.cardOptions) {
+            const index = this.cards.map(function(card) { return card.alias; }).indexOf(paymentMethod.alias);
+            if(index < 0) { throw new Error(`${paymentMethod.alias} doesn't exist in user information.`); }
+            
+            const selectedCard = this.cards[index];
+            
+            if(paymentMethod.cardOptions.msi) {
+                selectedCard.pay(options.amount, paymentMethod.cardOptions.msi);
+            } else {
+                selectedCard.pay(options.amount);
+            }
         } else {
-            // todo define what to do with other - mercado pago - caja de ahorro/fondo de ahorro
+            // todo define what to do with other payment method
+            // mercado pago, caja de ahorro/fondo de ahorro
         }
+        
+        this.expenses.push(newExpense);
     }
 
-    public addBalance(amount: number) {
+    public addIncome(amount: number) { // todo create incomeoptions interface
         // todo add new balanace to existing card, cash or any method used to pay
         console.log(amount);
+    }
+
+    public addCard(options: CardOptions, type: CardTypes, alias?: string) {
+        let newCard: AvailableCards;
+        switch(type) {
+            case CardTypes.CREDIT:
+                newCard = new CreditCard(options, options.limit ? options.limit : 0, this);
+            break;
+            case CardTypes.DEBIT:
+                newCard = new DebitCard(options, false, this);
+            break;
+            case CardTypes.VOUCHER:
+                newCard = new DebitCard(options, true, this);
+            break;
+        }
+        if(alias) newCard.setAlias(alias);
+        this.cards.push(newCard);
+    }
+
+    public removeCard() {
+        // todo add logic here
+        console.log("remove a card function call");
+    }
+
+    public addLoan() {
+        // todo add logic here
+        console.log("add a loan function call");
+    }
+
+    public removeLoan() {
+        // todo add logic here
+        console.log("remove a loan function call");
+    }
+
+    public user2Json() {
+        const userObj = {
+            userInfo: {
+                id:        this.id,
+                firstName: this.firstName,
+                lastName:  this.lastName,
+                email:     this.email
+            },
+            cards:    this.cards,
+            expenses: this.expenses,
+            loans:    this.loans,
+            incomes:  this.incomes
+        };
+        return JSON.stringify(userObj)
     }
 }
 
