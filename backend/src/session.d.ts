@@ -1,6 +1,6 @@
 import type { Request } from "express";
 import type { SessionData } from "express-session";
-import { UserSession } from "@common/types/auth";
+import { User } from "@src/session/user";
 
 declare global {
     namespace Express {
@@ -16,6 +16,6 @@ declare global {
 }
 declare module "express-session" {
     interface SessionData {
-        finance?: UserSession
+        userData?: User
     }
 }

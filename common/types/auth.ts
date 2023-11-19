@@ -4,8 +4,8 @@ export interface LoginRequest {
 }
 
 export interface UserSession {
+    id: string; // used to match with user data from db
     email: string;
     firstName: string;
     lastName: string;
-    userId: string; // used to match with user data from db
 }

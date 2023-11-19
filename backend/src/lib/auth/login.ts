@@ -38,17 +38,12 @@ export const handleLoginRequest: RequestHandler = async (req, res) => {
 
     if(badLoginAttempts[email] >= MAX_LOGIN_ATTEMPTS) throw new ForbiddenError(`Too many login attempts for ${email}.`)
 
-    const user = userController.get(email);
+    const foundUser = userController.get(email);
 
-    if(user) {
-        if(user.password === password) {
-            req.session.finance = {
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                userId: user.id
-            }
-            ConnectionStore.setConnection(req.sessionID, user.id);
+    if(foundUser) {
+        if(foundUser.password === password) {
+            req.session.userData = foundUser;
+            ConnectionStore.setConnection(req.sessionID, foundUser.id);
             return res.status(200).json({ status: "login successful" });
         } else {
             if(badLoginAttempts[email]) {

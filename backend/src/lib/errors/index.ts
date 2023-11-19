@@ -32,15 +32,19 @@ function makeErrorClass(message: string, code: number) {
     }
 }
 /* Client Errors */
-export const BadRequestError =   makeErrorClass("The server did not understand the request or could not read the request body.", 400);
+export const BadRequestError   = makeErrorClass("The server did not understand the request or could not read the request body.", 400);
 export const UnauthorizedError = makeErrorClass("You need to be logged in to view this resource.", 401);
-export const ForbiddenError =    makeErrorClass("You're not authorized to view this resource.", 403);
-export const NotFoundError =     makeErrorClass("The requested resource could not be found.", 404);
+export const ForbiddenError    = makeErrorClass("You're not authorized to view this resource.", 403);
+export const NotFoundError     = makeErrorClass("The requested resource could not be found.", 404);
 export const ResourceGoneError = makeErrorClass("The requested resource was previously in use but is no longer available and will not be available again.", 410);
 /* Server Errors */
-export const ServerError =       makeErrorClass("A server error occured while trying to process your request.", 500);
-export const TypeScriptError =   makeErrorClass("A typescript error occured while trying to process your request.", 555);
-export const HTTPSError =         makeErrorClass("Dummy class TODO create real http error class.", 555);
+export const ServerError     = makeErrorClass("A server error occured while trying to process your request.", 500);
+export const TypeScriptError = makeErrorClass("A typescript error occured while trying to process your request.", 555);
+export const HTTPSError      = makeErrorClass("Dummy class TODO create real http error class.", 555);
+/* TODO Craete Finance Errors */
+// BalanceNotEnough
+// PaymenthMethodNotFound
+// ExpenseCategoryIncorrect
 
 
 

@@ -1,8 +1,8 @@
-import { CardOptions }                 from "@common/types/cards";
-import { CardTypes }                   from "@common/types/cards";
-import { Expense, PaymentOptions }     from "@common/types/payments";
+import { randomUUID } from "crypto";
+import { UserSession } from "@common/types/auth";
+import { CardOptions, CardTypes } from "@common/types/cards";
 import { CreditCard, DebitCard } from "../lib/cards";
-import { randomUUID }                  from "crypto";
+import { Expense, ExpenseCategory, PaymentMethod } from "@common/types/payments";
 
 export class UserController {
     // mimic a database storage
@@ -25,7 +25,7 @@ export class UserController {
 
 type AvailableCards = DebitCard | CreditCard;
 
-export class User {
+export class User implements UserSession {
     public readonly id: string;
     public readonly email: string;
     public readonly password: string;
@@ -35,6 +35,7 @@ export class User {
     protected cash: number;
     protected loans: any[]; // todo create interface
     protected expenses: Expense[];
+    protected expenseCategories: ExpenseCategory[];
     protected incomes: any[]; // todo create interface
 
     constructor(id: string, email: string, password: string, firstName: string, lastName: string) {
@@ -50,40 +51,20 @@ export class User {
         this.expenses = [];
         this.loans    = [];
         this.incomes  = [];
+        // CUSTOM USER EXPERIENCE
+        this.expenseCategories = [];
     }
 
-    public pay(options: PaymentOptions){
-        const id = randomUUID();
-
-        const newExpense = {
-            id,
-            amount:      options.amount,
-            type:        options.type,
-            paymentDate: options.paymentDate,
-            comment:     options.comment
-        } as Expense;
-
-        const paymentMethod = options.method;
-        
-        if(paymentMethod.isCash) {
-            this.cash -= options.amount;
-        } else if(paymentMethod.isCard && paymentMethod.cardOptions) {
-            const index = this.cards.map(function(card) { return card.alias; }).indexOf(paymentMethod.alias);
-            if(index < 0) { throw new Error(`${paymentMethod.alias} doesn't exist in user information.`); }
-            
-            const selectedCard = this.cards[index];
-            
-            if(paymentMethod.cardOptions.msi) {
-                selectedCard.pay(options.amount, paymentMethod.cardOptions.msi);
-            } else {
-                selectedCard.pay(options.amount);
-            }
-        } else {
-            // todo define what to do with other payment method
-            // mercado pago, caja de ahorro/fondo de ahorro
+    public doPayment(expense: Expense){        
+        if(expense.method.type === PaymentMethod.CASH) {
+            this.cash -= expense.total;
+        } else if(expense.method.type === PaymentMethod.CARD) {
+            this.getCard(this.hasCard(expense.method.name)).pay(expense.total)
         }
-        
-        this.expenses.push(newExpense);
+
+        // todo add logic to pay using cash or card a loan or a different card
+
+        this.expenses.push(expense);
     }
 
     public addIncome(amount: number) { // todo create incomeoptions interface
@@ -95,22 +76,33 @@ export class User {
         let newCard: AvailableCards;
         switch(type) {
             case CardTypes.CREDIT:
-                newCard = new CreditCard(options, options.limit ? options.limit : 0, this);
+                options.alias = `Tarjeta de Crédito ${options.issuer.name} ${options.cardNumber}`;
+                newCard = new CreditCard(options, options.limit ? options.limit : 0);
             break;
             case CardTypes.DEBIT:
-                newCard = new DebitCard(options, false, this);
+                options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
+                newCard = new DebitCard(options, false);
             break;
             case CardTypes.VOUCHER:
-                newCard = new DebitCard(options, true, this);
+                options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
+                newCard = new DebitCard(options, true);
             break;
         }
-        if(alias) newCard.setAlias(alias);
+        if(alias) newCard.setAlias(alias); // in case user did set an alias manually
         this.cards.push(newCard);
     }
 
-    public removeCard() {
-        // todo add logic here
-        console.log("remove a card function call");
+    public hasCard(cardAlias: string) {
+        return this.cards.map(function(card) { return card.alias; }).indexOf(cardAlias);
+    }
+    
+    public removeCard(index: number) {
+        const deleted = this.cards.splice(index, 1);
+        console.log(deleted);
+    }
+
+    public getCard(index: number) {
+        return this.cards[index];
     }
 
     public addLoan() {
@@ -118,9 +110,24 @@ export class User {
         console.log("add a loan function call");
     }
 
+    public payLoan() {
+        // todo add logic here
+        console.log("pay a loan function call");
+    }
+
     public removeLoan() {
         // todo add logic here
         console.log("remove a loan function call");
+    }
+
+    public createExpenseCategory(newCategory: ExpenseCategory) {
+        this.expenseCategories.push(newCategory);
+    }
+
+    public removeExpenseCategory(index: number) {
+        const deleted = this.expenseCategories.splice(index, 1);
+        console.log(deleted);
+        // TODO all existing expenses with this category should be assigned to "Other"
     }
 
     public user2Json() {

@@ -1,7 +1,9 @@
-import { MSIOptions } from "types/cards";
-
-/* What did I pay for */
-export interface ExpenseType {
+/* What did I pay for 
+las mismas tarjetas son una categoría (con NU puedo pagar BBVA)
+los prestamos son una categoria (con BBVA pago prestamo RAPPI)
+las suscripciones son una categoria
+*/
+export interface ExpenseCategory {
     id: string;
     name: string; // Gas - Trips - Gifts - Delivery - Gaming - etc
 }
@@ -9,29 +11,28 @@ export interface ExpenseType {
 /* Something that I paid for */
 export interface Expense {
     id: string;
-    amount: number;
-    type: ExpenseType;
+    total: number;
+    category: ExpenseCategory;
+    method: {
+        type: PaymentMethod,
+        name: string // card alias, simple "cash", savings account name, etc.
+    },
     paymentDate: Date;
     comment?: string;
 }
 
-/* Used to pay an expense */
-export interface PaymentType {
-    id: string; // user can create as many payment types as he wants
-    alias: string; // TDC NU - TDD BBVA - CASH - Mercado Pago - Otro
+export enum PaymentMethod {
+    CASH = 1,
+    CARD = 2
 }
 
-export interface PaymentOptions {
-    amount: number;
-    type: ExpenseType;
-    paymentDate: Date;
-    method: PaymentType; // todo define this
-    isCard: boolean;
-    isCash: boolean;
-    cardOptions?: {
-        cardNumber: string; // e.g. 4421 1598 3034 1304
+export interface PaymentConfig {
+    total: number;
+    category: ExpenseCategory;
+    method: PaymentMethod,
+    cardOptions?: { // in case method is a card
+        cardAlias: string; // e.g. Tarjeta de Débito NU 4421 1598 3034 1304
         isCredit: boolean;
-        msi?: MSIOptions
     }
     comment?: string;
 }

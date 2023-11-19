@@ -17,9 +17,6 @@ export interface CardOptions {
     expires: Date;
     issuer: Bank;
     balance: number;
+    alias: string;
     limit?: number;
-}
-
-export interface MSIOptions {
-    months: number;
 }
