@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { UnauthorizedError } from "@errors";
+import { UnauthorizedError, ServerError } from "@errors";
 import { ConnectionStore } from "src/session/connectionStore";
 import { clearSession } from "src/session/util";
 
@@ -7,7 +7,7 @@ export const blacklistedSessionIDs: string[] = [];
 
 export async function requireSession(req: Request, _res: Response, next: NextFunction) {
     try {
-        if(!req.session.finance) {
+        if(!req.session.isValidUser) {
             throw new UnauthorizedError("You need to be logged in with a valid session to access this content.");
         }
 
@@ -20,7 +20,9 @@ export async function requireSession(req: Request, _res: Response, next: NextFun
             throw new UnauthorizedError("Your session has been blacklisted.");
         }
 
-        req.financeConnection = true;
+        const userData = ConnectionStore.getConnection(req.sessionID);
+        if(!userData) throw new ServerError("An error occured trying to get user data. Please try again.");
+        req.userData = userData;
         next();
     } catch(error){ 
         next(error);

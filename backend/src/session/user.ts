@@ -18,6 +18,15 @@ export class UserController {
         return undefined;
     }
 
+    public getByEmail(email: string) {
+        // TODO query against DB using email
+        for(const key in this.userStore) {
+            const user = this.userStore[key];
+            if(email === user.email) return user;
+        }
+        return undefined;
+    }
+
     public discard(id: string) {
         return delete this.userStore[id];
     }

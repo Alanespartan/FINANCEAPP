@@ -10,12 +10,12 @@ declare global {
              * The current user connection.
              * NOTE: This is only present on routes using the "checkConnection" middleware.
              */
-            financeConnection: boolean
+            userData: User
         }
     }
 }
 declare module "express-session" {
     interface SessionData {
-        userData?: User
+        isValidUser?: boolean
     }
 }

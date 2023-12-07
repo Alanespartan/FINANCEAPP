@@ -33,31 +33,29 @@ function verifyLoginBody(body: unknown): body is LoginRequest {
 export const handleLoginRequest: RequestHandler = async (req, res) => {
     if(!verifyLoginBody(req.body)) throw new BadRequestError("Malformed login body sent.");
 
-    const email = req.body.email;
+    const email    = req.body.email;
     const password = req.body.password;
 
     if(badLoginAttempts[email] >= MAX_LOGIN_ATTEMPTS) throw new ForbiddenError(`Too many login attempts for ${email}.`)
 
-    const foundUser = userController.get(email);
+    const foundUser = userController.getByEmail(email);
+    if(!foundUser) throw new UnauthorizedError("User does not exist. Please check credentials and try again.");
 
-    if(foundUser) {
-        if(foundUser.password === password) {
-            req.session.userData = foundUser;
-            ConnectionStore.setConnection(req.sessionID, foundUser.id);
-            return res.status(200).json({ status: "login successful" });
+    if(foundUser.password === password) {
+        req.session.isValidUser = true;
+        ConnectionStore.setConnection(req.sessionID, foundUser); // req.session.id is an alias of req.sessionID
+        return res.status(200).json({ status: "login successful" });
+    } else {
+        if(badLoginAttempts[email]) {
+            badLoginAttempts[email] += 1;
         } else {
-            if(badLoginAttempts[email]) {
-                badLoginAttempts[email] += 1;
-            } else {
-                badLoginAttempts[email] = 1;
-            }
-            if(badLoginAttempts[email] >= MAX_LOGIN_ATTEMPTS) {
-                setTimeout(() => {
-                    delete badLoginAttempts[email];
-                }, BAD_LOGIN_TIMEOUT);
-                throw new ForbiddenError(`Too many login attempts for ${email}. Try again in 5 minutes.`);
-            }
+            badLoginAttempts[email] = 1;
+        }
+        if(badLoginAttempts[email] >= MAX_LOGIN_ATTEMPTS) {
+            setTimeout(() => {
+                delete badLoginAttempts[email];
+            }, BAD_LOGIN_TIMEOUT);
+            throw new ForbiddenError(`Too many login attempts for ${email}. Try again in 5 minutes.`);
         }
     }
-    throw new UnauthorizedError("Incorrect credentials were given. Please check credentials and try again.");
 }

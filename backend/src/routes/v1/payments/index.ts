@@ -7,7 +7,7 @@ import { randomUUID }              from "crypto";
 const router = new MyRouter();
 
 router.post("/user-payment", (req, res) => {
-    const user    = req.session.userData;
+    const user    = req.userData;
     const options = req.body.options as PaymentConfig;
     if(!user) throw new Error("User data not found");
     
@@ -29,6 +29,8 @@ router.post("/user-payment", (req, res) => {
     }
 
     user.doPayment(newExpense);
+
+    res.status(200).json({});
 });
 
 
