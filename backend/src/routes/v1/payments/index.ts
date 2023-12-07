@@ -1,8 +1,8 @@
 import { MyRouter } from "../../MyRouter";
-import { CardOptions }             from "@common/types/cards";
-import { CardTypes }               from "@common/types/cards";
-import { Expense, PaymentConfig, PaymentMethod } from "@common/types/payments";
-import { randomUUID }              from "crypto";
+import { CardOptions } from "@common/types/cards";
+import { CardTypes } from "@common/types/cards";
+import { Expense, PaymentConfig } from "@common/types/payments";
+import { randomUUID } from "crypto";
 
 const router = new MyRouter();
 
@@ -11,6 +11,7 @@ router.post("/user-payment", (req, res) => {
     const options = req.body.options as PaymentConfig;
     if(!user) throw new Error("User data not found");
     
+    // create expense record
     const newExpense = {
         id:          randomUUID(),
         total:       options.total,
@@ -19,16 +20,27 @@ router.post("/user-payment", (req, res) => {
         comment:     options.comment
     } as Expense;
     newExpense.method.type = options.method;
+    if(options.method === "CASH") {
+        newExpense.method.name = options.method;
+        // reduce cash balance
+        user.decreaseCash(newExpense.total);
+    } else if(options.method === "CARD" && options.cardOptions) {
+        if(!user.hasCard(options.cardOptions.cardAlias)) { throw new Error(`${options.cardOptions.cardAlias} doesn't exist in user information.`); }
+        newExpense.method.name = options.cardOptions.cardAlias; // e.g. Tarjeta de Débito NU 4444 1515 3030 1313
+        // reduce card balance
+        user.getCardByAlias(options.cardOptions.cardAlias).pay(newExpense.total);
+    }
+    user.addExpense(newExpense);
 
-    if(options.method === PaymentMethod.CASH) {
-        newExpense.method.name = "Cash";
-    } else if(options.method === PaymentMethod.CARD && options.cardOptions) {
-        const exists = user.hasCard(options.cardOptions.cardAlias);
-        if(exists < 0) { throw new Error(`${options.cardOptions.cardAlias} doesn't exist in user information.`); }
-        newExpense.method.name = options.cardOptions.cardAlias;
+    // check if user paid a card
+    if(user.hasCard(newExpense.category.name)) {
+        user.getCardByAlias(newExpense.category.name).addBalance(newExpense.total);
     }
 
-    user.doPayment(newExpense);
+    // check if user paid a loan
+    if(user.hasLoan(newExpense.category.name)) {
+        user.getLoanByAlias(newExpense.category.name).pay(newExpense.total);
+    }
 
     res.status(200).json({});
 });

@@ -5,7 +5,7 @@ las suscripciones son una categoria
 */
 export interface ExpenseCategory {
     id: string;
-    name: string; // Gas - Trips - Gifts - Delivery - Gaming - etc
+    name: string; // Gas - Trips - Gifts - Delivery - Gaming - Tarjeta de Débito NU 4444 1515 3030 1313
 }
 
 /* Something that I paid for */
@@ -14,24 +14,23 @@ export interface Expense {
     total: number;
     category: ExpenseCategory;
     method: {
-        type: PaymentMethod,
+        type: TPaymentMethod,
         name: string // card alias, simple "cash", savings account name, etc.
     },
     paymentDate: Date;
     comment?: string;
 }
 
-export enum PaymentMethod {
-    CASH = 1,
-    CARD = 2
-}
+export type TPaymentMethod       = "CASH" | "CARD";
+export type TFinancialInstrument = "SAVINGS" | "INVESTMENTS" | "LOAN";
+export type TFinancialRepository = TPaymentMethod | TFinancialInstrument;
 
 export interface PaymentConfig {
     total: number;
     category: ExpenseCategory;
-    method: PaymentMethod,
+    method: TPaymentMethod,
     cardOptions?: { // in case method is a card
-        cardAlias: string; // e.g. Tarjeta de Débito NU 4421 1598 3034 1304
+        cardAlias: string; // e.g. Tarjeta de Débito NU 4444 1515 3030 1313
         isCredit: boolean;
     }
     comment?: string;
@@ -43,3 +42,8 @@ Con PaymentType digo con que pagué.
 Con ExpenseType digo qué estoy comprando.
 Con Expense genero el registro de en que gasté.
 */
+
+/* NOMINA, TRANSFERNCIA EXTERNA, RENDMIENTOS, VENTA DE PRODUCTO*/
+export interface Income {
+
+}

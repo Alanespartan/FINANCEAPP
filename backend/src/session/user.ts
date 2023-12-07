@@ -2,7 +2,9 @@ import { randomUUID } from "crypto";
 import { UserSession } from "@common/types/auth";
 import { CardOptions, CardTypes } from "@common/types/cards";
 import { CreditCard, DebitCard } from "../lib/cards";
-import { Expense, ExpenseCategory, PaymentMethod } from "@common/types/payments";
+import { Loan } from "../lib/loans";
+import { Expense, ExpenseCategory } from "@common/types/payments";
+import { LoanOptions } from "@common/types/loans";
 
 export class UserController {
     // mimic a database storage
@@ -42,7 +44,7 @@ export class User implements UserSession {
     public readonly lastName: string;
     protected cards: AvailableCards[];
     protected cash: number;
-    protected loans: any[]; // todo create interface
+    protected loans: Loan[]; // todo create interface
     protected expenses: Expense[];
     protected expenseCategories: ExpenseCategory[];
     protected incomes: any[]; // todo create interface
@@ -64,23 +66,11 @@ export class User implements UserSession {
         this.expenseCategories = [];
     }
 
-    public doPayment(expense: Expense){        
-        if(expense.method.type === PaymentMethod.CASH) {
-            this.cash -= expense.total;
-        } else if(expense.method.type === PaymentMethod.CARD) {
-            this.getCard(this.hasCard(expense.method.name)).pay(expense.total)
-        }
+    /* CASH */
+    public addCash(amount: number)      { this.cash += amount; }
+    public decreaseCash(amount: number) { this.cash -= amount; }
 
-        // todo add logic to pay using cash or card a loan or a different card
-
-        this.expenses.push(expense);
-    }
-
-    public addIncome(amount: number) { // todo create incomeoptions interface
-        // todo add new balanace to existing card, cash or any method used to pay
-        console.log(amount);
-    }
-
+    /* CARDS */
     public addCard(options: CardOptions, type: CardTypes, alias?: string) {
         let newCard: AvailableCards;
         switch(type) {
@@ -102,7 +92,7 @@ export class User implements UserSession {
     }
 
     public hasCard(cardAlias: string) {
-        return this.cards.map(function(card) { return card.alias; }).indexOf(cardAlias);
+        return this.cards.map((c) => c.alias).indexOf(cardAlias) < 0 ? false : true;
     }
     
     public removeCard(index: number) {
@@ -114,14 +104,27 @@ export class User implements UserSession {
         return this.cards[index];
     }
 
-    public addLoan() {
-        // todo add logic here
-        console.log("add a loan function call");
+    public getCardByAlias(alias: string) {
+        return this.cards.filter((c) => c.alias === alias)[0];
     }
 
-    public payLoan() {
-        // todo add logic here
-        console.log("pay a loan function call");
+    /* LOANS */
+    public addLoan(options: LoanOptions, alias?: string) {
+        options.alias = `Préstamo ${options.issuer.name} ${options.borrowed}`;
+        if(alias) options.alias = alias; // in case user did set an alias manually
+        this.loans.push(new Loan(options));
+    }
+
+    public hasLoan(loanName: string) {
+        return this.loans.map((l) => l.alias).indexOf(loanName) < 0 ? false : true;
+    }
+
+    public getLoan(index: number) {
+        return this.loans[index];
+    }
+
+    public getLoanByAlias(alias: string) {
+        return this.loans.filter((l) => l.alias === alias)[0];
     }
 
     public removeLoan() {
@@ -129,17 +132,24 @@ export class User implements UserSession {
         console.log("remove a loan function call");
     }
 
+    /* EXPENSES */
     public createExpenseCategory(newCategory: ExpenseCategory) {
         this.expenseCategories.push(newCategory);
     }
-
     public removeExpenseCategory(index: number) {
         const deleted = this.expenseCategories.splice(index, 1);
         console.log(deleted);
         // TODO all existing expenses with this category should be assigned to "Other"
     }
+    public addExpense(expense: Expense) {
+        this.expenses.push(expense);
+    }
+    public deleteExpense(expense: Expense) {
+        console.log(expense);
+    }
 
-    public user2Json() {
+    /* HELPER FUNCTIONS */
+    private user2Json() {
         const userObj = {
             userInfo: {
                 id:        this.id,

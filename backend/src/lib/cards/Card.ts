@@ -1,13 +1,13 @@
-import { Bank } from "@common/types/cards";
+import { Bank } from "@common/types/util";
 import { CardOptions } from "@common/types/cards";
 
 export class Card {
     public cardNumber: string; // id
+    public alias: string; // default is number but can be updated by set by user
     protected holderName: string;
     protected expires: Date;
     protected issuer: Bank;
     protected balance: number;
-    public alias: string; // default is number but can be updated by set by user
 
     public constructor(options: CardOptions) {
         this.cardNumber = options.cardNumber;
