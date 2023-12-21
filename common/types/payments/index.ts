@@ -1,36 +1,54 @@
-/* What did I pay for 
-las mismas tarjetas son una categoría (con NU puedo pagar BBVA)
-los prestamos son una categoria (con BBVA pago prestamo RAPPI)
-las suscripciones son una categoria
-*/
+/** What type of object the user is paying for.
+ * Credit/Debit cards are a category
+ * Loans are a category
+ * Suscriptions are a category
+ * */
 export interface ExpenseCategory {
     id: string;
-    name: string; // Gas - Trips - Gifts - Delivery - Gaming - Tarjeta de Débito NU 4444 1515 3030 1313
+    name: string; // e.g. Gas - Trips - Gifts - Delivery - Gaming - NU CARD 4444 1515 3030 1313
+    description?: string;
+    isDefault: boolean;
 }
 
-/* Something that I paid for */
+/** Used to store the information of a payment. */
 export interface Expense {
     id: string;
     total: number;
     category: ExpenseCategory;
     method: {
-        type: TPaymentMethod,
+        type: PaymentMethod,
         name: string // card alias, simple "cash", savings account name, etc.
     },
     paymentDate: Date;
     comment?: string;
 }
 
-export type TPaymentMethod       = "CASH" | "CARD";
-export type TFinancialInstrument = "SAVINGS" | "INVESTMENTS" | "LOAN";
-export type TFinancialRepository = TPaymentMethod | TFinancialInstrument;
+/** Used to define what type of method is used to pay. */
+export enum PaymentMethod {
+    CASH = "CASH",
+    CARD = "CARD"
+}
 
+/** Used to define what type of financial object the user opens. */
+export enum FinancialInstrument {
+    SAVINGS     = "SAVINGS",
+    INVESTMENTS = "INVESTMENTS",
+    LOAN        = "LOAN"
+}
+
+/** Handles both payment methods and financial instruments. */
+export const FinancialRepository = {
+    ...PaymentMethod,
+    ...FinancialInstrument
+}
+
+/** Used to define a payment done by the user and send it to the server. */
 export interface PaymentConfig {
     total: number;
     category: ExpenseCategory;
-    method: TPaymentMethod,
+    method: PaymentMethod,
     cardOptions?: { // in case method is a card
-        cardAlias: string; // e.g. Tarjeta de Débito NU 4444 1515 3030 1313
+        cardAlias: string; // e.g. NU CARD 4444 1515 3030 1313
         isCredit: boolean;
     }
     comment?: string;
