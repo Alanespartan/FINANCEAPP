@@ -2,8 +2,8 @@ import { Bank } from "@common/types/util";
 import { CardOptions } from "@common/types/cards";
 
 export class Card {
-    public cardNumber: string; // id
-    public alias?: string;
+    protected cardNumber: string; // id
+    protected alias?: string;
     protected holderName: string;
     protected expires: Date;
     protected issuer: Bank;
@@ -22,13 +22,33 @@ export class Card {
         this.balance += amount;
     }
 
-    public setAlias(alias: string) {
-        this.alias = alias;
-    }
-
     // decrease balance
     public pay(amount: number) {
         if(this.balance < amount) throw new Error(`Couldn't complete the transaction. Insufficient funds in ${this.alias}.`);
         this.balance -= amount;
+    }
+
+    public setAlias(alias: string) {
+        this.alias = alias;
+    }
+
+    public getAlias() {
+        return this.alias;
+    }
+
+    public setCardNumber(cardNumber: string) {
+        this.cardNumber = cardNumber;
+    }
+
+    public getCardNumber() {
+        return this.cardNumber;
+    }
+
+    public setExpiryDate(expires: Date) {
+        this.expires = expires;
+    }
+
+    public getIssuerName() {
+        return this.issuer.name;
     }
 }

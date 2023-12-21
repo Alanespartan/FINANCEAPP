@@ -3,8 +3,8 @@ import { LoanOptions } from "@common/types/loans";
 import { randomUUID } from "crypto";
 
 export class Loan {
-    public id: string;
-    public alias: string; // default is bank name + borrowed number but can be updated by set by user
+    protected id: string;
+    protected alias: string; // default is bank name + borrowed number but can be updated by set by user
     protected holderName: string;
     protected expires: Date;
     protected issuer: Bank;
@@ -25,10 +25,6 @@ export class Loan {
         this.isPaid     = false;
     }
 
-    public setAlias(alias: string) {
-        this.alias = alias;
-    }
-
     public pay(amount: number) {
         this.paid += amount;
     }
@@ -38,5 +34,13 @@ export class Loan {
         if(this.borrowed > this.paid) { throw new Error(`Couldn't complete the operation. Amount paid has not covered what was lent and interest.`); }
         this.isPaid    = true;
         this.interests = this.paid - this.borrowed;
+    }
+
+    public setAlias(alias: string) {
+        this.alias = alias;
+    }
+
+    public getAlias() {
+        return this.alias;
     }
 }

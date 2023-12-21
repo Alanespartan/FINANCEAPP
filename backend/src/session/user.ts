@@ -99,7 +99,7 @@ export class User implements UserSession {
     * @param {string} alias Card alias to search for.
     */
     public hasCard(alias: string) {
-        return this.cards.map((c) => c.alias).indexOf(alias) < 0 ? false : true;
+        return this.cards.map((c) => c.getAlias()).indexOf(alias) < 0 ? false : true;
     }
     /**
     * Get stored user card.
@@ -107,7 +107,7 @@ export class User implements UserSession {
     * @param {number|string} searchFor Can be either the index or the card alias.
     */
     public getCard(useIndex: boolean, searchFor: number | string) {
-        if(!useIndex) return this.cards.filter((c) => c.alias === searchFor as string)[0];
+        if(!useIndex) return this.cards.filter((c) => c.getAlias() === searchFor as string)[0];
         return this.cards[(searchFor as number)];
     }
     /**
@@ -115,8 +115,9 @@ export class User implements UserSession {
     * @param {number} index Array index of the selected card.
     */
     public removeCard(index: number) {
+        if(index < this.cards.length || index > this.cards.length) { throw new Error("Card index out of bounds."); }
         const deleted = this.cards.splice(index, 1);
-        console.log("The following card was deleted correctly: " + deleted[0].alias);
+        console.log("The following card was deleted correctly: " + deleted[0].getAlias());
     }
 
 
@@ -136,7 +137,7 @@ export class User implements UserSession {
     * @param {string} alias Loan alias to search for.
     */
     public hasLoan(loanName: string) {
-        return this.loans.map((l) => l.alias).indexOf(loanName) < 0 ? false : true;
+        return this.loans.map((l) => l.getAlias()).indexOf(loanName) < 0 ? false : true;
     }
     /**
     * Get stored user loan.
@@ -144,7 +145,7 @@ export class User implements UserSession {
     * @param {number|string} searchFor Can be either the index or the loan alias.
     */
     public getLoan(useIndex: boolean, searchFor: number | string) {
-        if(!useIndex) return this.loans.filter((l) => l.alias === searchFor as string)[0];
+        if(!useIndex) return this.loans.filter((l) => l.getAlias() === searchFor as string)[0];
         return this.loans[(searchFor as number)];
     }
     /**
@@ -152,8 +153,9 @@ export class User implements UserSession {
     * @param {number} index Array index of the selected loan.
     */
     public removeLoan(index: number) {
+        if(index < this.loans.length || index > this.loans.length) { throw new Error("Loan index out of bounds."); }
         const deleted = this.loans.splice(index, 1);
-        console.log("The following loan was deleted correctly: " + deleted[0].alias);
+        console.log("The following loan was deleted correctly: " + deleted[0].getAlias());
     }
 
 

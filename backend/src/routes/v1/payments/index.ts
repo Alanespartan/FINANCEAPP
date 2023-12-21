@@ -8,10 +8,9 @@ import { Expense, ExpenseCategory,
 
 const router = new MyRouter();
 
-router.post("/do-payment", (req, res) => {
+router.post("/add-payment", (req, res) => {
     const user    = req.userData;
     const options = req.body.options as PaymentConfig;
-    if(!user) throw new Error("User data not found");
     
     // create expense record
     const newExpense = {
@@ -56,37 +55,6 @@ router.post("/delete-expense-categories", (req, res) => {
     
 });
 
-// todo create endpoint to add/remove cards
-router.post("/add-card", (req, res) => {
-    const user    = req.userData;
-    const options = req.body.options as CardOptions;
-    const type    = req.body.type as CardTypes;
-    let newCard: CreditCard | DebitCard;
-    switch(type) {
-        case CardTypes.CREDIT:
-            options.alias = `Tarjeta de Crédito ${options.issuer.name} ${options.cardNumber}`;
-            newCard = new CreditCard(options, options.limit ? options.limit : 0);
-        break;
-        case CardTypes.DEBIT:
-            options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
-            newCard = new DebitCard(options, false);
-        break;
-        case CardTypes.VOUCHER:
-            options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
-            newCard = new DebitCard(options, true);
-        break;
-    }
-    user.addCard(newCard);
-    return res.status(200);
-});
-router.post("/delete-card", (req, res) => {
-    
-});
-
 // todo create endpoint to add balance to savings account and pull money from it
-
-// todo create endpoint to update card information (balance, alias)
-
-// todo create endpoint to add/remove loans
 
 export default router;
