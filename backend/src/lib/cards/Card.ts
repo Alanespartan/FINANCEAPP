@@ -3,7 +3,7 @@ import { CardOptions } from "@common/types/cards";
 
 export class Card {
     public cardNumber: string; // id
-    public alias: string; // default is number but can be updated by set by user
+    public alias?: string;
     protected holderName: string;
     protected expires: Date;
     protected issuer: Bank;

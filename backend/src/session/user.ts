@@ -34,7 +34,7 @@ export class UserController {
     }
 }
 
-type AvailableCards = DebitCard | CreditCard;
+export type AvailableCards = DebitCard | CreditCard;
 
 export class User implements UserSession {
     public readonly id: string;
@@ -44,7 +44,7 @@ export class User implements UserSession {
     public readonly lastName: string;
     protected cards: AvailableCards[];
     protected cash: number;
-    protected loans: Loan[]; // todo create interface
+    protected loans: Loan[];
     protected expenses: Expense[];
     protected expenseCategories: ExpenseCategory[];
     protected incomes: any[]; // todo create interface
@@ -63,92 +63,124 @@ export class User implements UserSession {
         this.loans    = [];
         this.incomes  = [];
         // CUSTOM USER EXPERIENCE
-        this.expenseCategories = [];
+        this.expenseCategories = [
+            {
+                id:        randomUUID(),
+                name:      "Other",
+                isDefault: true
+            } as ExpenseCategory
+        ];
     }
 
-    /* CASH */
+    /*---------------- CASH ----------------*/
+    /**
+    * Increase amount of available cash a user has.
+    * @param {number} amount Amount of cash to be added to user savings.
+    */
     public addCash(amount: number)      { this.cash += amount; }
+    /**
+    * Reduce amount of available cash a user has.
+    * @param {number} amount Amount of cash to be removed from user savings.
+    */
     public decreaseCash(amount: number) { this.cash -= amount; }
 
-    /* CARDS */
-    public addCard(options: CardOptions, type: CardTypes, alias?: string) {
-        let newCard: AvailableCards;
-        switch(type) {
-            case CardTypes.CREDIT:
-                options.alias = `Tarjeta de Crédito ${options.issuer.name} ${options.cardNumber}`;
-                newCard = new CreditCard(options, options.limit ? options.limit : 0);
-            break;
-            case CardTypes.DEBIT:
-                options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
-                newCard = new DebitCard(options, false);
-            break;
-            case CardTypes.VOUCHER:
-                options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
-                newCard = new DebitCard(options, true);
-            break;
-        }
-        if(alias) newCard.setAlias(alias); // in case user did set an alias manually
+
+
+    /*---------------- CARDS ---------------- */
+    /**
+    * Save a new card in user information.
+    * @param {AvailableCards} newCard Contains information of new card.
+    */
+    public addCard(newCard: AvailableCards) {
         this.cards.push(newCard);
     }
-
-    public hasCard(cardAlias: string) {
-        return this.cards.map((c) => c.alias).indexOf(cardAlias) < 0 ? false : true;
+    /**
+    * Helper function that verifies that a given card does really exist in user information.
+    * @param {string} alias Card alias to search for.
+    */
+    public hasCard(alias: string) {
+        return this.cards.map((c) => c.alias).indexOf(alias) < 0 ? false : true;
     }
-    
+    /**
+    * Get stored user card.
+    * @param {boolean} useIndex Specify if function call must use index or card alias to get card from array.
+    * @param {number|string} searchFor Can be either the index or the card alias.
+    */
+    public getCard(useIndex: boolean, searchFor: number | string) {
+        if(!useIndex) return this.cards.filter((c) => c.alias === searchFor as string)[0];
+        return this.cards[(searchFor as number)];
+    }
+    /**
+    * Delete card from user data.
+    * @param {number} index Array index of the selected card.
+    */
     public removeCard(index: number) {
         const deleted = this.cards.splice(index, 1);
-        console.log(deleted);
+        console.log("The following card was deleted correctly: " + deleted[0].alias);
     }
 
-    public getCard(index: number) {
-        return this.cards[index];
-    }
 
-    public getCardByAlias(alias: string) {
-        return this.cards.filter((c) => c.alias === alias)[0];
-    }
 
-    /* LOANS */
+    /*---------------- LOANS ----------------*/
+    /**
+    * Save a new loan in user information.
+    * @param {AvailableCards} newCard Contains information of new card.
+    */
     public addLoan(options: LoanOptions, alias?: string) {
         options.alias = `Préstamo ${options.issuer.name} ${options.borrowed}`;
         if(alias) options.alias = alias; // in case user did set an alias manually
         this.loans.push(new Loan(options));
     }
-
+    /**
+    * Helper function that verifies that a given loan does really exist in user information.
+    * @param {string} alias Loan alias to search for.
+    */
     public hasLoan(loanName: string) {
         return this.loans.map((l) => l.alias).indexOf(loanName) < 0 ? false : true;
     }
-
-    public getLoan(index: number) {
-        return this.loans[index];
+    /**
+    * Get stored user loan.
+    * @param {boolean} useIndex Specify if function call must use index or loan alias to get loan from array.
+    * @param {number|string} searchFor Can be either the index or the loan alias.
+    */
+    public getLoan(useIndex: boolean, searchFor: number | string) {
+        if(!useIndex) return this.loans.filter((l) => l.alias === searchFor as string)[0];
+        return this.loans[(searchFor as number)];
+    }
+    /**
+    * Delete loan from user data.
+    * @param {number} index Array index of the selected loan.
+    */
+    public removeLoan(index: number) {
+        const deleted = this.loans.splice(index, 1);
+        console.log("The following loan was deleted correctly: " + deleted[0].alias);
     }
 
-    public getLoanByAlias(alias: string) {
-        return this.loans.filter((l) => l.alias === alias)[0];
-    }
 
-    public removeLoan() {
-        // todo add logic here
-        console.log("remove a loan function call");
-    }
 
-    /* EXPENSES */
+    /*---------------- EXPENSES ----------------*/
     public createExpenseCategory(newCategory: ExpenseCategory) {
         this.expenseCategories.push(newCategory);
     }
     public removeExpenseCategory(index: number) {
+        // all existing expenses with this category should be assigned to "Other"
+        this.expenses
+            .filter((expense) => expense.category.id)
+            .forEach((filtered) => filtered.category = this.expenseCategories[0]); // 0 is always default
         const deleted = this.expenseCategories.splice(index, 1);
-        console.log(deleted);
-        // TODO all existing expenses with this category should be assigned to "Other"
+        console.log("The following category was deleted correctly: " + deleted[0].name);
     }
     public addExpense(expense: Expense) {
         this.expenses.push(expense);
     }
-    public deleteExpense(expense: Expense) {
-        console.log(expense);
+    public removeExpense(index: number) {
+        const deleted = this.expenses.splice(index, 1);
+        console.log("The following expense was deleted correctly: " + deleted[0].id);
     }
 
-    /* HELPER FUNCTIONS */
+
+
+    /*---------------- HELPER FUNCTIONS ----------------*/
     private user2Json() {
         const userObj = {
             userInfo: {
@@ -162,7 +194,7 @@ export class User implements UserSession {
             loans:    this.loans,
             incomes:  this.incomes
         };
-        return JSON.stringify(userObj)
+        return JSON.stringify(userObj);
     }
 }
 
