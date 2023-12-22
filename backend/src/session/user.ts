@@ -240,6 +240,7 @@ export class User implements UserSession {
 }
 
 export const userController = new UserController();
+userController.create("arturocruz10@live.com.mx", "admin123", "Juan Arturo", "Cruz Cardona")
 
 /* 
 PUBLIC
