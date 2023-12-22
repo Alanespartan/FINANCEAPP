@@ -94,7 +94,7 @@ export class User implements UserSession {
         this.cards.push(newCard);
     }
     /**
-    * Helper function that verifies that a given card does really exist in user information.
+    * Helper function that verifies that the given card does really exist in user information.
     * @param {string} alias Card alias to search for.
     */
     public hasCard(alias: string) {
@@ -109,12 +109,10 @@ export class User implements UserSession {
     }
     /**
     * Get stored user card.
-    * @param {boolean} useIndex Specify if function call must use index or card alias to get card from array.
-    * @param {number|string} searchFor Can be either the index or the card alias.
+    * @param {number} index Position of the card in user array.
     */
-    public getCard(useIndex: boolean, searchFor: number | string) {
-        if(!useIndex) return this.cards.filter((c) => c.getAlias() === searchFor as string)[0];
-        return this.cards[(searchFor as number)];
+    public getCard(index: number) {
+        return this.cards[index];
     }
     /**
     * Delete card from user data.
@@ -139,7 +137,7 @@ export class User implements UserSession {
         this.loans.push(new Loan(options));
     }
     /**
-    * Helper function that verifies that a given loan does really exist in user information.
+    * Helper function that verifies that the given loan does really exist in user information.
     * @param {string} alias Loan alias to search for.
     */
     public hasLoan(alias: string) {
@@ -154,12 +152,10 @@ export class User implements UserSession {
     }
     /**
     * Get stored user loan.
-    * @param {boolean} useIndex Specify if function call must use index or loan alias to get loan from array.
-    * @param {number|string} searchFor Can be either the index or the loan alias.
+    * @param {number} index Position of the loan in user array.
     */
-    public getLoan(useIndex: boolean, searchFor: number | string) {
-        if(!useIndex) return this.loans.filter((l) => l.getAlias() === searchFor as string)[0];
-        return this.loans[(searchFor as number)];
+    public getLoan(index: number) {
+        return this.loans[index];
     }
     /**
     * Delete loan from user data.
@@ -174,25 +170,42 @@ export class User implements UserSession {
 
 
     /*---------------- CATEGORIES ----------------*/
+    /**
+    * Save a new expense category in user information.
+    * @param {ExpenseCategory} newCategory Contains information of new expense category.
+    */
     public addCategory(newCategory: ExpenseCategory) {
         this.expenseCategories.push(newCategory);
     }
+    /**
+    * Helper function that verifies that the given category does really exist in user information.
+    * @param {string} alias Expense category alias to search for.
+    */
     public hasCategory(alias: string) {
         return this.getCategoryIndex(alias) < 0 ? false : true;
     }
+    /**
+    * Helper function that obtains the index of the given expense category alias.
+    * @param {string} alias Expense category alias to search for.
+    */
     public getCategoryIndex(alias: string) {
         return this.expenseCategories.map((ec) => ec.alias).indexOf(alias);
     }
-    public getCategory(useIndex: boolean, searchFor: number | string) {
-        if(!useIndex) return this.expenseCategories.filter((ec) => ec.alias === searchFor as string)[0];
-        return this.expenseCategories[(searchFor as number)];
+    /**
+    * Get stored expense category.
+    * @param {number} index Position of the category in user array.
+    */
+    public getCategory(index: number) {
+        return this.expenseCategories[index];
     }
+    /**
+    * Delete expense category from user data.
+    * @param {number} index Array index of the selected expense category.
+    */
     public removeCategory(index: number) {
         if(index < this.expenseCategories.length || index > this.expenseCategories.length) { throw new Error("Category index out of bounds."); }
-        // before deleting category, update all existing expenses to use "Other"
-        this.expenses.filter((expense) => expense.category.alias === this.getCategory(true, index).alias).forEach((filtered) => filtered.category = this.expenseCategories[0]); // set as default (0 is always default)
         const deleted = this.expenseCategories.splice(index, 1);
-        console.log("The following category was deleted correctly: " + deleted[0].alias);
+        console.log("The following expense category was deleted correctly: " + deleted[0].alias);
     }
 
 

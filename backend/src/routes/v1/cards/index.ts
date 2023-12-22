@@ -47,10 +47,7 @@ router.post("/delete-card/:alias", (req, res) => {
     if(!user.hasCard(alias) || !user.hasCategory(alias)) { throw new Error(`${alias} doesn't exist.`); }
 
     user.removeCard(user.getCardIndex(alias));
-    
-    // once card is deleted, remove related category
-    const toDelete = user.getCategoryIndex(alias);
-    user.removeCategory(toDelete);
+    user.removeCategory(user.getCategoryIndex(alias)); // once card is deleted, remove related category
 
     return res.status(200);
 });
@@ -62,8 +59,8 @@ router.post("/update-information/:alias", (req, res) => {
 
     if(!user.hasCard(alias) || !user.hasCategory(alias)) { throw new Error(`${alias} doesn't exist.`); }
 
-    const card     = user.getCard(false, alias);
-    const category = user.getCategory(false, alias); // use current alias to get existing category
+    const card     = user.getCard(user.getCardIndex(alias));
+    const category = user.getCategory(user.getCategoryIndex(alias)); // use current alias to get existing category
 
     card.setCardNumber(options.cardNumber);
     card.setExpiryDate(options.expires);
@@ -88,7 +85,7 @@ router.post("/update-limit/:alias", (req, res) => {
 
     if(!user.hasCard(alias)) { throw new Error(`${alias} doesn't exist.`); }
 
-    const card = user.getCard(false, alias) as CreditCard;
+    const card = user.getCard(user.getCardIndex(alias)) as CreditCard;
     card.increaseLimit(current - newLimit);
 
     return res.status(200);

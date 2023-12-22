@@ -18,9 +18,7 @@ router.post("/delete-categories", (req, res) => {
 
     for(const category of categories) {
         if(!user.hasCategory(category)) { throw new Error(`${category} doesn't exist.`); }
-        // once card is deleted, remove related category
-        const toDelete = user.getCategoryIndex(category);
-        user.removeCategory(toDelete);
+        user.removeCategory(user.getCategoryIndex(category));
     }
 
     return res.status(200);
