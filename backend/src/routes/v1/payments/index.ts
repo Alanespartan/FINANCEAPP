@@ -19,16 +19,14 @@ router.post("/add-payment", (req, res) => {
     newExpense.method.type = options.method;
     if(options.method === PaymentMethod.CASH) {
         newExpense.method.name = options.method;
-        // reduce cash balance
         user.decreaseCash(newExpense.total);
     } else if(options.method === PaymentMethod.CARD && options.cardOptions) {
-        if(!user.hasCard(options.cardOptions.cardAlias)) { throw new Error(`${options.cardOptions.cardAlias} doesn't exist in user information.`); }
+        if(!user.hasCard(options.cardOptions.cardAlias)) { throw new Error(`${options.cardOptions.cardAlias} used to pay doesn't exist in user information.`); }
+        if(options.cardOptions.cardAlias === newExpense.category.alias) { throw new Error(`Can't use ${options.cardOptions.cardAlias} to pay for ${newExpense.category.alias}.`); }
         newExpense.method.name = options.cardOptions.cardAlias; // e.g. Paid with Tarjeta de Débito NU 4444 1515 3030 1313
-        // reduce card balance
-        user.getCard(user.getCardIndex(options.cardOptions.cardAlias)).pay(newExpense.total);
+        user.getCard(user.getCardIndex(options.cardOptions.cardAlias)).pay(newExpense.total); // reduce card balance by making a payment
     }
-    user.addExpense(newExpense);
-
+    
     // check if user paid a card
     if(user.hasCard(newExpense.category.alias)) {
         user.getCard(user.getCardIndex(newExpense.category.alias)).addBalance(newExpense.total);
@@ -38,6 +36,8 @@ router.post("/add-payment", (req, res) => {
     if(user.hasLoan(newExpense.category.alias)) {
         user.getLoan(user.getLoanIndex(newExpense.category.alias)).pay(newExpense.total);
     }
+
+    user.addExpense(newExpense);
 
     return res.status(200);
 });
