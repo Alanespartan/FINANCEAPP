@@ -1,8 +1,7 @@
 import { randomUUID } from "crypto";
 import { UserSession } from "@common/types/auth";
-import { CardOptions, CardTypes } from "@common/types/cards";
-import { CreditCard, DebitCard } from "../lib/cards";
-import { Loan } from "../lib/loans";
+import { CreditCard, DebitCard } from "@cards";
+import { Loan } from "@loans";
 import { Expense, ExpenseCategory } from "@common/types/payments";
 import { LoanOptions } from "@common/types/loans";
 
@@ -66,7 +65,7 @@ export class User implements UserSession {
         this.expenseCategories = [
             {
                 id:        randomUUID(),
-                name:      "Other",
+                alias:     "Other",
                 isDefault: true
             } as ExpenseCategory
         ];
@@ -99,7 +98,14 @@ export class User implements UserSession {
     * @param {string} alias Card alias to search for.
     */
     public hasCard(alias: string) {
-        return this.cards.map((c) => c.getAlias()).indexOf(alias) < 0 ? false : true;
+        return this.getCardIndex(alias) < 0 ? false : true;
+    }
+    /**
+    * Helper function that obtains the index of the given card alias.
+    * @param {string} alias Card alias to search for.
+    */
+    public getCardIndex(alias: string) {
+        return this.cards.map((c) => c.getAlias()).indexOf(alias);
     }
     /**
     * Get stored user card.
@@ -136,8 +142,15 @@ export class User implements UserSession {
     * Helper function that verifies that a given loan does really exist in user information.
     * @param {string} alias Loan alias to search for.
     */
-    public hasLoan(loanName: string) {
-        return this.loans.map((l) => l.getAlias()).indexOf(loanName) < 0 ? false : true;
+    public hasLoan(alias: string) {
+        return this.getLoanIndex(alias) < 0 ? false : true;
+    }
+    /**
+    * Helper function that obtains the index of the given loan alias.
+    * @param {string} alias Loan alias to search for.
+    */
+    public getLoanIndex(alias: string) {
+        return this.loans.map((l) => l.getAlias()).indexOf(alias);
     }
     /**
     * Get stored user loan.
@@ -160,18 +173,31 @@ export class User implements UserSession {
 
 
 
-    /*---------------- EXPENSES ----------------*/
-    public createExpenseCategory(newCategory: ExpenseCategory) {
+    /*---------------- CATEGORIES ----------------*/
+    public addCategory(newCategory: ExpenseCategory) {
         this.expenseCategories.push(newCategory);
     }
-    public removeExpenseCategory(index: number) {
-        // all existing expenses with this category should be assigned to "Other"
-        this.expenses
-            .filter((expense) => expense.category.id)
-            .forEach((filtered) => filtered.category = this.expenseCategories[0]); // 0 is always default
-        const deleted = this.expenseCategories.splice(index, 1);
-        console.log("The following category was deleted correctly: " + deleted[0].name);
+    public hasCategory(alias: string) {
+        return this.getCategoryIndex(alias) < 0 ? false : true;
     }
+    public getCategoryIndex(alias: string) {
+        return this.expenseCategories.map((ec) => ec.alias).indexOf(alias);
+    }
+    public getCategory(useIndex: boolean, searchFor: number | string) {
+        if(!useIndex) return this.expenseCategories.filter((ec) => ec.alias === searchFor as string)[0];
+        return this.expenseCategories[(searchFor as number)];
+    }
+    public removeCategory(index: number) {
+        if(index < this.expenseCategories.length || index > this.expenseCategories.length) { throw new Error("Category index out of bounds."); }
+        // before deleting category, update all existing expenses to use "Other"
+        this.expenses.filter((expense) => expense.category.alias === this.getCategory(true, index).alias).forEach((filtered) => filtered.category = this.expenseCategories[0]); // set as default (0 is always default)
+        const deleted = this.expenseCategories.splice(index, 1);
+        console.log("The following category was deleted correctly: " + deleted[0].alias);
+    }
+
+
+
+    /*---------------- EXPENSES ----------------*/
     public addExpense(expense: Expense) {
         this.expenses.push(expense);
     }

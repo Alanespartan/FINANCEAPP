@@ -1,10 +1,6 @@
 import { randomUUID } from "crypto";
 import { MyRouter } from "../../MyRouter";
-import { CreditCard, DebitCard } from "../../../lib/cards";
-import { CardOptions, CardTypes } from "@common/types/cards";
-import { Expense, ExpenseCategory,
-    PaymentConfig, PaymentMethod
-} from "@common/types/payments";
+import { Expense, PaymentConfig, PaymentMethod } from "@common/types/payments";
 
 const router = new MyRouter();
 
@@ -34,25 +30,16 @@ router.post("/add-payment", (req, res) => {
     user.addExpense(newExpense);
 
     // check if user paid a card
-    if(user.hasCard(newExpense.category.name)) {
-        user.getCard(false, newExpense.category.name).addBalance(newExpense.total);
+    if(user.hasCard(newExpense.category.alias)) {
+        user.getCard(false, newExpense.category.alias).addBalance(newExpense.total);
     }
 
     // check if user paid a loan
-    if(user.hasLoan(newExpense.category.name)) {
-        user.getLoan(false, newExpense.category.name).pay(newExpense.total);
+    if(user.hasLoan(newExpense.category.alias)) {
+        user.getLoan(false, newExpense.category.alias).pay(newExpense.total);
     }
 
     return res.status(200);
-});
-
-// todo create endpoint to add/remove expenses categories
-router.post("/add-expense-categories", (req, res) => {
-    const user       = req.userData;
-    const categories = req.body.options as ExpenseCategory[];
-});
-router.post("/delete-expense-categories", (req, res) => {
-    
 });
 
 // todo create endpoint to add balance to savings account and pull money from it

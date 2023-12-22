@@ -5,7 +5,7 @@
  * */
 export interface ExpenseCategory {
     id: string;
-    name: string; // e.g. Gas - Trips - Gifts - Delivery - Gaming - NU CARD 4444 1515 3030 1313
+    alias: string; // e.g. Gas - Trips - Gifts - Delivery - Gaming - NU CARD 4444 1515 3030 1313
     description?: string;
     isDefault: boolean;
 }

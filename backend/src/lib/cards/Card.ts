@@ -3,7 +3,7 @@ import { CardOptions } from "@common/types/cards";
 
 export class Card {
     protected cardNumber: string; // id
-    protected alias?: string;
+    protected alias: string;
     protected holderName: string;
     protected expires: Date;
     protected issuer: Bank;
@@ -15,7 +15,7 @@ export class Card {
         this.issuer     = options.issuer;
         this.expires    = options.expires;
         this.balance    = options.balance;
-        this.alias      = options.alias;
+        this.alias      = options.alias ?? `Tarjeta ${options.issuer.name} ${options.cardNumber}`;
     }
 
     public addBalance(amount: number) {

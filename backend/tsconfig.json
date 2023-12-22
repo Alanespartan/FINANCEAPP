@@ -10,7 +10,9 @@
             "@common/*": [ "../common/*" ],
             "@errors":   [ "./src/lib/errors"],
             "@tools/*":  [ "./src/routes/v1/tools/*"],
-            "@src/*":    [ "./src/*"]
+            "@src/*":    [ "./src/*"],
+            "@cards":    [ "./src/lib/cards"],
+            "@loans":    [ "./src/lib/loans"]
         },
         
         "skipLibCheck": true
