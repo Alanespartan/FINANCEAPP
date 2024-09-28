@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ClientRequest } from "http";
 import { AxiosResponseHeaders, AxiosResponse, AxiosRequestConfig } from "axios";
 
@@ -34,9 +35,9 @@ export class HTTPResponse<T> implements AxiosResponse<T> {
         );
     }
     /** Returns whether this response has a successful response code (i.e 2XX) */
-    public isSuccess()  { return this.status >= 200 && this.status < 300 }
+    public isSuccess()  { return this.status >= 200 && this.status < 300; }
     /** Returns whether this response has a non-error response code (i.e 1XX, 2XX or 3XX) */
-    public isComplete() { return this.status < 400 }
+    public isComplete() { return this.status < 400; }
 
     /** Returns parsed body according to given function
      * @param {Function} funct Given function to parse body request

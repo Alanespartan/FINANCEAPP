@@ -1,10 +1,10 @@
-import { MyRouter } from "../../MyRouter";
+import { Router } from "express";
 
-const router = new MyRouter();
+const router = Router();
 
 router.post("/add-loan", (req, res) => {
-    const user    = req.userData;
-    
+    // const user = req.userData;
+
     /**
      * user.addCategory({
         id:        randomUUID(),
@@ -15,6 +15,7 @@ router.post("/add-loan", (req, res) => {
 
     return res.status(200);
 });
+
 router.post("/delete-loan/:alias", (req, res) => {
     const user  = req.userData;
     const alias = req.params.alias;

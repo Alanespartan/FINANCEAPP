@@ -5,7 +5,7 @@ import axiosGlobal, { AxiosError, AxiosResponse, Method } from "axios";
 import { HttpCookieAgent, HttpsCookieAgent, CookieAgentOptions } from "http-cookie-agent/http";
 import { CookieJar } from "tough-cookie";
 
-import { SessionError, AuthenticationError } from "@errors";
+import { SessionError } from "@errors";
 import { HTTPRequestOptions, HTTPRequestHeaders } from "@common/types/axios";
 import { HTTPResponse } from "./HTTPResponse";
 import { RequestBuilder } from "./RequestBuilder";

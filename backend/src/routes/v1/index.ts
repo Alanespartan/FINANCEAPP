@@ -1,15 +1,30 @@
-import { requireSession } from "@src/middleware/checkConnection";
-import { MyRouter }   from "../MyRouter";
-import authRouter     from "./auth";
-import paymentsRouter from "./payments"
-import cardsRouter    from "./cards";
+import { Router } from "express";
+import jobRouter        from "./jobs";
+import statusHandler    from "./status";
+import serversRouter    from "./servers";
+import authRouter       from "./auth";
+import { requiresAuth } from "@backend/middleware/auth";
 
-const v1Router = new MyRouter();
+const v1Router = Router();
 
-v1Router.use("/", authRouter.getRouter());
+/** NO AUTH REQUIRED **/
+// Auth
+v1Router.use("/", authRouter);
 
-v1Router.use("/payments", requireSession, paymentsRouter.getRouter());
+// Servers
+v1Router.use("/servers", serversRouter);
 
-v1Router.use("/cards", requireSession, cardsRouter.getRouter());
+/** AUTH REQUIRED */
+// Server Status
+v1Router.use("/status",
+    requiresAuth,
+    statusHandler
+);
+
+// Job Status
+v1Router.use("/jobs",
+    requiresAuth,
+    jobRouter
+);
 
 export default v1Router;

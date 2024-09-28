@@ -1,20 +1,20 @@
 {
     "extends": "../tsconfig.base.json",
     "compilerOptions": {
-        "module": "CommonJS",
-        "target": "ES6",
+        "module": "commonjs",
+        "target": "es6",
 
         "outDir": "dist",
         "baseUrl": ".",
         "paths": {
             "@common/*": [ "../common/*" ],
-            "@errors":   [ "./src/lib/errors"],
-            "@tools/*":  [ "./src/routes/v1/tools/*"],
-            "@src/*":    [ "./src/*"],
+            "@backend/*":[ "./src/*"],
+            "@errors":   [ "./src/lib/errors" ],
             "@cards":    [ "./src/lib/cards"],
-            "@loans":    [ "./src/lib/loans"]
+            "@loans":    [ "./src/lib/loans"],
+            "@tools/*":  [ "./src/routes/v1/tools/*"]
         },
-        
+
         "skipLibCheck": true
     },
     "tsc-alias": {
@@ -25,9 +25,7 @@
             }
         }
     },
-    "include": [
-        "./src"
-    ],
+    "include": ["./src"],
     "references": [
         { "path": "../common" }
     ]

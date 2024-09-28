@@ -1,7 +1,7 @@
-import { MyRouter } from "../../MyRouter";
+import { Router } from "express";
 import { ExpenseCategory } from "@common/types/payments";
 
-const router = new MyRouter();
+const router = Router();
 
 router.post("/add-categories", (req, res) => {
     const user       = req.userData;

@@ -1,14 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Request } from "express";
 import type { SessionData } from "express-session";
-import { User } from "@src/session/user";
+import { User } from "@backend/session/user";
 
 declare global {
     namespace Express {
-        // Inject additional property on express.Request
+        // Inject additional properties on express.Request
+        // e.g req.dbConnection
         interface Request {
             /**
-             * The current user connection.
-             * NOTE: This is only present on routes using the "checkConnection" middleware.
+             * The current user's connection.
+             * NOTE: This is only present on routes using the `requiresELM` middleware.
              */
             userData: User
         }

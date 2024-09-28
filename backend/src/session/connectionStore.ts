@@ -1,4 +1,5 @@
-import { User } from "@src/session/user";
+import { User } from "@backend/session/user";
+
 /**
  * This class server as an in-memory store of users connections.
  * We do not put these in the session object since they're not serializable.
@@ -22,3 +23,4 @@ export class ConnectionStore {
         ConnectionStore.STORE.delete(sid);
     }
 }
+

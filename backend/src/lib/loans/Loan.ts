@@ -31,7 +31,7 @@ export class Loan {
 
     public closeLoan() {
         // todo add error class
-        if(this.borrowed > this.paid) { throw new Error(`Couldn't complete the operation. Amount paid has not covered what was lent and interest.`); }
+        if(this.borrowed > this.paid) { throw new Error("Couldn't complete the operation. Amount paid has not covered what was lent and interest."); }
         this.isPaid    = true;
         this.interests = this.paid - this.borrowed;
     }

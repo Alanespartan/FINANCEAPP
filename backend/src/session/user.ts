@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// import { Logger } from "@common/types/logger";
 import { randomUUID } from "crypto";
 import { UserSession } from "@common/types/auth";
 import { CreditCard, DebitCard } from "@cards";
@@ -5,10 +7,12 @@ import { Loan } from "@loans";
 import { Expense, ExpenseCategory } from "@common/types/payments";
 import { LoanOptions } from "@common/types/loans";
 
+// const logger = new Logger("session/user.ts");
+
 export class UserController {
     // mimic a database storage
     userStore: Record<string, User> = {};
-    
+
     public create(email: string, password: string, firstName: string, lastName: string) {
         const id = randomUUID();
         if(!this.userStore[id]) this.userStore[id] = new User(id, email, password, firstName, lastName);
@@ -20,7 +24,6 @@ export class UserController {
     }
 
     public getByEmail(email: string) {
-        // TODO query against DB using email
         for(const key in this.userStore) {
             const user = this.userStore[key];
             if(email === user.email) return user;
@@ -49,7 +52,6 @@ export class User implements UserSession {
     protected incomes: any[]; // todo create interface
 
     constructor(id: string, email: string, password: string, firstName: string, lastName: string) {
-        // BASIC USER INFO
         this.id        = id;
         this.email     = email;
         this.password  = password;
@@ -208,8 +210,6 @@ export class User implements UserSession {
         console.log("The following expense category was deleted correctly: " + deleted[0].alias);
     }
 
-
-
     /*---------------- EXPENSES ----------------*/
     public addExpense(expense: Expense) {
         this.expenses.push(expense);
@@ -219,8 +219,6 @@ export class User implements UserSession {
         console.log("The following expense was deleted correctly: " + deleted[0].id);
     }
 
-
-
     /*---------------- HELPER FUNCTIONS ----------------*/
     private user2Json() {
         const userObj = {
@@ -229,41 +227,10 @@ export class User implements UserSession {
                 firstName: this.firstName,
                 lastName:  this.lastName,
                 email:     this.email
-            },
-            cards:    this.cards,
-            expenses: this.expenses,
-            loans:    this.loans,
-            incomes:  this.incomes
+            }
         };
         return JSON.stringify(userObj);
     }
 }
 
 export const userController = new UserController();
-userController.create("arturocruz10@live.com.mx", "admin123", "Juan Arturo", "Cruz Cardona")
-
-/* 
-PUBLIC
-By default, all members of a class in TypeScript are public.
-All the public members can be accessed anywhere without any restrictions.
-
-PRIVATE
-The private access modifier ensures that class members are visible only to 
-that class and are not accessible outside the containing class.
-
-PROTECTED
-The protected access modifier is similar to the private access modifier,
-except that protected members can be accessed using their deriving classes.
-
-STATIC
-class Circle {
-    static pi = 3.14;
-    pi = 3;
-}
-Circle.pi; // returns 3.14
-let circleObj = new Circle();
-circleObj.pi; // returns 3
-Static and non-static fields with the same name can exists without any error.
-The static field will be accessed using dot notation and the non-static field
-can be accessed using an object.
-*/

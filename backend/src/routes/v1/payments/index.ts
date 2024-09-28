@@ -1,13 +1,13 @@
 import { randomUUID } from "crypto";
-import { MyRouter } from "../../MyRouter";
+import { Router } from "express";
 import { Expense, PaymentConfig, PaymentMethod } from "@common/types/payments";
 
-const router = new MyRouter();
+const router = Router();
 
 router.post("/add-payment", (req, res) => {
     const user    = req.userData;
     const options = req.body.options as PaymentConfig;
-    
+
     // create expense record
     const newExpense = {
         id:          randomUUID(),
@@ -26,7 +26,7 @@ router.post("/add-payment", (req, res) => {
         newExpense.method.name = options.cardOptions.cardAlias; // e.g. Paid with Tarjeta de Débito NU 4444 1515 3030 1313
         user.getCard(user.getCardIndex(options.cardOptions.cardAlias)).pay(newExpense.total); // reduce card balance by making a payment
     }
-    
+
     // check if user paid a card
     if(user.hasCard(newExpense.category.alias)) {
         user.getCard(user.getCardIndex(newExpense.category.alias)).addBalance(newExpense.total);

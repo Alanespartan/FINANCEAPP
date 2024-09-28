@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { URL } from "url";
-import type { HTTPRequestHeaders, HTTPRequestOptions } from "@common/types/axios"
+import type { HTTPRequestHeaders, HTTPRequestOptions } from "@common/types/axios";
 import { Session } from "./Session";
 import { HTTPPromise } from "./HTTPPromise";
 import { Method } from "axios";
@@ -23,7 +24,7 @@ export class RequestBuilder<T extends keyof RequestBuilderMap> {
         private type: T
     ) { }
 
-    private toType<T extends keyof RequestBuilderMap>(type: T): RequestBuilder<T> { 
+    private toType<T extends keyof RequestBuilderMap>(type: T): RequestBuilder<T> {
         const builder = new RequestBuilder(this.session, this.method, this.url, type);
         builder.options = this.options;
         return builder;
@@ -34,7 +35,7 @@ export class RequestBuilder<T extends keyof RequestBuilderMap> {
     public send(body?: string) {
         if(body) { this.options.body = body; }
         const p = this.session.request(this.method, this.url, this.options);
-        switch(this.type) {
+        switch (this.type) {
             // case "xml": return p.parseXML();
             case "json": return p.parseJSON();
             default: return p;
@@ -81,7 +82,7 @@ export class RequestBuilder<T extends keyof RequestBuilderMap> {
     public context(context: string, asQuery = false) {
         return asQuery ?
             this.addParam("oslc_config.context", context) :
-            this.setHeader("oslc_config.context", context)
+            this.setHeader("oslc_config.context", context);
     }
     public oslc() { return this.setHeader("OSLC-Core-Version", "2.0"); }
 }
