@@ -1,13 +1,13 @@
 {
     "extends": "../tsconfig.base.json",
     "compilerOptions": {
-        "target": "ESNext",
-        "module": "ESNext",
+        "target": "esnext",
+        "module": "esnext",
         "lib": [
             "ES2018",
-            "DOM",
-            "DOM.Iterable",
-            "ScriptHost"
+            "dom",
+            "dom.iterable",
+            "scripthost"
         ],
 
         "experimentalDecorators": true,
@@ -15,26 +15,39 @@
 
         "baseUrl": ".",
         "paths": {
-            "@common/*":   [ "../common/*" ],
-            "@components/*": [ "./src/components/*"],
-            "@backend/*":  [ "../backend/*"]
+            "@common/*": [ "../common/*" ],
+            "@components": [ "./src/components/index" ],
+            "@components/*": [ "./src/components/*" ],
+            "@backend/*": [ "../backend/*" ]
         },
 
-        /* VITE CONFIG */
+        /***********************************
+         *     Copied from Vite Config     *
+         ***********************************/
         "resolveJsonModule": true,
         "useDefineForClassFields": true,
 
+        // Required in Vue projects
         "jsx": "preserve",
+
+        // `"noImplicitThis": true` is part of `strict`
+        // Added again here in case some users decide to disable `strict`.
+        // This enables stricter inference for data properties on `this`.
         "noImplicitThis": true,
         "strict": true,
 
+        // Required in Vite
         "isolatedModules": true,
+        // For `<script setup>`
+        // See <https://devblogs.microsoft.com/typescript/announcing-typescript-4-5-beta/#preserve-value-imports>
         "preserveValueImports": true,
+        // Enforce using `import type` instead of `import` for types
         "importsNotUsedAsValues": "error",
-        
+
         // Recommended
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
+        // See <https://github.com/vuejs/vue-cli/pull/5688>
         "skipLibCheck": true
     },
     "include": [
@@ -47,6 +60,6 @@
     ],
     "references": [
         { "path": "../common" },
-        { "path": "./tsconfig.config.json" },
+        { "path": "./tsconfig.config.json" }
     ]
 }
