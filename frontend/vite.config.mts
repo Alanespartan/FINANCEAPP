@@ -16,4 +16,11 @@ export default defineConfig({
     build: {
         chunkSizeWarningLimit: 1000,
     },
+    css: {
+        preprocessorOptions: {
+            scss: {
+                api: 'modern-compiler' // or "modern"
+            }
+        }
+    }
 });
