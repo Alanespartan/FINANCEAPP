@@ -3,6 +3,8 @@ import vSelect from "vue-select";
 import Donut from "vue-css-donut-chart";
 import Datepicker from "@vuepic/vue-datepicker";
 import Multiselect from "@vueform/multiselect";
+import PrimeVue from 'primevue/config';
+import TreeSelect from 'primevue/treeselect';
 import "bootstrap";
 
 import "vue-css-donut-chart/dist/vcdonut.css";
@@ -14,5 +16,14 @@ import "sweetalert2/src/sweetalert2.scss";
 
 import App from "./App.vue";
 import router from "./router";
+import store from "./store";
 
-createApp(App).use(router).use(Donut).component("Datepicker", Datepicker).component("Multiselect", Multiselect).component("v-select", vSelect).mount("#app");
+// Initialize the tools
+createApp(App).use(store).use(router)
+.use(Donut)
+.use(PrimeVue)
+.component("Datepicker", Datepicker)
+.component("Multiselect", Multiselect)
+.component("v-select", vSelect)
+.component("TreeSelect", TreeSelect)
+.mount("#app");

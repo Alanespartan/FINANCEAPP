@@ -1,10 +1,63 @@
+@font-face {
+    font-family: "gesans-regular";
+    src: url("/font/gesans-regular.woff2") format("woff2");
+}
+
+html * {
+    font-family: gesans-regular !important;
+}
+
 body {
-    background-color: #fff;
+    background-color: #e9e9e9 !important;
     margin: 0;
     padding: 0;
 }
 
 #app {
-    margin: 0;
-    padding: 0;
+    font-family: gesans-regular;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #2c3e50;
+    background-color: #e9e9e9 !important;
+}
+
+i.bi.md {
+    font-size: 1.5rem;
+}
+
+i.bi.x2 {
+    font-size: 3rem;
+}
+
+.error-message {
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+}
+
+.nav-item {
+    font-size: 1.2rem;
+}
+
+.navbar-brand {
+    margin-left: 1rem;
+}
+
+.navbox {
+    margin-bottom: 1rem;
+}
+
+.navbox .alert {
+    border-radius: 0%;
+}
+
+.navbox .alert p {
+    text-align: center;
+    margin-bottom: 0 !important;
+    margin-right: -32px;
+    padding: 0rem 3rem 0rem 3rem
+}
+
+.useful-link {
+    text-decoration: none;
+    color: #3B73B9;
 }
