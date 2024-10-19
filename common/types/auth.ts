@@ -9,3 +9,8 @@ export interface UserSession {
     firstName: string;
     lastName: string;
 }
+
+export interface SimpleUser {
+    sso: string,
+    name: string
+}
