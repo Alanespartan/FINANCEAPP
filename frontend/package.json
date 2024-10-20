@@ -39,7 +39,7 @@
     "devDependencies": {
         "@babel/plugin-proposal-decorators": "^7.18.2",
         "@rushstack/eslint-patch": "^1.1.0",
-        "@types/node": "^20.14.8",
+        "@types/node": "20.16.13",
         "@types/uuid": "^8.3.4",
         "@types/vue-select": "^3.16.0",
         "@vitejs/plugin-vue": "^5.1.4",

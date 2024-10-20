@@ -38,7 +38,7 @@
     "@types/express-fileupload": "^1.4.1",
     "@types/express-session": "^1.17.4",
     "@types/mocha": "^9.1.1",
-    "@types/node": "^16.11.1",
+    "@types/node": "20.16.13",
     "@types/node-cron": "^3.0.7",
     "@types/tough-cookie": "^4.0.2",
     "@types/uuid": "^8.3.4",
