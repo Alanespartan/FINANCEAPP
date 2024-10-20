@@ -64,16 +64,4 @@ package-lock.json
 
 # Common
 common/lib
-
-# frontend
-frontend/node_modules
-frontend/dist
-frontend/package-lock.json
-
-# backend
-backend/node_modules
-backend/dist
-backend/package-lock.json
-
 package-lock.json
-
