@@ -131,7 +131,7 @@ export default defineComponent({
     },
     methods: {
         goToJob(id: string) {
-            console.log("this.$router.push({ path: `/jobs/${id}` });", id);
+            this.$router.push({ path: `/jobs/${id}` });
         },
         getTime(date?: Date) {
             return date != null ? date.getTime() : 0;
