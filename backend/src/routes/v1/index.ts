@@ -1,6 +1,6 @@
 import { Router } from "express";
 import jobRouter        from "./jobs";
-import statusHandler    from "./status";
+import statusRouter     from "./status";
 import serversRouter    from "./servers";
 import authRouter       from "./auth";
 import { requiresAuth } from "@backend/middleware/auth";
@@ -18,7 +18,7 @@ v1Router.use("/servers", serversRouter);
 // Server Status
 v1Router.use("/status",
     requiresAuth,
-    statusHandler
+    statusRouter
 );
 
 // Job Status
