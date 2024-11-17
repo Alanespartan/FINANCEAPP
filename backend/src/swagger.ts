@@ -35,70 +35,15 @@ const JSDocsOptions = {
                 LoginPayload: {
                     type: "object",
                     properties: {
-                        username: {
+                        email: {
                             type: "string",
-                            description: "User SSO",
-                            required: true
+                            required: true,
+                            example: "test@gmail.com"
                         },
                         password: {
                             type: "string",
-                            description: "User Password",
-                            required: true
-                        },
-                        server: {
-                            type: "string",
-                            description: "Server Base URL",
-                            required: true
-                        },
-                        tool: {
-                            type: "string",
-                            description: "Server Tool",
-                            required: true
-                        }
-                    },
-                    example: {
-                        username: "223034657",
-                        password: "YOURPASSWORD",
-                        server: "https://www.google.com",
-                        tool: "rm"
-                    }
-                },
-                InstanceEndpoint: {
-                    type: "object",
-                    properties: {
-                        id: {
-                            type: "string",
-                            description: "Used to differentiate between ELM basic and hidden endpoints"
-                        },
-                        name: {
-                            type: "string",
-                            description: "ELM group endpoint name"
-                        }
-                    }
-                },
-                Servers: {
-                    type: "object",
-                    properties: {
-                        id: {
-                            type: "string",
-                            description: "Server's id"
-                        },
-                        name: {
-                            type: "string",
-                            description: "Server's name"
-                        },
-                        url: {
-                            type: "string",
-                            description: "Server's URL"
-                        },
-                        location: {
-                            type: "string",
-                            description: "Location of the server"
-                        },
-                        endpoints: {
-                            type: "object",
-                            $ref: "#/components/schemas/InstanceEndpoint",
-                            description: "Endpoints available on the server"
+                            required: true,
+                            example: "YOURPASSWORD"
                         }
                     }
                 }
