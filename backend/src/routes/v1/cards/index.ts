@@ -1,43 +1,98 @@
 import { Router } from "express";
-import { CreditCard, DebitCard } from "@cards";
+import { AvailableCards, CreditCard, DebitCard } from "@cards";
 import { CardOptions, CardTypes, UpdateCardOptions } from "@common/types/cards";
 import { ExpenseCategory } from "@common/types/payments";
 import { randomUUID } from "crypto";
+import { BadRequestError } from "@backend/lib/errors";
+import { User } from "@backend/session/user";
 
 const router = Router();
 
-router.post("/add-card", (req, res) => {
-    const user    = req.userData;
-    const options = req.body.options as CardOptions;
-    const type    = req.body.type as CardTypes;
+/**
+* @swagger
+* /api/v1/cards:
+*   post:
+*       summary: Create a new user card
+*       description: Given a configuration of card options, create and assign a new card (debit, credit, voucher, services) to the user information
+*       tags:
+*           - Cards
+*       requestBody:
+*           description: Payload that includes all the required new card data.
+*           required: true
+*           content:
+*               application/json:
+*                   schema:
+*                       $ref: "#/components/schemas/CardOptions"
+*       responses:
+*           '200':
+*               description: An array of cards that includes the recently added
+*           '400':
+*               description: Bad Request Error
+*/
+router.post("/", (req, res, next) => {
+    try {
+        const user    = req.userData;
+        const options = req.body as CardOptions;
+        const type    = req.query.type;
 
-    let newCard: CreditCard | DebitCard;
-    switch (type) {
-        case CardTypes.CREDIT:
-            options.alias = `Tarjeta de Crédito ${options.issuer.name} ${options.cardNumber}`;
-            newCard = new CreditCard(options, options.limit ?? 0);
-            break;
-        case CardTypes.DEBIT:
-            options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
-            newCard = new DebitCard(options, false);
-            break;
-        case CardTypes.VOUCHER:
-            options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
-            newCard = new DebitCard(options, true);
-            break;
-    }
+        if(type && typeof type !== "string") {
+            throw new BadRequestError("No card type was given in the correct format.");
+        }
 
-    // add card to user array of cards
-    user.addCard(newCard);
+        let newCard: CreditCard | DebitCard;
+        switch (parseInt(type as string)) {
+            case CardTypes.DEBIT:
+                options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
+                newCard = new DebitCard(options, false);
+                break;
+            case CardTypes.CREDIT:
+                options.alias = `Tarjeta de Crédito ${options.issuer.name} ${options.cardNumber}`;
+                newCard = new CreditCard(options, options.limit ?? 0);
+                break;
+            case CardTypes.VOUCHER:
+                options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
+                newCard = new DebitCard(options, true);
+                break;
+            case CardTypes.SERVICES:
+                options.alias = `Tarjeta de Servicios ${options.issuer.name} ${options.cardNumber}`;
+                newCard = new CreditCard(options, options.limit ?? 0); // Add class for services class (e.g. amex platinum)
+                break;
+            default: throw new BadRequestError("Invalid type for creating a new card.");
+        }
 
-    // create category using card alias
-    user.addCategory({
-        id:        randomUUID(),
-        alias:     newCard.getAlias(),
-        isDefault: false
-    } as ExpenseCategory);
+        // add card to user array of cards
+        user.addCard(newCard);
 
-    return res.status(200);
+        // create expense category using card alias
+        // so we can register when paying "TO A CARD"
+        user.addCategory({
+            id:        randomUUID(),
+            alias:     newCard.getAlias(),
+            isDefault: false
+        } as ExpenseCategory);
+
+        const cards: AvailableCards[] = user.getCards(CardTypes.ALL);
+        return res.status(200).json({ cards });
+    } catch(error) { return next(error); }
+});
+
+router.get("/", (req, res, next) => {
+    try {
+        const user: User = req.userData;
+        const type = req.query.type; // by default is always "ALL" cards (if not modified by user in the front end)
+
+        if(type && typeof type !== "string") {
+            throw new BadRequestError("No card type filter was given in the correct format.");
+        }
+
+        const filterBy = type ? parseInt(type) : CardTypes.ALL; // Default get all
+        if(!(filterBy in CardTypes)) {
+            throw new BadRequestError("Invalid type for filtering cards.");
+        }
+
+        const cards: AvailableCards[] = user.getCards(filterBy);
+        return res.status(200).json({ cards });
+    } catch(error) { return next(error); }
 });
 
 router.post("/delete-card/:alias", (req, res) => {
