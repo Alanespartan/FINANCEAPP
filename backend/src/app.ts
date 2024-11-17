@@ -95,7 +95,7 @@ app.use(/\/api\/.*/, (req, res) => {
     res.status(404).json({ status: "error", message: `Could not find route '${req.originalUrl}'` });
 });
 
-import { requiresAuth } from "@backend/middleware/auth";
+import { requiresAuth } from "@backend/middleware/requiresAuth";
 import { swaggerDocumentFromJSDoc, swaggerUIOptions } from "./swagger";
 import swaggerUi from "swagger-ui-express";
 app.use(
