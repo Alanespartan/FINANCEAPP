@@ -10,12 +10,14 @@ declare global {
         interface Request {
             /**
              * The current user's connection.
-             * NOTE: This is only present on routes using the `requiresELM` middleware.
+             * NOTE: This is only present on routes using the `requiresAuth` middleware.
              */
             userData: User
         }
     }
 }
+
+// used for caching data e.g req.session.isValidUser
 declare module "express-session" {
     interface SessionData {
         isValidUser?: boolean
