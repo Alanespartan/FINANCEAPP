@@ -8,14 +8,16 @@ export class Card {
     protected expires: Date;
     protected issuer: Bank;
     protected balance: number;
+    protected type: number;
 
-    public constructor(options: CardOptions) {
+    public constructor(options: CardOptions, type: number) {
         this.cardNumber = options.cardNumber;
         this.holderName = options.holderName;
         this.issuer     = options.issuer;
         this.expires    = options.expires;
         this.balance    = options.balance;
         this.alias      = options.alias ?? `Tarjeta ${options.issuer.name} ${options.cardNumber}`;
+        this.type       = type;
     }
 
     public addBalance(amount: number) {
@@ -50,5 +52,9 @@ export class Card {
 
     public getIssuerName() {
         return this.issuer.name;
+    }
+
+    public getCardType() {
+        return this.type;
     }
 }
