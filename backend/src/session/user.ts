@@ -240,4 +240,4 @@ export class User implements UserSession {
 }
 
 export const userController = new UserController();
-userController.create("test@gmail.com", "YOURPASSWORD", "John", "Doe");
+userController.create("test@gmail.com", "admin", "John", "Doe");
