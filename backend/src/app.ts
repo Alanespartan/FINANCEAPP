@@ -45,21 +45,28 @@ else if(desiredLogs === "debug") { Session.LEVEL = SessionDebugLevel.DEBUG; }
 else if(desiredLogs === "trace") { Session.LEVEL = SessionDebugLevel.TRACE; }
 
 // Session Timeouts
+// https://www.npmjs.com/package/express-session
+// https://www.npmjs.com/package/memorystore
 /** 30 minutes, in milliseconds. */
-const SESSION_TIMEOUT = 30 * 60 * 1000;
+const SESSION_TIMEOUT = 30 * 60 * 1000; // 1,800,000 ms
+console.log(`Session Timeout ${SESSION_TIMEOUT} set at ${new Date().toISOString()}`);
 app.use(session({
     secret: cipherKey,
     cookie: {
         maxAge: SESSION_TIMEOUT
     },
     store: new MemoryStore({
-        checkPeriod: SESSION_TIMEOUT / 2,
-        ttl: SESSION_TIMEOUT,
+        checkPeriod: SESSION_TIMEOUT / 2, // Define how long MemoryStore will check for expired sessions
+        ttl: SESSION_TIMEOUT, // Session TTL (expiration) in milliseconds. Defaults to session.maxAge (if set), or one day
         dispose(sid) {
-            ConnectionStore.deleteConnection(sid); // // ELM Connections are stored outside the session, so need to be deleted separately.
+            console.log(`Dispose connection for ${sid} at ${new Date().toISOString()}`);
+            ConnectionStore.deleteConnection(sid);
         },
+        // By default, if you set a dispose() method, then it'll be called whenever a set() operation overwrites an existing key.
+        // If you set this option, dispose() will only be called when a key falls out of the cache, not when it is overwritten.
+        noDisposeOnSet: true
     }),
-    resave: true,
+    resave: true, // Forces the session to be saved back to the session store
     rolling: true, // Each request will restart the session timer.
     saveUninitialized: false // Don't keep track of visitors that haven't logged in.
 }));
