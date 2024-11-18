@@ -39,20 +39,20 @@ const BAD_LOGIN_TIMEOUT = 5 * 60 * 1000;
 *                               example: test@gmail.com
 *                           password:
 *                               type: string
-*                               example: YOURPASSWORD
+*                               example: admin
 *                       required:
 *                           - email
 *                           - password
 *       responses:
-*           '200':
+*           200:
 *               description: A successful login
-*           '400':
+*           400:
 *               description: Bad Request Error
-*           '401':
+*           401:
 *               description: Unauthorized Error
-*           '403':
+*           403:
 *               description: Forbidden Error
-*           '500':
+*           500:
 *               description: Internal server error
 */
 router.post("/login", async (req, res, next) => {
@@ -98,9 +98,9 @@ router.post("/login", async (req, res, next) => {
 *       tags:
 *           - Auth
 *       responses:
-*           '200':
+*           200:
 *               description: A successful log out
-*           '500':
+*           500:
 *               description: There was an unexpected server error trying to log out
 */
 router.post("/logout", async (req, res, next) => {
