@@ -32,7 +32,7 @@ const router = Router();
 *                       $ref: "#/components/schemas/CardOptions"
 *       responses:
 *           200:
-*               description: An array of cards that includes the recently added
+*               description: An array of cards a user has registered including the recently added.
 *               content:
 *                   application/json:
 *                       schema:
@@ -103,7 +103,13 @@ router.post("/", (req, res, next) => {
 *               type: integer
 *       responses:
 *           200:
-*               description: An array of cards.
+*               description: An array of cards a user has registered.
+*               content:
+*                   application/json:
+*                       schema:
+*                           type: array
+*                           items:
+*                               $ref: "#/components/schemas/AvailableCards"
 *           400:
 *               description: Bad Request Error
 */

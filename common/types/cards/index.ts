@@ -184,6 +184,7 @@ export interface DebitCard extends Card {
 *               - $ref: "#/components/schemas/DebitCard"
 *           description: Represents a possible type of either DebitCard or CreditCard.
 */
+/** Represents a possible type of either DebitCard or CreditCard */
 export type AvailableCards = DebitCard | CreditCard;
 
 /** User deactivates digital card and issues a new one.
