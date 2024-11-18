@@ -62,8 +62,11 @@ app.use(session({
             console.log(`Dispose connection for ${sid} at ${new Date().toISOString()}`);
             ConnectionStore.deleteConnection(sid);
         },
-        // By default, if you set a dispose() method, then it'll be called whenever a set() operation overwrites an existing key.
-        // If you set this option, dispose() will only be called when a key falls out of the cache, not when it is overwritten.
+        /*
+        The noDisposeOnSet attribute in MemoryStore prevents the store from prematurely disposing of sessions when they are updated.
+        Setting noDisposeOnSet: true ensures that the dispose function is not triggered when sessions are refreshed or modified,
+        which is especially useful when rolling: true is enabled, as it prevents unintended session deletion.
+        */
         noDisposeOnSet: true
     }),
     resave: true, // Forces the session to be saved back to the session store
