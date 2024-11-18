@@ -14,10 +14,11 @@
                     span.error-message {{ error }}
 
                 .mb-3
-                    .form-label(for="username") Credentials
-                    input#username.form-control.mb-2(type="text", name="username", placeholder="SSO", required, autofocus, v-model="form.username", :disabled="disableAll")
+                    .form-label(for="email") Credentials
+                    input#email.form-control.mb-2(type="text", name="email", placeholder="test@gmail.com", required, autofocus, v-model="form.email", :disabled="disableAll")
                     .form-label(for="password")
                     input#password.form-control(type="password", name="password", placeholder="Password", required, v-model="form.password", :disabled="disableAll")
+
                 .d-flex.justify-content-center.align-items-center(v-if="downloadingInfo")
                     .spinner-border.spinner(style="margin: 1rem", role="status")
                     span Downloading server information
@@ -36,7 +37,7 @@
                 .button-group.mb-5
                     button#login-button.btn.btn-primary.my-button.mb-2.w-100(
                         type="submit",
-                        :disabled="disableAll || form.username === '' || form.password === '' || !form.server",
+                        :disabled="disableAll || form.email === '' || form.password === '' || !form.server",
                         @click="signIn()"
                     )
                         span(v-show="!signInLoading") Sign In
@@ -61,7 +62,7 @@ export default defineComponent({
         disableAll:  false,
         downloadingInfo: true,
         form: {
-            username: "",
+            email: "",
             password: "",
             server: undefined as Server | undefined,
             // instanceEndpoint: {} as Record<string, any>,
@@ -87,7 +88,7 @@ export default defineComponent({
                 this.error = "You must select a server";
                 return;
             }
-            login(this.form.username, this.form.password, this.form.server).then((res) => {
+            login(this.form.email, this.form.password, this.form.server).then((res) => {
                 if(!res.success) {
                     if(res.timeoutMs) {
                         this.disableAll = true;
@@ -102,7 +103,7 @@ export default defineComponent({
                 } else {
                     this.signInLoading = false;
                     this.disableAll = false;
-                    window.location.href = window.location.origin + "/api/oidc/login";
+                    window.location.href = window.location.origin + "/home";
                 }
             });
         },

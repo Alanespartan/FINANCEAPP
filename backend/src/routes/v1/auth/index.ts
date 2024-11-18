@@ -85,7 +85,7 @@ router.post("/login", async (req, res, next) => {
         req.session.isValidUser = true;
 
         ConnectionStore.setConnection(req.sessionID, foundUser); // req.session.id is an alias of req.sessionID
-        return res.status(200);
+        return res.sendStatus(200);
     } catch(error) { next(error); }
 });
 
