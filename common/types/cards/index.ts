@@ -26,12 +26,11 @@ export enum CardTypes {
 *                   format: date
 *                   example: 2029-04-01
 *               issuer:
-*                   type: object
 *                   $ref: "#/components/schemas/Bank"
 *               balance:
 *                   type: number
 *                   example: 4000
-*               alias
+*               alias:
 *                   type: string
 *                   example: Visa Crédito BBVA Digital
 *               limit:

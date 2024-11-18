@@ -37,7 +37,10 @@ const JSDocsOptions = {
 
         // CARDS
         "./src/routes/v1/cards/*.ts",
-        "../../common/types/cards/*.ts"
+        "../common/types/cards/*.ts",
+
+        // OTHERS
+        "../common/types/*.ts"
     ]
 };
 
