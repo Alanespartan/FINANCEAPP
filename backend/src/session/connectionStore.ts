@@ -16,10 +16,12 @@ export class ConnectionStore {
     }
 
     public static setConnection(sid: string, userData: User) {
+        console.log(`Set connection for ${sid} at ${new Date().toISOString()}`);
         ConnectionStore.STORE.set(sid, userData);
     }
 
     public static deleteConnection(sid: string) {
+        console.log(`Deleting connection for ${sid} at ${new Date().toISOString()}`);
         ConnectionStore.STORE.delete(sid);
     }
 }
