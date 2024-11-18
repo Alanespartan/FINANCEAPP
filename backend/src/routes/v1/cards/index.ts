@@ -84,7 +84,7 @@ router.post("/", (req, res, next) => {
         } as ExpenseCategory);
 
         const cards: AvailableCards[] = user.getCards(CardTypes.ALL);
-        return res.status(200).json({ cards });
+        return res.status(200).json(cards);
     } catch(error) { return next(error); }
 });
 
@@ -128,7 +128,7 @@ router.get("/", (req, res, next) => {
         }
 
         const cards: AvailableCards[] = user.getCards(filterBy);
-        return res.status(200).json({ cards });
+        return res.status(200).json(cards);
     } catch(error) { return next(error); }
 });
 
