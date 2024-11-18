@@ -29,30 +29,15 @@ const JSDocsOptions = {
                 name: "Express App Team",
                 email: "test@test.com",
             },
-        },
-        components: {
-            schemas: {
-                LoginPayload: {
-                    type: "object",
-                    properties: {
-                        email: {
-                            type: "string",
-                            required: true,
-                            example: "test@gmail.com"
-                        },
-                        password: {
-                            type: "string",
-                            required: true,
-                            example: "YOURPASSWORD"
-                        }
-                    }
-                }
-            }
         }
     },
     apis: [
         "./src/routes_v1/auth/*.ts",
-        "./src/routes_v1/servers/*.ts"
+        "./src/routes_v1/servers/*.ts",
+
+        // CARDS
+        "./src/routes_v1/cards/*.ts",
+        "../../common/types/cards/*.ts"
     ]
 };
 

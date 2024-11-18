@@ -17,20 +17,26 @@ export enum CardTypes {
 *           properties:
 *               cardNumber:
 *                   type: string
+*                   example: 4815 6973 7892 1530
 *               holderName:
 *                   type: string
+*                   example: Juan Arturo Cruz Cardona
 *               expires:
 *                   type: string
 *                   format: date
+*                   example: 2029-04-01
 *               issuer:
 *                   type: object
-*                   $ref: "#/components/schemas/ContactInfo"
+*                   $ref: "#/components/schemas/Bank"
 *               balance:
 *                   type: number
+*                   example: 4000
 *               alias
 *                   type: string
+*                   example: Visa Crédito BBVA Digital
 *               limit:
 *                   type: number
+*                   example: 10000
 *           required:
 *               - cardNumber
 *               - holderName

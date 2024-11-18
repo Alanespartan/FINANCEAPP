@@ -32,7 +32,17 @@ const BAD_LOGIN_TIMEOUT = 5 * 60 * 1000;
 *           content:
 *               application/json:
 *                   schema:
-*                       $ref: '#/components/schemas/LoginPayload'
+*                       type: object
+*                       properties:
+*                           email:
+*                               type: string
+*                               example: test@gmail.com
+*                           password:
+*                               type: string
+*                               example: YOURPASSWORD
+*                       required:
+*                           - email
+*                           - password
 *       responses:
 *           '200':
 *               description: A successful login
