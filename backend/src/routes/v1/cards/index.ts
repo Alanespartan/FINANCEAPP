@@ -5,6 +5,7 @@ import { ExpenseCategory } from "@common/types/payments";
 import { randomUUID } from "crypto";
 import { BadRequestError } from "@backend/lib/errors";
 import { User } from "@backend/session/user";
+import { getHeaders } from "@backend/utils/requests";
 
 const router = Router();
 
@@ -16,6 +17,12 @@ const router = Router();
 *       description: Given a configuration of card options, create and assign a new card (debit, credit, voucher, services) to the user information
 *       tags:
 *           - Cards
+*       parameters:
+*           - in: header
+*             name: cardType
+*             schema:
+*               type: string
+*             required: true
 *       requestBody:
 *           description: Payload that includes all the required new card data.
 *           required: true
@@ -24,23 +31,28 @@ const router = Router();
 *                   schema:
 *                       $ref: "#/components/schemas/CardOptions"
 *       responses:
-*           '200':
+*           200:
 *               description: An array of cards that includes the recently added
-*           '400':
+*               content:
+*                   application/json:
+*                       schema:
+*                           type: array
+*                           items:
+*                               $ref: "#/components/schemas/AvailableCards"
+*           400:
 *               description: Bad Request Error
 */
 router.post("/", (req, res, next) => {
     try {
         const user    = req.userData;
         const options = req.body as CardOptions;
-        const type    = req.query.type;
 
-        if(type && typeof type !== "string") {
-            throw new BadRequestError("No card type was given in the correct format.");
-        }
+        const { cardType } = getHeaders(req,
+            [ "cardType", "Expected 'cardType' header was not provided." ]
+        );
 
         let newCard: CreditCard | DebitCard;
-        switch (parseInt(type as string)) {
+        switch (parseInt(cardType)) {
             case CardTypes.DEBIT:
                 options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
                 newCard = new DebitCard(options, false);
@@ -76,16 +88,35 @@ router.post("/", (req, res, next) => {
     } catch(error) { return next(error); }
 });
 
+/**
+* @swagger
+* /api/v1/cards:
+*   get:
+*       summary: Get user cards
+*       description: Get all cards a user has registered. These can be credit, debit, voucher or a services card. If no type was given for filtering in the request, all cards are returned.
+*       tags:
+*           - Cards
+*       parameters:
+*           - in: query
+*             name: cardType
+*             schema:
+*               type: integer
+*       responses:
+*           200:
+*               description: An array of cards.
+*           400:
+*               description: Bad Request Error
+*/
 router.get("/", (req, res, next) => {
     try {
         const user: User = req.userData;
-        const type = req.query.type; // by default is always "ALL" cards (if not modified by user in the front end)
+        const cardType = req.query.cardType; // by default is always "ALL" cards (if not modified by user in the front end)
 
-        if(type && typeof type !== "string") {
+        if(cardType && typeof cardType !== "string") {
             throw new BadRequestError("No card type filter was given in the correct format.");
         }
 
-        const filterBy = type ? parseInt(type) : CardTypes.ALL; // Default get all
+        const filterBy = cardType ? parseInt(cardType) : CardTypes.ALL; // Default get all
         if(!(filterBy in CardTypes)) {
             throw new BadRequestError("Invalid type for filtering cards.");
         }
