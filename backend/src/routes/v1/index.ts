@@ -1,9 +1,13 @@
 import { Router } from "express";
-import jobRouter        from "./jobs";
-import statusRouter     from "./status";
-import serversRouter    from "./servers";
-import authRouter       from "./auth";
-import { requiresAuth } from "@backend/middleware/auth";
+import { requiresAuth } from "@backend/middleware/requiresAuth";
+
+import authRouter    from "./auth";
+import serversRouter from "./servers";
+
+import statusRouter  from "./status";
+import jobRouter     from "./jobs";
+
+import cardsRouter   from "./cards";
 
 const v1Router = Router();
 
@@ -26,5 +30,13 @@ v1Router.use("/jobs",
     requiresAuth,
     jobRouter
 );
+
+
+// Cards
+v1Router.use("/cards",
+    requiresAuth,
+    cardsRouter
+);
+
 
 export default v1Router;

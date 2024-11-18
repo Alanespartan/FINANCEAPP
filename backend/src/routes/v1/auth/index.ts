@@ -32,17 +32,27 @@ const BAD_LOGIN_TIMEOUT = 5 * 60 * 1000;
 *           content:
 *               application/json:
 *                   schema:
-*                       $ref: '#/components/schemas/LoginPayload'
+*                       type: object
+*                       properties:
+*                           email:
+*                               type: string
+*                               example: test@gmail.com
+*                           password:
+*                               type: string
+*                               example: admin
+*                       required:
+*                           - email
+*                           - password
 *       responses:
-*           '200':
+*           200:
 *               description: A successful login
-*           '400':
+*           400:
 *               description: Bad Request Error
-*           '401':
+*           401:
 *               description: Unauthorized Error
-*           '403':
+*           403:
 *               description: Forbidden Error
-*           '500':
+*           500:
 *               description: Internal server error
 */
 router.post("/login", async (req, res, next) => {
@@ -75,7 +85,7 @@ router.post("/login", async (req, res, next) => {
         req.session.isValidUser = true;
 
         ConnectionStore.setConnection(req.sessionID, foundUser); // req.session.id is an alias of req.sessionID
-        return res.status(200);
+        return res.sendStatus(200);
     } catch(error) { next(error); }
 });
 
@@ -88,9 +98,9 @@ router.post("/login", async (req, res, next) => {
 *       tags:
 *           - Auth
 *       responses:
-*           '200':
+*           200:
 *               description: A successful log out
-*           '500':
+*           500:
 *               description: There was an unexpected server error trying to log out
 */
 router.post("/logout", async (req, res, next) => {

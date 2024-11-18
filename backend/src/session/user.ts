@@ -2,7 +2,7 @@
 // import { Logger } from "@common/types/logger";
 import { randomUUID } from "crypto";
 import { UserSession } from "@common/types/auth";
-import { CreditCard, DebitCard } from "@cards";
+import { AvailableCards } from "@cards";
 import { Loan } from "@loans";
 import { Expense, ExpenseCategory } from "@common/types/payments";
 import { LoanOptions } from "@common/types/loans";
@@ -35,8 +35,6 @@ export class UserController {
         return delete this.userStore[id];
     }
 }
-
-export type AvailableCards = DebitCard | CreditCard;
 
 export class User implements UserSession {
     public readonly id: string;
@@ -85,8 +83,6 @@ export class User implements UserSession {
     */
     public decreaseCash(amount: number) { this.cash -= amount; }
 
-
-
     /*---------------- CARDS ---------------- */
     /**
     * Save a new card in user information.
@@ -110,11 +106,21 @@ export class User implements UserSession {
         return this.cards.map((c) => c.getAlias()).indexOf(alias);
     }
     /**
-    * Get stored user card.
+    * Get a specific stored user card by index.
     * @param {number} index Position of the card in user array.
     */
     public getCard(index: number) {
         return this.cards[index];
+    }
+    /**
+    * Get all stored user cards.
+    * @param {number} type Used to filter user cards if a type was given in the request.
+    */
+    public getCards(type: number) {
+        if(type !== 0) {
+            return this.cards.filter((c) => c.getCardType() === type);
+        }
+        return this.cards;
     }
     /**
     * Delete card from user data.
@@ -234,4 +240,4 @@ export class User implements UserSession {
 }
 
 export const userController = new UserController();
-userController.create("test@gmail.com", "YOURPASSWORD", "John", "Doe");
+userController.create("test@gmail.com", "admin", "John", "Doe");
