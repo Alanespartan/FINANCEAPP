@@ -6,6 +6,7 @@ import { AvailableCards } from "@cards";
 import { Loan } from "@loans";
 import { Expense, ExpenseCategory } from "@common/types/payments";
 import { LoanOptions } from "@common/types/loans";
+import { CardTypes } from "@common/types/cards";
 
 // const logger = new Logger("session/user.ts");
 
@@ -83,6 +84,7 @@ export class User implements UserSession {
     */
     public decreaseCash(amount: number) { this.cash -= amount; }
 
+
     /*---------------- CARDS ---------------- */
     /**
     * Save a new card in user information.
@@ -92,31 +94,17 @@ export class User implements UserSession {
         this.cards.push(newCard);
     }
     /**
-    * Helper function that verifies that the given card does really exist in user information.
-    * @param {string} alias Card alias to search for.
+    * Get a specific stored user card using its card number id.
+    * @param {string} cardNumber Card number or alias to search for.
     */
-    public hasCard(alias: string) {
-        return this.getCardIndex(alias) < 0 ? false : true;
-    }
-    /**
-    * Helper function that obtains the index of the given card alias.
-    * @param {string} alias Card alias to search for.
-    */
-    public getCardIndex(alias: string) {
-        return this.cards.map((c) => c.getAlias()).indexOf(alias);
-    }
-    /**
-    * Get a specific stored user card by index.
-    * @param {number} index Position of the card in user array.
-    */
-    public getCard(index: number) {
-        return this.cards[index];
+    public getCard(cardNumber: string): AvailableCards | undefined {
+        return this.cards.find((c) => c.getCardNumber() === cardNumber);
     }
     /**
     * Get all stored user cards.
     * @param {number} type Used to filter user cards if a type was given in the request.
     */
-    public getCards(type: number) {
+    public getCards(type: CardTypes) {
         if(type !== 0) {
             return this.cards.filter((c) => c.getCardType() === type);
         }
@@ -131,7 +119,6 @@ export class User implements UserSession {
         const deleted = this.cards.splice(index, 1);
         console.log("The following card was deleted correctly: " + deleted[0].getAlias());
     }
-
 
 
     /*---------------- LOANS ----------------*/
@@ -176,7 +163,6 @@ export class User implements UserSession {
     }
 
 
-
     /*---------------- CATEGORIES ----------------*/
     /**
     * Save a new expense category in user information.
@@ -186,25 +172,17 @@ export class User implements UserSession {
         this.expenseCategories.push(newCategory);
     }
     /**
-    * Helper function that verifies that the given category does really exist in user information.
+    * Helper function that obtains the desired expense category using it's alias.
     * @param {string} alias Expense category alias to search for.
     */
-    public hasCategory(alias: string) {
-        return this.getCategoryIndex(alias) < 0 ? false : true;
+    public getCategory(alias: string) {
+        return this.expenseCategories.find((ec) => ec.alias === alias);
     }
     /**
-    * Helper function that obtains the index of the given expense category alias.
-    * @param {string} alias Expense category alias to search for.
+    * Get all stored user expense categories.
     */
-    public getCategoryIndex(alias: string) {
-        return this.expenseCategories.map((ec) => ec.alias).indexOf(alias);
-    }
-    /**
-    * Get stored expense category.
-    * @param {number} index Position of the category in user array.
-    */
-    public getCategory(index: number) {
-        return this.expenseCategories[index];
+    public getCategories() {
+        return this.expenseCategories;
     }
     /**
     * Delete expense category from user data.
