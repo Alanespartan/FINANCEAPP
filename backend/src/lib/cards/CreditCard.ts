@@ -13,7 +13,7 @@ export class CreditCard extends Card {
         return this.limit - this.balance;
     }
 
-    public increaseLimit(newLimit: number) {
-        this.limit = newLimit;
+    public setLimit(limit: number) {
+        this.limit = limit;
     }
 }
