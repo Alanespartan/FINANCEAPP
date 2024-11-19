@@ -48,7 +48,7 @@ export class Card {
         return this.cardNumber;
     }
 
-    public setExpiryDate(expires: Date) {
+    public setExpirationDate(expires: Date) {
         this.expires = expires;
     }
 
