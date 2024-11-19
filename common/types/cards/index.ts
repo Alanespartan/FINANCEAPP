@@ -202,10 +202,10 @@ export type AvailableCards = DebitCard | CreditCard;
 
 export interface UpdateCardOptions {
     cardNumber?: string;
-    alias?: string;
     archived?: boolean;
-    limit?: number;
-    balance?: number;
-    type?: CardTypes.DEBIT | CardTypes.CREDIT | CardTypes.SERVICES;
     expires?: Date;
+    type?: CardTypes.DEBIT | CardTypes.CREDIT | CardTypes.SERVICES;
+    /** This only must appear when dealing with credit cards. */
+    limit?: number;
+    alias?: string;
 }
