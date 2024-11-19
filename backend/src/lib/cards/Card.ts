@@ -1,5 +1,5 @@
 import { Bank } from "@common/types/util";
-import { CardOptions } from "@common/types/cards";
+import { CardOptions, CardTypes } from "@common/types/cards";
 
 export class Card {
     protected cardNumber: string; // id
@@ -8,9 +8,10 @@ export class Card {
     protected expires: Date;
     protected issuer: Bank;
     protected balance: number;
-    protected type: number;
+    protected type: CardTypes;
+    protected archived: boolean;
 
-    public constructor(options: CardOptions, type: number) {
+    public constructor(options: CardOptions, type: CardTypes) {
         this.cardNumber = options.cardNumber;
         this.holderName = options.holderName;
         this.issuer     = options.issuer;
@@ -18,6 +19,7 @@ export class Card {
         this.balance    = options.balance;
         this.alias      = options.alias ?? `Tarjeta ${options.issuer.name} ${options.cardNumber}`;
         this.type       = type;
+        this.archived   = false;
     }
 
     public addBalance(amount: number) {
@@ -54,7 +56,19 @@ export class Card {
         return this.issuer.name;
     }
 
+    public setCardType(type: CardTypes) {
+        this.type = type;
+    }
+
     public getCardType() {
         return this.type;
+    }
+
+    public setArchived(archived: boolean) {
+        this.archived = archived;
+    }
+
+    public getArchived() {
+        return this.archived;
     }
 }
