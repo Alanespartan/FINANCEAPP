@@ -172,7 +172,6 @@ router.get("/", (req, res, next) => {
 *               description: Not Found Error
 */
 router.put("/:cardNumber", (req, res, next) => {
-    // TODO this endpoint is throwing the following error: Cannot set headers after they are sent to the client
     try {
         const user       = req.userData;
         const cardNumber = req.params.cardNumber;
@@ -255,7 +254,7 @@ router.put("/:cardNumber", (req, res, next) => {
         category.alias = card.getAlias();
         // TODO verify that when this category is updated, all the existing expenses related to this category are update too
 
-        return res.send(200).json(card);
+        return res.status(200).json(card);
     } catch(error) { return next(error); }
 });
 
