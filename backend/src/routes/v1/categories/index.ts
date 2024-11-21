@@ -13,6 +13,7 @@ router.post("/add-categories", (req, res) => {
 });
 
 router.post("/delete-categories", (req, res) => {
+    /*
     const user       = req.userData;
     const categories = req.body.options as string[];
 
@@ -20,6 +21,7 @@ router.post("/delete-categories", (req, res) => {
         if(!user.hasCategory(category)) { throw new Error(`${category} doesn't exist.`); }
         user.removeCategory(user.getCategoryIndex(category));
     }
+    */
 
     return res.status(200);
 });

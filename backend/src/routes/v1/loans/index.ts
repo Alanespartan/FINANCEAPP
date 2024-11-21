@@ -22,7 +22,7 @@ router.post("/delete-loan/:alias", (req, res) => {
 
     if(!user.hasLoan(alias)) { throw new Error("Loan doesn't exist."); }
 
-    user.removeLoan(user.getCardIndex(alias));
+    // user.removeLoan(user.getCardIndex(alias));
 
     return res.status(200);
 });
