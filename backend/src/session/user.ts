@@ -111,6 +111,13 @@ export class User implements UserSession {
         return this.cards;
     }
     /**
+    * Get a specific stored user card using its card alias.
+    * @param {string} cardAlias Card alias to search for.
+    */
+    public getCardByAlias(cardAlias: string): AvailableCards | undefined {
+        return this.cards.find((c) => c.getAlias() === cardAlias);
+    }
+    /**
     * Delete card from user data.
     * @param {number} index Array index of the selected card.
     */
