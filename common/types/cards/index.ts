@@ -206,13 +206,48 @@ export interface DebitCard extends Card {
 /** Represents a possible type of either DebitCard or CreditCard */
 export type AvailableCards = DebitCard | CreditCard;
 
+/**
+* @swagger
+* components:
+*   schemas:
+*       UpdateCardOptions:
+*           type: object
+*           properties:
+*               cardNumber:
+*                   type: string
+*                   description: The card number.
+*                   example: 4815 6973 7892 1530
+*               archived:
+*                   type: boolean
+*                   example: false
+*               expires:
+*                   type: string
+*                   format: date
+*                   example: 2029-04-01
+*               type:
+*                   $ref: "#/components/schemas/CardTypes"
+*                   example: 1
+*                   description: The type of card, it can be either debit (1), credit (2) or service (3) card.
+*               limit:
+*                   type: number
+*                   format: double
+*                   description: The credit limit for the credit card.
+*                   example: 10000.00
+*               alias:
+*                   type: string
+*                   description: The alias for the card.
+*                   example: Visa (Crédito|Débito) BBVA Digital
+*/
 /** Representes the expected and possible parameters during a PUT request to update a user card. */
 export interface UpdateCardOptions {
     cardNumber?: string;
+    /** If user decides to delete a card, archived instead for data safety and governance. */
     archived?: boolean;
     expires?: Date;
+    /** The type of card, it can be either debit (1), credit (2) or service (3) card. */
     type?: CardTypes.DEBIT | CardTypes.CREDIT | CardTypes.SERVICES;
     /** This only must appear when dealing with credit cards. */
     limit?: number;
+    /** If user set a new alias to the card. */
     alias?: string;
 }
