@@ -79,6 +79,12 @@ export interface CardOptions {
     isVoucher?: boolean;
 }
 
+/** Interface that serves as a basic representation of a user card. */
+export interface SimpleCardOptions {
+    cardNumber: string;
+    alias: string;
+}
+
 /**
 * @swagger
 * components:
@@ -200,6 +206,7 @@ export interface DebitCard extends Card {
 /** Represents a possible type of either DebitCard or CreditCard */
 export type AvailableCards = DebitCard | CreditCard;
 
+/** Representes the expected and possible parameters during a PUT request to update a user card. */
 export interface UpdateCardOptions {
     cardNumber?: string;
     archived?: boolean;
