@@ -56,7 +56,7 @@ router.post("/", (req, res, next) => {
             throw new BadRequestError(`Invalid card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
         }
 
-        // avoid duplicate creating a duplicate if the card number already exists
+        // avoid creating a duplicate if the card number already exists
         if(user.getCard(options.cardNumber)) {
             throw new BadRequestError(`A card with the "${options.cardNumber}" card number already exist in user data.`);
         }
@@ -185,7 +185,7 @@ router.put("/:cardNumber", (req, res, next) => {
 
         // CARD NUMBER
         if(options.cardNumber) {
-            // avoid duplicate creating a duplicate if the card number already exists
+            // avoid creating a duplicate if the card number already exists
             if(user.getCard(options.cardNumber)) {
                 throw new BadRequestError(`A card with the "${options.cardNumber}" card number already exist in user data.`);
             }
