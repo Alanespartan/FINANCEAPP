@@ -98,7 +98,8 @@ export class User implements UserSession {
     * @param {string} cardNumber Card number to search for.
     */
     public getCard(cardNumber: string): AvailableCards | undefined {
-        return this.cards.find((c) => c.getCardNumber() === cardNumber);
+        // do comparision removing whitespaces for safety and to avoid user errors
+        return this.cards.find((c) => c.getCardNumber().replace(/\s+/g, "") === cardNumber.replace(/\s+/g, ""));
     }
     /**
     * Get all stored user cards.
