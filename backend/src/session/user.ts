@@ -95,7 +95,7 @@ export class User implements UserSession {
     }
     /**
     * Get a specific stored user card using its card number id.
-    * @param {string} cardNumber Card number or alias to search for.
+    * @param {string} cardNumber Card number to search for.
     */
     public getCard(cardNumber: string): AvailableCards | undefined {
         return this.cards.find((c) => c.getCardNumber() === cardNumber);
