@@ -51,6 +51,16 @@ router.post("/", (req, res, next) => {
             [ "cardType", "Expected 'cardType' header was not provided." ]
         );
 
+        // from the given card number, remove any whitespace and then validate the string contains only numbers
+        if( !( /^[0-9]+$/.test(options.cardNumber.replace(/\s+/g, "")) ) ) {
+            throw new BadRequestError(`Invalid card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
+        }
+
+        // avoid duplicate creating a duplicate if the card number already exists
+        if(user.getCard(options.cardNumber)) {
+            throw new BadRequestError(`A card with the "${options.cardNumber}" card number already exist in user data.`);
+        }
+
         let newCard: CreditCard | DebitCard;
         switch (parseInt(cardType)) {
             case CardTypes.DEBIT:
@@ -136,6 +146,12 @@ router.get("/", (req, res, next) => {
 *       description: From a given card number, fetch the desired card and apply all the updates that appear in the payload configuration.
 *       tags:
 *           - Cards
+*       parameters:
+*           - in: path
+*             name: cardNumber
+*             schema:
+*               type: string
+*               description: The current card number assigned to the desired card to update.
 *       requestBody:
 *           description: Payload that includes all the desired updates for the given card.
 *           required: true
@@ -156,6 +172,7 @@ router.get("/", (req, res, next) => {
 *               description: Not Found Error
 */
 router.put("/:cardNumber", (req, res, next) => {
+    // TODO this endpoint is throwing the following error: Cannot set headers after they are sent to the client
     try {
         const user       = req.userData;
         const cardNumber = req.params.cardNumber;
@@ -168,14 +185,20 @@ router.put("/:cardNumber", (req, res, next) => {
         if(!category) throw new NotFoundError(`There is no "${card.getAlias()}" registered as an expense category.`);
 
         // CARD NUMBER
-        if(options.cardNumber) card.setCardNumber(options.cardNumber);
+        if(options.cardNumber) {
+            // avoid duplicate creating a duplicate if the card number already exists
+            if(user.getCard(options.cardNumber)) {
+                throw new BadRequestError(`A card with the "${options.cardNumber}" card number already exist in user data.`);
+            }
+            card.setCardNumber(options.cardNumber);
+        }
 
         // ARCHIVED
         if(options.archived) card.setArchived(options.archived);
 
         // CARD EXPIRATION DATE
         if(options.expires) {
-            if(options.expires.getTime() < new Date().getTime()) {
+            if(new Date(options.expires).getTime() < new Date().getTime()) { // TODO this throws an error (options.expires.getTime is not a function) so fix it
                 throw new BadRequestError(`New expiration date "${options.expires}" can't be less than today's date.`);
             }
             card.setExpirationDate(options.expires);
@@ -203,15 +226,20 @@ router.put("/:cardNumber", (req, res, next) => {
 
         // LIMIT
         if(options.limit) {
-            if(card.getCardType() !== CardTypes.CREDIT) {
-                throw new BadRequestError("Can't modify the limit attribute from a non credit card.");
-            }
-
             if(options.limit <= 0) {
                 throw new BadRequestError("Can't modify the limit of a credit card to have a value of less or equal to 0.");
             }
 
-            (card as CreditCard).setLimit(options.limit);
+            // type guard safety check to avoid thrown errors during runtime
+            const isCreditCard = (card: AvailableCards): card is CreditCard => {
+                return (card as CreditCard).setLimit !== undefined;
+            };
+
+            if(card.getCardType() === CardTypes.CREDIT && isCreditCard(card)) {
+                card.setLimit(options.limit);
+            } else {
+                throw new BadRequestError("Can't modify the limit attribute from a non credit card.");
+            }
         }
 
         // If no new alias, number nor card type were given, generate 1 automatically that matches the new card settings
