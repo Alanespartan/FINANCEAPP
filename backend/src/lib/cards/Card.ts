@@ -1,6 +1,8 @@
 import { Bank } from "@common/types/util";
 import { CardOptions, CardTypes } from "@common/types/cards";
+//import { Card } from "@common/types/cards";
 
+//export class lCard implements Card {
 export class Card {
     protected cardNumber: string; // id
     protected alias: string;
