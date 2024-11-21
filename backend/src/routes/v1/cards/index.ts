@@ -3,7 +3,7 @@ import { AvailableCards, CreditCard, DebitCard } from "@cards";
 import { CardOptions, CardTypes, UpdateCardOptions } from "@common/types/cards";
 import { ExpenseCategory } from "@common/types/payments";
 import { randomUUID } from "crypto";
-import { BadRequestError } from "@backend/lib/errors";
+import { BadRequestError, NotFoundError } from "@backend/lib/errors";
 import { User } from "@backend/session/user";
 import { getHeaders } from "@backend/utils/requests";
 
@@ -128,20 +128,33 @@ router.get("/", (req, res, next) => {
     } catch(error) { return next(error); }
 });
 
-/*
-router.post("/delete-card/:alias", (req, res) => {
-    const user  = req.userData;
-    const alias = req.params.alias;
-
-    if(!user.hasCard(alias) || !user.hasCategory(alias)) { throw new Error(`${alias} doesn't exist.`); }
-
-    user.removeCard(user.getCardIndex(alias));
-    user.removeCategory(user.getCategoryIndex(alias)); // once card is deleted, remove related category
-
-    return res.status(200);
-});
+/**
+* @swagger
+* /api/v1/cards/{cardNumber}:
+*   put:
+*       summary: Update user card
+*       description: From a given card number, fetch the desired card and apply all the updates that appear in the payload configuration.
+*       tags:
+*           - Cards
+*       requestBody:
+*           description: Payload that includes all the desired updates for the given card.
+*           required: true
+*           content:
+*               application/json:
+*                   schema:
+*                       $ref: "#/components/schemas/UpdateCardOptions"
+*       responses:
+*           200:
+*               description: A JSON representation of the updated card.
+*               content:
+*                   application/json:
+*                       schema:
+*                           $ref: "#/components/schemas/AvailableCards"
+*           400:
+*               description: Bad Request Error
+*           404:
+*               description: Not Found Error
 */
-
 router.put("/:cardNumber", (req, res, next) => {
     try {
         const user       = req.userData;
@@ -149,20 +162,16 @@ router.put("/:cardNumber", (req, res, next) => {
         const options    = req.body as UpdateCardOptions;
 
         const card = user.getCard(cardNumber);
-        if(!card) throw new BadRequestError(`There is no "${cardNumber}" card in the user data.`);
+        if(!card) throw new NotFoundError(`There is no "${cardNumber}" card in the user data.`);
 
         const category = user.getCategory(card.getAlias()); // use current alias to get existing category
-        if(!category) throw new BadRequestError(`There is no "${card.getAlias()}" registered as an expense category.`);
+        if(!category) throw new NotFoundError(`There is no "${card.getAlias()}" registered as an expense category.`);
 
         // CARD NUMBER
-        if(options.cardNumber) {
-            card.setCardNumber(options.cardNumber);
-        }
+        if(options.cardNumber) card.setCardNumber(options.cardNumber);
 
         // ARCHIVED
-        if(options.archived) {
-            card.setArchived(options.archived);
-        }
+        if(options.archived) card.setArchived(options.archived);
 
         // CARD EXPIRATION DATE
         if(options.expires) {
@@ -216,8 +225,9 @@ router.put("/:cardNumber", (req, res, next) => {
 
         // once the card is updated, modify the related expense category and all of its records
         category.alias = card.getAlias();
+        // TODO verify that when this category is updated, all the existing expenses related to this category are update too
 
-        return res.sendStatus(200);
+        return res.send(200).json(card);
     } catch(error) { return next(error); }
 });
 
