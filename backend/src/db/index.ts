@@ -15,6 +15,10 @@ if(!host)     throw new ServerError("Must provide a host environment variable");
 if(port <= 0) throw new ServerError("Must provide a port environment variable");
 if(!database) throw new ServerError("Must provide a database environment variable");
 
+import {
+    User, Card, Loan
+} from "@backend/lib/entities";
+
 const TypeORMConfig: DataSourceOptions = {
     type,
     host,
@@ -25,12 +29,14 @@ const TypeORMConfig: DataSourceOptions = {
     synchronize: true,
     logging: true,
     entities: [
-        "../lib/cards/*.ts",
+        User,
+        Card,
+        Loan
     ],
     subscribers: [],
     migrations: []
 };
 
-const AppDataSource = new DataSource(TypeORMConfig);
+const DBContextSource = new DataSource(TypeORMConfig);
 
-export default AppDataSource;
+export default DBContextSource;
