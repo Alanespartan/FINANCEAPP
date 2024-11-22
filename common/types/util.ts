@@ -2,7 +2,7 @@
 * @swagger
 * components:
 *   schemas:
-*       Bank:
+*       IBank:
 *           type: object
 *           properties:
 *               name:
@@ -16,9 +16,8 @@
 *               - country
 */
 /** Interface that serves as the representation of the issuer provider of cards, loans and saving accounts. */
-export interface Bank {
+export interface IBank {
     name: string;
-    // contact information
     country: string;
     phone?: string;
 }
