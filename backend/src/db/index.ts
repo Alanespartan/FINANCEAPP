@@ -1,8 +1,11 @@
 // https://aws.amazon.com/es/rds/free/
 import { ServerError } from "@backend/lib/errors";
 import { DataSource, DataSourceOptions } from "typeorm";
+import { Logger } from "@common/types/logger";
 
-const type = "postgres";
+const logger = new Logger();
+
+const type     = "postgres";
 const username = process.env.DB_USER;
 const password = process.env.DB_PASSWORD;
 const host     = process.env.DB_HOST;
@@ -18,6 +21,13 @@ if(!database) throw new ServerError("Must provide a database environment variabl
 import {
     User, Card, Loan
 } from "@backend/lib/entities";
+
+logger.info("Creating TypeORM Connection...");
+logger.info(`Type: ${type}`);
+logger.info(`Username: ${username}`);
+logger.info(`Host: ${host}`);
+logger.info(`Port: ${port}`);
+logger.info(`Database Name: ${database}`);
 
 const TypeORMConfig: DataSourceOptions = {
     type,
@@ -38,5 +48,15 @@ const TypeORMConfig: DataSourceOptions = {
 };
 
 const DBContextSource = new DataSource(TypeORMConfig);
+
+// https://www.npmjs.com/package/typeorm
+// to initialize the initial connection with the database, register all entities
+// and "synchronize" database schema, call "initialize()" method of a newly created database
+// once in your application bootstrap
+DBContextSource.initialize()
+    .then(() => {
+        logger.info("DB connection successfully established!");
+    })
+    .catch((error) => console.log(error));
 
 export default DBContextSource;
