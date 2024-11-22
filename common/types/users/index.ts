@@ -1,4 +1,4 @@
-import { TAvailableCards } from "../cards";
+import { ICard } from "../cards";
 
 /** Interface used to represent a User class */
 export interface IUser {
@@ -6,6 +6,7 @@ export interface IUser {
     email: string;
     firstName: string;
     lastName: string;
+    cards: ICard[];
 }
 
 export interface ISimpleUser {
