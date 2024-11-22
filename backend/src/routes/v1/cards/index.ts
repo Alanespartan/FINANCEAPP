@@ -39,7 +39,7 @@ const router = Router();
 *                       schema:
 *                           type: array
 *                           items:
-*                               $ref: "#/components/schemas/AvailableCards"
+*                               $ref: "#/components/schemas/ICard"
 *           400:
 *               description: Bad Request Error
 */
@@ -122,7 +122,7 @@ router.post("/", (req, res, next) => {
 *                       schema:
 *                           type: array
 *                           items:
-*                               $ref: "#/components/schemas/AvailableCards"
+*                               $ref: "#/components/schemas/ICard"
 *           400:
 *               description: Bad Request Error
 */
@@ -172,7 +172,7 @@ router.get("/", (req, res, next) => {
 *               content:
 *                   application/json:
 *                       schema:
-*                           $ref: "#/components/schemas/AvailableCards"
+*                           $ref: "#/components/schemas/ICard"
 *           400:
 *               description: Bad Request Error
 *           404:
