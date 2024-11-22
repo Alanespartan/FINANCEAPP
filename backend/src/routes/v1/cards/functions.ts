@@ -1,6 +1,6 @@
 import { BadRequestError, NotFoundError } from "@backend/lib/errors";
 import { ECardTypes, UpdateCardPayload }   from "@common/types/cards";
-import { User } from "@backend/lib/entities/user";
+import { User } from "@backend/lib/entities/users/user";
 
 export function ValidateUpdateCardPayload(user: User, cardNumber: string, options: UpdateCardPayload): boolean {
     // remove any whitespace and then validate the cardNumber contains only numbers

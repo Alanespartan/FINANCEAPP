@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { ConnectionStore } from "@backend/session/connectionStore";
-import { userController } from "@backend/lib/entities/userController";
+import { userController } from "@backend/lib/entities/users/userController";
 import { BadRequestError, ForbiddenError, UnauthorizedError } from "@errors";
 import { clearSession, verifyLoginBody } from "./functions";
 
