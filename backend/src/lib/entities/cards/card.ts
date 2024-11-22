@@ -93,21 +93,22 @@ export class Card implements ICard {
 
     /* CREDIT CARD METHODS */
     public getUsedBalance() {
-        // type guard safety check to avoid thrown errors during runtime
         if(this.type === ECardTypes.CREDIT && this.limit !== undefined) {
             return this.limit - this.balance;
         }
         throw new BadRequestError("Can't get used balance since the credit is a non credit card.");
     }
     public setLimit(limit: number) {
-        this.limit = limit;
+        if(this.type === ECardTypes.CREDIT) {
+            this.limit = limit;
+        }
+        throw new BadRequestError("Can't set limit since the card is a non credit card.");
     }
     public getLimit() {
-        // type guard safety check to avoid thrown errors during runtime
         if(this.type === ECardTypes.CREDIT && this.limit !== undefined) {
             return this.limit;
         }
-        throw new BadRequestError("Can't get limit since the credit is a non credit card.");
+        throw new BadRequestError("Can't get limit since the card is a non credit card.");
     }
 
     /* VOUCHER CARD METHODS */
