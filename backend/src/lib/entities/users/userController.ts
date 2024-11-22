@@ -7,9 +7,11 @@ export class UserController {
     // mimic a database storage
     userStore: Record<string, User> = {};
 
+    // const userRepository = MyDataSource.getRepository(User);
+
     public create(email: string, password: string, firstName: string, lastName: string) {
         const id = randomUUID();
-        if(!this.userStore[id]) this.userStore[id] = new User(id, email, password, firstName, lastName);
+        if(!this.userStore[id]) this.userStore[id] = new User(email, password, firstName, lastName);
     }
 
     public get(id: string) {

@@ -3,8 +3,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { Expense, ExpenseCategory } from "@common/types/payments";
 import { randomUUID }  from "crypto";
-import { Card }        from "@cards";
-import { Loan }        from "@loans";
+import { Card }        from "@backend/lib/entities/cards";
+import { Loan }        from "@backend/lib/entities/loans";
 import { IUser }       from "@common/types/users";
 import { LoanOptions } from "@common/types/loans";
 import { ECardTypes }  from "@common/types/cards";

@@ -2,8 +2,8 @@ import { Entity, PrimaryColumn, Column, ManyToOne } from "typeorm";
 import { CreateCardPayload, ECardTypes } from "@common/types/cards";
 import { IBank } from "@common/types/util";
 import { ICard } from "@common/types/cards";
-import { User }  from "../entities/user";
-import { BadRequestError } from "../errors";
+import { User }  from "../users/user";
+import { BadRequestError } from "../../errors";
 
 @Entity()
 export class Card implements ICard {
