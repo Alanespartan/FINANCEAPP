@@ -1,17 +1,31 @@
-import { IBank } from "@common/types/util";
+import { Entity, PrimaryColumn, Column } from "typeorm";
 import { CreateCardPayload, ECardTypes } from "@common/types/cards";
-//import { Card } from "@common/types/cards";
+import { IBank } from "@common/types/util";
+import { ICard } from "@common/types/cards";
+import { BadRequestError } from "../errors";
 
-//export class lCard implements Card {
-export class Card {
-    protected cardNumber: string; // id
-    protected alias: string;
-    protected holderName: string;
-    protected expires: Date;
-    protected issuer: IBank;
-    protected balance: number;
-    protected type: ECardTypes;
-    protected archived: boolean;
+@Entity()
+export class Card implements ICard {
+    @PrimaryColumn()
+    public cardNumber: string; // id
+    @Column()
+    public alias: string;
+    @Column()
+    public holderName: string;
+    @Column()
+    public expires: Date;
+    @Column()
+    public issuer: IBank;
+    @Column()
+    public balance: number;
+    @Column()
+    public type: ECardTypes;
+    @Column()
+    public archived: boolean;
+    @Column()
+    public limit?: number;
+    @Column()
+    public isVoucher?: boolean;
 
     public constructor(options: CreateCardPayload, type: ECardTypes) {
         this.cardNumber = options.cardNumber;
@@ -72,5 +86,29 @@ export class Card {
 
     public getArchived() {
         return this.archived;
+    }
+
+    /* CREDIT CARD METHODS */
+    public getUsedBalance() {
+        // type guard safety check to avoid thrown errors during runtime
+        if(this.type === ECardTypes.CREDIT && this.limit !== undefined) {
+            return this.limit - this.balance;
+        }
+        throw new BadRequestError("Can't get used balance since the credit is a non credit card.");
+    }
+    public setLimit(limit: number) {
+        this.limit = limit;
+    }
+    public getLimit() {
+        // type guard safety check to avoid thrown errors during runtime
+        if(this.type === ECardTypes.CREDIT && this.limit !== undefined) {
+            return this.limit;
+        }
+        throw new BadRequestError("Can't get limit since the credit is a non credit card.");
+    }
+
+    /* VOUCHER CARD METHODS */
+    public setIsVoucher(isVoucher: boolean) {
+        this.isVoucher = isVoucher;
     }
 }

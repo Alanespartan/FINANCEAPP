@@ -58,9 +58,21 @@ export enum ECardTypes {
 *                   format: double
 *                   description: The balance available on the card.
 *                   example: 4000.00
+*               type:
+*                   $ref: "#/components/schemas/ECardTypes"
+*                   example: 2
+*                   description: The type of card, represented as the value 2 from the ECardTypes enum.
 *               archived:
 *                   type: boolean
 *                   example: false
+*               limit:
+*                   type: number
+*                   format: double
+*                   description: The credit limit in case the card is a credit card.
+*                   example: 10000.00
+*               isVoucher:
+*                   type: boolean
+*                   description: Indicates whether the card is a debit voucher card.
 *           required:
 *               - cardNumber
 *               - alias
@@ -68,6 +80,7 @@ export enum ECardTypes {
 *               - expires
 *               - issuer
 *               - balance
+*               - type
 *               - archived
 */
 /** Interface used to have a representation of all attributes within the Card Class */
@@ -78,75 +91,11 @@ export interface ICard {
     expires: Date;
     issuer: IBank;
     balance: number;
+    type: ECardTypes;
     archived: boolean;
+    limit?: number;
+    isVoucer?: boolean;
 }
-
-/**
-* @swagger
-* components:
-*   schemas:
-*       ICreditCard:
-*           allOf:
-*               - $ref: "#/components/schemas/ICard"
-*               - type: object
-*                 properties:
-*                   limit:
-*                       type: number
-*                       format: double
-*                       description: The credit limit for the credit card.
-*                       example: 10000.00
-*                   type:
-*                       $ref: "#/components/schemas/ECardTypes"
-*                       example: 2
-*                       description: The type of card, represented as the value 2 from the ECardTypes enum.
-*                 required:
-*                   - limit
-*                   - type
-*/
-/** Interface used to have a representation of all attributes within the CreditCard Class */
-export interface ICreditCard extends ICard {
-    limit: number;
-    type: ECardTypes.CREDIT
-}
-
-/**
-* @swagger
-* components:
-*   schemas:
-*       DebitCard:
-*           allOf:
-*               - $ref: "#/components/schemas/ICard"
-*               - type: object
-*                 properties:
-*                   isVoucher:
-*                       type: boolean
-*                       description: Indicates whether the debit card is a voucher card.
-*                   type:
-*                       $ref: "#/components/schemas/ECardTypes"
-*                       example: 1
-*                       description: The type of card, represented as the value 1 from the ECardTypes enum.
-*                 required:
-*                   - isVoucher
-*                   - type
-*/
-/** Interface used to have a representation of all attributes within the DebitCard Class */
-export interface IDebitCard extends ICard {
-    isVoucher: boolean;
-    type: ECardTypes.DEBIT;
-}
-
-/**
-* @swagger
-* components:
-*   schemas:
-*       TAvailableCards:
-*           anyOf:
-*               - $ref: "#/components/schemas/ICreditCard"
-*               - $ref: "#/components/schemas/IDebitCard"
-*           description: Represents a possible type of either IDebitCard or ICreditCard.
-*/
-/** Represents a possible type of either DebitCard or CreditCard */
-export type TAvailableCards = IDebitCard | ICreditCard;
 
 /*************************************/
 /*********   HELPER SCHEMAS   ********/
