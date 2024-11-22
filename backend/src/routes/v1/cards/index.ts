@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { AvailableCards, CreditCard, DebitCard } from "@cards";
-import { CardOptions, CardTypes, UpdateCardOptions } from "@common/types/cards";
+import { CreateCardPayload, ECardTypes, UpdateCardPayload } from "@common/types/cards";
 import { ExpenseCategory } from "@common/types/payments";
 import { randomUUID } from "crypto";
 import { BadRequestError } from "@backend/lib/errors";
@@ -30,7 +30,7 @@ const router = Router();
 *           content:
 *               application/json:
 *                   schema:
-*                       $ref: "#/components/schemas/CardOptions"
+*                       $ref: "#/components/schemas/CreateCardPayload"
 *       responses:
 *           200:
 *               description: An array of cards a user has registered including the recently added.
@@ -46,7 +46,7 @@ const router = Router();
 router.post("/", (req, res, next) => {
     try {
         const user    = req.userData;
-        const options = req.body as CardOptions;
+        const options = req.body as CreateCardPayload;
 
         const { cardType } = getHeaders(req,
             [ "cardType", "Expected 'cardType' header was not provided." ]
@@ -64,15 +64,15 @@ router.post("/", (req, res, next) => {
 
         let newCard: CreditCard | DebitCard;
         switch (parseInt(cardType)) {
-            case CardTypes.DEBIT:
+            case ECardTypes.DEBIT:
                 options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
                 newCard = new DebitCard(options, options.isVoucher ? true : false);
                 break;
-            case CardTypes.CREDIT:
+            case ECardTypes.CREDIT:
                 options.alias = `Tarjeta de Crédito ${options.issuer.name} ${options.cardNumber}`;
                 newCard = new CreditCard(options, options.limit ?? 0);
                 break;
-            case CardTypes.SERVICES:
+            case ECardTypes.SERVICES:
                 options.alias = `Tarjeta de Servicios ${options.issuer.name} ${options.cardNumber}`;
                 newCard = new CreditCard(options, options.limit ?? 0); // Add class for services class (e.g. amex platinum)
                 break;
@@ -90,7 +90,7 @@ router.post("/", (req, res, next) => {
             isDefault: false
         } as ExpenseCategory);
 
-        const cards: AvailableCards[] = user.getCards(CardTypes.ALL);
+        const cards: AvailableCards[] = user.getCards(ECardTypes.ALL);
         return res.status(200).json(cards);
     } catch(error) { return next(error); }
 });
@@ -129,8 +129,8 @@ router.get("/", (req, res, next) => {
             throw new BadRequestError("No card type filter was given in the correct format.");
         }
 
-        const filterBy = cardType ? parseInt(cardType) : CardTypes.ALL; // Default get all
-        if(!(filterBy in CardTypes)) {
+        const filterBy = cardType ? parseInt(cardType) : ECardTypes.ALL; // Default get all
+        if(!(filterBy in ECardTypes)) {
             throw new BadRequestError("Invalid type for filtering cards.");
         }
 
@@ -159,7 +159,7 @@ router.get("/", (req, res, next) => {
 *           content:
 *               application/json:
 *                   schema:
-*                       $ref: "#/components/schemas/UpdateCardOptions"
+*                       $ref: "#/components/schemas/UpdateCardPayload"
 *       responses:
 *           200:
 *               description: A JSON representation of the updated card.
@@ -176,7 +176,7 @@ router.put("/:cardNumber", (req, res, next) => {
     try {
         const user       = req.userData;
         const cardNumber = req.params.cardNumber;
-        const options    = req.body as UpdateCardOptions;
+        const options    = req.body as UpdateCardPayload;
 
         if(ValidateUpdateCardPayload(user, cardNumber, options)) {
             const card     = user.getCard(cardNumber) as AvailableCards;

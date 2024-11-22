@@ -1,5 +1,5 @@
-import { Bank } from "@common/types/util";
-import { CardOptions, CardTypes } from "@common/types/cards";
+import { IBank } from "@common/types/util";
+import { CreateCardPayload, ECardTypes } from "@common/types/cards";
 //import { Card } from "@common/types/cards";
 
 //export class lCard implements Card {
@@ -8,12 +8,12 @@ export class Card {
     protected alias: string;
     protected holderName: string;
     protected expires: Date;
-    protected issuer: Bank;
+    protected issuer: IBank;
     protected balance: number;
-    protected type: CardTypes;
+    protected type: ECardTypes;
     protected archived: boolean;
 
-    public constructor(options: CardOptions, type: CardTypes) {
+    public constructor(options: CreateCardPayload, type: ECardTypes) {
         this.cardNumber = options.cardNumber;
         this.holderName = options.holderName;
         this.issuer     = options.issuer;
@@ -58,7 +58,7 @@ export class Card {
         return this.issuer.name;
     }
 
-    public setCardType(type: CardTypes) {
+    public setCardType(type: ECardTypes) {
         this.type = type;
     }
 

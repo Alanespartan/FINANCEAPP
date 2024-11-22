@@ -1,4 +1,4 @@
-import { Bank } from "@common/types/util";
+import { IBank } from "@common/types/util";
 import { LoanOptions } from "@common/types/loans";
 import { randomUUID } from "crypto";
 
@@ -7,7 +7,7 @@ export class Loan {
     protected alias: string; // default is bank name + borrowed number but can be updated by set by user
     protected holderName: string;
     protected expires: Date;
-    protected issuer: Bank;
+    protected issuer: IBank;
     protected borrowed: number;
     protected paid: number;
     protected isPaid: boolean;

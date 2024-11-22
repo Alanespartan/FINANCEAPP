@@ -1,11 +1,11 @@
 import { Card } from "./Card";
-import { CardOptions, CardTypes } from "@common/types/cards";
+import { CreateCardPayload, ECardTypes } from "@common/types/cards";
 
 export class CreditCard extends Card {
     public readonly isCredit: boolean = true;
     private limit: number;
-    constructor(options: CardOptions, limit: number) {
-        super(options, CardTypes.CREDIT);
+    constructor(options: CreateCardPayload, limit: number) {
+        super(options, ECardTypes.CREDIT);
         this.limit = limit;
     }
 

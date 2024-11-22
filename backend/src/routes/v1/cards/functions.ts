@@ -1,8 +1,8 @@
 import { BadRequestError, NotFoundError } from "@backend/lib/errors";
-import { CardTypes, UpdateCardOptions }   from "@common/types/cards";
+import { ECardTypes, UpdateCardPayload }   from "@common/types/cards";
 import { User } from "@backend/lib/entities/user";
 
-export function ValidateUpdateCardPayload(user: User, cardNumber: string, options: UpdateCardOptions): boolean {
+export function ValidateUpdateCardPayload(user: User, cardNumber: string, options: UpdateCardPayload): boolean {
     // remove any whitespace and then validate the cardNumber contains only numbers
     if( !( /^[0-9]+$/.test(cardNumber.replace(/\s+/g, "")) ) ) {
         throw new BadRequestError(`Invalid card number "${cardNumber}". A card number can not contain non numeric chars.`);
@@ -42,12 +42,12 @@ export function ValidateUpdateCardPayload(user: User, cardNumber: string, option
 
     // CARD TYPE
     if(options.type) {
-        if(!(options.type in CardTypes)) {
+        if(!(options.type in ECardTypes)) {
             throw new BadRequestError(`Invalid card type: "${options.type}" for updating "${card.getAlias()}" card.`);
         }
 
         // if new type is credit card
-        if(options.type === CardTypes.CREDIT) {
+        if(options.type === ECardTypes.CREDIT) {
             // ensure a limit was sent in the payload
             if(!options.limit) {
                 throw new BadRequestError(`No limit value was provided for updating "${card.getAlias()}" card to be a Credit Card.`);
@@ -59,7 +59,7 @@ export function ValidateUpdateCardPayload(user: User, cardNumber: string, option
 
     // LIMIT
     if(options.limit) {
-        if(card.getCardType() !== CardTypes.CREDIT) {
+        if(card.getCardType() !== ECardTypes.CREDIT) {
             throw new BadRequestError("Can't modify the limit attribute from a non credit card.");
         }
 
