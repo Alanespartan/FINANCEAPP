@@ -1,38 +1,48 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { Logger } from "@common/types/logger";
-import { randomUUID } from "crypto";
+import { BadRequestError } from "@backend/lib/errors";
 import { User } from "./user";
+import DBContextSource from "@db";
 
-export class UserController {
-    // mimic a database storage
-    userStore: Record<string, User> = {};
+class UserController {
+    protected userStore = DBContextSource.getRepository(User);
 
-    // const userRepository = MyDataSource.getRepository(User);
-
-    public create(email: string, password: string, firstName: string, lastName: string) {
-        const id = randomUUID();
-        if(!this.userStore[id]) this.userStore[id] = new User(email, password, firstName, lastName);
-    }
-
-    public get(id: string) {
-        if(this.userStore[id]) return this.userStore[id];
-        return undefined;
-    }
-
-    public getByEmail(email: string) {
-        // dbConnection.query()
-
-        for(const key in this.userStore) {
-            const user = this.userStore[key];
-            if(email === user.email) return user;
+    public async create(email: string, password: string, firstName: string, lastName: string) {
+        const foundUser = await this.getByEmail(email);
+        if(foundUser) {
+            throw new BadRequestError(`An account with "${email}" email already exists.`);
         }
-        return undefined;
+        this.userStore.create(new User(email, password, firstName, lastName));
     }
 
-    public discard(id: string) {
-        return delete this.userStore[id];
+    public async getById(id: number) {
+        return await this.userStore.findOne({
+            where: {
+                id: id
+            }
+        });
+    }
+
+    public async getByEmail(email: string) {
+        return await this.userStore.findOne({
+            where: {
+                email: email
+            }
+        });
+    }
+
+    /** Deletes a user from the database.
+     *
+     * Read more at: https://stackoverflow.com/questions/54246615/what-s-the-difference-between-remove-and-delete
+     */
+    public async discard(id: number) {
+        const foundUser = await this.getById(id);
+        if(!foundUser) {
+            throw new BadRequestError(`No account with "${id}" id was found to delete.`);
+        }
+        await this.userStore.delete(id);
     }
 }
 
-export const userController = new UserController();
-userController.create("test@gmail.com", "admin", "John", "Doe");
+const userController = new UserController();
+
+export default userController;
