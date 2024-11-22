@@ -240,6 +240,7 @@ export type AvailableCards = DebitCard | CreditCard;
 */
 /** Representes the expected and possible parameters during a PUT request to update a user card. */
 export interface UpdateCardOptions {
+    /** New card number. */
     cardNumber?: string;
     /** If user decides to delete a card, archived instead for data safety and governance. */
     archived?: boolean;
