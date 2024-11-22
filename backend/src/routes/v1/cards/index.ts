@@ -4,7 +4,7 @@ import { CardOptions, CardTypes, UpdateCardOptions } from "@common/types/cards";
 import { ExpenseCategory } from "@common/types/payments";
 import { randomUUID } from "crypto";
 import { BadRequestError } from "@backend/lib/errors";
-import { User } from "@backend/session/user";
+import { User } from "@backend/lib/entities/user";
 import { getHeaders } from "@backend/utils/requests";
 import { ValidateUpdateCardPayload } from "./functions";
 
