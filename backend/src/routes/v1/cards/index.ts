@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { AvailableCards, CreditCard, DebitCard } from "@cards";
+import { Card } from "@backend/lib/entities/cards";
 import { CreateCardPayload, ECardTypes, UpdateCardPayload } from "@common/types/cards";
 import { ExpenseCategory } from "@common/types/payments";
 import { randomUUID } from "crypto";
 import { BadRequestError } from "@backend/lib/errors";
-import { User } from "@backend/lib/entities/user";
+import { User } from "@backend/lib/entities/users/user";
 import { getHeaders } from "@backend/utils/requests";
 import { ValidateUpdateCardPayload } from "./functions";
 
@@ -62,19 +62,25 @@ router.post("/", (req, res, next) => {
             throw new BadRequestError(`A card with the "${options.cardNumber}" card number already exist in user data.`);
         }
 
-        let newCard: CreditCard | DebitCard;
+        let newCard: Card;
         switch (parseInt(cardType)) {
             case ECardTypes.DEBIT:
                 options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
-                newCard = new DebitCard(options, options.isVoucher ? true : false);
+                newCard = new Card(options, ECardTypes.DEBIT);
+                if(options.isVoucher) {
+                    newCard.setIsVoucher(true);
+                }
                 break;
             case ECardTypes.CREDIT:
                 options.alias = `Tarjeta de Crédito ${options.issuer.name} ${options.cardNumber}`;
-                newCard = new CreditCard(options, options.limit ?? 0);
+                newCard = new Card(options, ECardTypes.CREDIT);
+                if(options.limit) {
+                    newCard.setLimit(options.limit);
+                }
                 break;
             case ECardTypes.SERVICES:
                 options.alias = `Tarjeta de Servicios ${options.issuer.name} ${options.cardNumber}`;
-                newCard = new CreditCard(options, options.limit ?? 0); // Add class for services class (e.g. amex platinum)
+                newCard = new Card(options, ECardTypes.SERVICES);
                 break;
             default: throw new BadRequestError("Invalid type for creating a new card.");
         }
@@ -90,7 +96,7 @@ router.post("/", (req, res, next) => {
             isDefault: false
         } as ExpenseCategory);
 
-        const cards: AvailableCards[] = user.getCards(ECardTypes.ALL);
+        const cards: Card[] = user.getCards(ECardTypes.ALL);
         return res.status(200).json(cards);
     } catch(error) { return next(error); }
 });
@@ -134,7 +140,7 @@ router.get("/", (req, res, next) => {
             throw new BadRequestError("Invalid type for filtering cards.");
         }
 
-        const cards: AvailableCards[] = user.getCards(filterBy);
+        const cards: Card[] = user.getCards(filterBy);
         return res.status(200).json(cards);
     } catch(error) { return next(error); }
 });
@@ -179,7 +185,7 @@ router.put("/:cardNumber", (req, res, next) => {
         const options    = req.body as UpdateCardPayload;
 
         if(ValidateUpdateCardPayload(user, cardNumber, options)) {
-            const card     = user.getCard(cardNumber) as AvailableCards;
+            const card     = user.getCard(cardNumber) as Card;
             const category = user.getCategory(card.getAlias()) as ExpenseCategory;
 
             // CARD NUMBER
@@ -195,14 +201,7 @@ router.put("/:cardNumber", (req, res, next) => {
             if(options.type) card.setCardType(options.type);
 
             // LIMIT
-            if(options.limit) {
-                // type guard safety check to avoid thrown errors during runtime
-                const isCreditCard = (card: AvailableCards): card is CreditCard => {
-                    return (card as CreditCard).setLimit !== undefined;
-                };
-
-                if(isCreditCard(card)) card.setLimit(options.limit);
-            }
+            if(options.limit) card.setLimit(options.limit);
 
             // If no new alias, number nor card type were given, generate 1 automatically that matches the new card settings
             if(options.alias) {
