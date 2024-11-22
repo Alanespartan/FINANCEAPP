@@ -1,47 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { Logger } from "@common/types/logger";
-import { randomUUID } from "crypto";
-import { UserSession } from "@common/types/auth";
-import { AvailableCards } from "@cards";
-import { Loan } from "@loans";
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 import { Expense, ExpenseCategory } from "@common/types/payments";
+import { AvailableCards } from "@cards";
+import { randomUUID }  from "crypto";
+import { Loan }        from "@loans";
+import { UserSession } from "@common/types/auth";
 import { LoanOptions } from "@common/types/loans";
-import { CardTypes } from "@common/types/cards";
+import { CardTypes }   from "@common/types/cards";
 
-// const logger = new Logger("session/user.ts");
-
-export class UserController {
-    // mimic a database storage
-    userStore: Record<string, User> = {};
-
-    public create(email: string, password: string, firstName: string, lastName: string) {
-        const id = randomUUID();
-        if(!this.userStore[id]) this.userStore[id] = new User(id, email, password, firstName, lastName);
-    }
-
-    public get(id: string) {
-        if(this.userStore[id]) return this.userStore[id];
-        return undefined;
-    }
-
-    public getByEmail(email: string) {
-        for(const key in this.userStore) {
-            const user = this.userStore[key];
-            if(email === user.email) return user;
-        }
-        return undefined;
-    }
-
-    public discard(id: string) {
-        return delete this.userStore[id];
-    }
-}
-
+@Entity()
 export class User implements UserSession {
+    @PrimaryGeneratedColumn()
     public readonly id: string;
+    @Column()
     public readonly email: string;
+    @Column()
     public readonly password: string;
+    @Column()
     public readonly firstName: string;
+    @Column()
     public readonly lastName: string;
     protected cards: AvailableCards[];
     protected cash: number;
@@ -224,6 +202,3 @@ export class User implements UserSession {
         return JSON.stringify(userObj);
     }
 }
-
-export const userController = new UserController();
-userController.create("test@gmail.com", "admin", "John", "Doe");
