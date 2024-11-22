@@ -32,8 +32,10 @@ const JSDocsOptions = {
         }
     },
     apis: [
+        // AUTH & API STUFF
         "./src/routes/v1/auth/*.ts",
         "./src/routes/v1/servers/*.ts",
+        "./src/routes/v1/status/*.ts",
 
         // CARDS
         "./src/routes/v1/cards/*.ts",
