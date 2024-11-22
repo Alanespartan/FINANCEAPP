@@ -15,7 +15,7 @@ The application is designed to support a wide range of financial management capa
 - Generating income and expense projections for future months to forecast potential balances, whether positive or negative.
 - Creating detailed financial reports to help users identify spending patterns and make informed decisions to achieve greater financial stability.
 
-By unifying these features into a single platform, the project seeks to deliver a robust tool for financial organization and planning.
+By unifying these features into a single platform, the project seeks to deliver a robust tool for financial organization and planning, allowing users to do smarter spending and having financial awareness.
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -57,6 +57,34 @@ This section includes a list of the major frameworks/libraries used to build the
 * [![Bootstrap][Bootstrap.com]][Bootstrap-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- GETTING STARTED -->
+## Getting Started
+To get a local copy up and running follow these simple example steps.
+
+### Prerequisites
+Please ensure to have the following libraries installed in your computer.
+* npm
+  ```sh
+  npm install npm@10.9.0
+  ```
+* node
+  ```sh
+  npm install node@20.18.0
+  ```
+
+### Installation
+Below are the steps you have to follow to set up the project.
+
+1. Clone the repo
+   ```sh
+   git clone https://github.com/Alanespartan/FINANCEAPP.git
+   ```
+2. Read [backend instructions](https://github.com/Alanespartan/FINANCEAPP/tree/main/backend)
+3. Read [frontend instructions](https://github.com/Alanespartan/FINANCEAPP/tree/main/frontend)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 
 <!-- CONTACT -->
 ## Contact
