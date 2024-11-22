@@ -1,11 +1,14 @@
-import { Entity, PrimaryColumn, Column } from "typeorm";
+import { Entity, PrimaryColumn, Column, ManyToOne } from "typeorm";
 import { CreateCardPayload, ECardTypes } from "@common/types/cards";
 import { IBank } from "@common/types/util";
 import { ICard } from "@common/types/cards";
+import { User }  from "../entities/user";
 import { BadRequestError } from "../errors";
 
 @Entity()
 export class Card implements ICard {
+    @ManyToOne(() => User, (user) => user.cards)
+    public owner!: User;
     @PrimaryColumn()
     public cardNumber: string; // id
     @Column()

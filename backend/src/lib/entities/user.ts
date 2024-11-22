@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { Logger } from "@common/types/logger";
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { Expense, ExpenseCategory } from "@common/types/payments";
-import { AvailableCards } from "@cards";
 import { randomUUID }  from "crypto";
+import { Card }        from "@cards";
 import { Loan }        from "@loans";
-import { UserSession } from "@common/types/auth";
+import { IUser }       from "@common/types/users";
 import { LoanOptions } from "@common/types/loans";
-import { CardTypes }   from "@common/types/cards";
+import { ECardTypes }  from "@common/types/cards";
 
 @Entity()
-export class User implements UserSession {
+export class User implements IUser {
     @PrimaryGeneratedColumn()
-    public readonly id: string;
+    public readonly id!: number; // Assertion added since TypeORM will generate the value
     @Column()
     public readonly email: string;
     @Column()
@@ -21,15 +21,16 @@ export class User implements UserSession {
     public readonly firstName: string;
     @Column()
     public readonly lastName: string;
-    protected cards: AvailableCards[];
-    protected cash: number;
-    protected loans: Loan[];
-    protected expenses: Expense[];
-    protected expenseCategories: ExpenseCategory[];
-    protected incomes: any[]; // todo create interface
+    @Column()
+    public cash: number;
+    @OneToMany(() => Card, (card) => card.owner)
+    public cards: Card[];
+    public loans: Loan[];
+    public expenses: Expense[];
+    public expenseCategories: ExpenseCategory[];
+    public incomes: any[]; // todo create interface
 
-    constructor(id: string, email: string, password: string, firstName: string, lastName: string) {
-        this.id        = id;
+    constructor(email: string, password: string, firstName: string, lastName: string) {
         this.email     = email;
         this.password  = password;
         this.firstName = firstName;
@@ -68,14 +69,14 @@ export class User implements UserSession {
     * Save a new card in user information.
     * @param {AvailableCards} newCard Contains information of new card.
     */
-    public addCard(newCard: AvailableCards) {
+    public addCard(newCard: Card) {
         this.cards.push(newCard);
     }
     /**
     * Get a specific stored user card using its card number id.
     * @param {string} cardNumber Card number to search for.
     */
-    public getCard(cardNumber: string): AvailableCards | undefined {
+    public getCard(cardNumber: string): Card | undefined {
         // do comparision removing whitespaces for safety and to avoid user errors
         return this.cards.find((c) => c.getCardNumber().replace(/\s+/g, "") === cardNumber.replace(/\s+/g, ""));
     }
@@ -83,7 +84,7 @@ export class User implements UserSession {
     * Get all stored user cards.
     * @param {number} type Used to filter user cards if a type was given in the request.
     */
-    public getCards(type: CardTypes) {
+    public getCards(type: ECardTypes) {
         if(type !== 0) {
             return this.cards.filter((c) => c.getCardType() === type);
         }
@@ -93,7 +94,7 @@ export class User implements UserSession {
     * Get a specific stored user card using its card alias.
     * @param {string} cardAlias Card alias to search for.
     */
-    public getCardByAlias(cardAlias: string): AvailableCards | undefined {
+    public getCardByAlias(cardAlias: string): Card | undefined {
         return this.cards.find((c) => c.getAlias() === cardAlias);
     }
     /**
