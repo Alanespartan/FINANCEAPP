@@ -80,8 +80,10 @@ Below are the steps you have to follow to set up the project.
    ```sh
    git clone https://github.com/Alanespartan/FINANCEAPP.git
    ```
-2. Read [backend instructions](https://github.com/Alanespartan/FINANCEAPP/tree/main/backend)
-3. Read [frontend instructions](https://github.com/Alanespartan/FINANCEAPP/tree/main/frontend)
+2. Read and perform [backend instructions](https://github.com/Alanespartan/FINANCEAPP/tree/main/backend)
+3. Read and perform [frontend instructions](https://github.com/Alanespartan/FINANCEAPP/tree/main/frontend)
+
+Note: First build the `backend` then the `frontend` project, since the last one uses the types generated during the `backend` build.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
