@@ -3,9 +3,10 @@ import { AvailableCards, CreditCard, DebitCard } from "@cards";
 import { CardOptions, CardTypes, UpdateCardOptions } from "@common/types/cards";
 import { ExpenseCategory } from "@common/types/payments";
 import { randomUUID } from "crypto";
-import { BadRequestError, NotFoundError } from "@backend/lib/errors";
+import { BadRequestError } from "@backend/lib/errors";
 import { User } from "@backend/session/user";
 import { getHeaders } from "@backend/utils/requests";
+import { ValidateUpdateCardPayload } from "./functions";
 
 const router = Router();
 
@@ -51,7 +52,7 @@ router.post("/", (req, res, next) => {
             [ "cardType", "Expected 'cardType' header was not provided." ]
         );
 
-        // from the given card number, remove any whitespace and then validate the string contains only numbers
+        // remove any whitespace and then validate the cardNumber contains only numbers
         if( !( /^[0-9]+$/.test(options.cardNumber.replace(/\s+/g, "")) ) ) {
             throw new BadRequestError(`Invalid card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
         }
@@ -177,84 +178,48 @@ router.put("/:cardNumber", (req, res, next) => {
         const cardNumber = req.params.cardNumber;
         const options    = req.body as UpdateCardOptions;
 
-        const card = user.getCard(cardNumber);
-        if(!card) throw new NotFoundError(`There is no "${cardNumber}" card in the user data.`);
+        if(ValidateUpdateCardPayload(user, cardNumber, options)) {
+            const card     = user.getCard(cardNumber) as AvailableCards;
+            const category = user.getCategory(card.getAlias()) as ExpenseCategory;
 
-        const category = user.getCategory(card.getAlias()); // use current alias to get existing category
-        if(!category) throw new NotFoundError(`There is no "${card.getAlias()}" registered as an expense category.`);
+            // CARD NUMBER
+            if(options.cardNumber) card.setCardNumber(options.cardNumber);
 
-        // CARD NUMBER
-        if(options.cardNumber) {
-            // avoid creating a duplicate if the card number already exists
-            if(user.getCard(options.cardNumber)) {
-                throw new BadRequestError(`A card with the "${options.cardNumber}" card number already exist in user data.`);
-            }
-            card.setCardNumber(options.cardNumber);
-        }
+            // ARCHIVED
+            if(options.archived) card.setArchived(options.archived);
 
-        // ARCHIVED
-        if(options.archived) card.setArchived(options.archived);
+            // CARD EXPIRATION DATE
+            if(options.expires) card.setExpirationDate(options.expires);
 
-        // CARD EXPIRATION DATE
-        if(options.expires) {
-            if(new Date(options.expires).getTime() < new Date().getTime()) { // TODO this throws an error (options.expires.getTime is not a function) so fix it
-                throw new BadRequestError(`New expiration date "${options.expires}" can't be less than today's date.`);
-            }
-            card.setExpirationDate(options.expires);
-        }
+            // CARD TYPE
+            if(options.type) card.setCardType(options.type);
 
-        // CARD TYPE
-        if(options.type) {
-            if(!(options.type in CardTypes)) {
-                throw new BadRequestError(`Invalid card type: "${options.type}" for updating "${card.getAlias()}" card.`);
+            // LIMIT
+            if(options.limit) {
+                // type guard safety check to avoid thrown errors during runtime
+                const isCreditCard = (card: AvailableCards): card is CreditCard => {
+                    return (card as CreditCard).setLimit !== undefined;
+                };
+
+                if(isCreditCard(card)) card.setLimit(options.limit);
             }
 
-            card.setCardType(options.type);
-
-            // if new type is credit card
-            if(card.getCardType() === CardTypes.CREDIT) {
-                // ensure a limit was sent in the payload
-                if(!options.limit) {
-                    throw new BadRequestError(`No limit value was provided for updating "${card.getAlias()}" card to be a Credit Card.`);
-                }
-                (card as CreditCard).setLimit(options.limit);
-            }
-
-            // TODO if new type is service card (e.g. AMEX PLATINUM no limit)
-        }
-
-        // LIMIT
-        if(options.limit) {
-            if(options.limit <= 0) {
-                throw new BadRequestError("Can't modify the limit of a credit card to have a value of less or equal to 0.");
-            }
-
-            // type guard safety check to avoid thrown errors during runtime
-            const isCreditCard = (card: AvailableCards): card is CreditCard => {
-                return (card as CreditCard).setLimit !== undefined;
-            };
-
-            if(card.getCardType() === CardTypes.CREDIT && isCreditCard(card)) {
-                card.setLimit(options.limit);
+            // If no new alias, number nor card type were given, generate 1 automatically that matches the new card settings
+            if(options.alias) {
+                card.setAlias(options.alias);
             } else {
-                throw new BadRequestError("Can't modify the limit attribute from a non credit card.");
+                const type = `${card.getCardType() === 1 ? "Débito" : card.getCardType() === 2 ? "Crédito" : card.getCardType() === 3 ? "Servicios" : "UNDEFINED_TYPE" }`;
+                options.alias = `Tarjeta de ${type} ${card.getIssuerName()} ${options.cardNumber}`;
+                card.setAlias(options.alias);
             }
+
+            // once the card is updated, modify the related expense category and all of its records
+            category.alias = card.getAlias();
+            // TODO verify that when this category is updated, all the existing expenses related to this category are update too
+
+            return res.status(200).json(card);
         }
-
-        // If no new alias, number nor card type were given, generate 1 automatically that matches the new card settings
-        if(options.alias) {
-            card.setAlias(options.alias);
-        } else {
-            const type = `${card.getCardType() === 1 ? "Débito" : card.getCardType() === 2 ? "Crédito" : card.getCardType() === 3 ? "Servicios" : "UNDEFINED_TYPE" }`;
-            options.alias = `Tarjeta de ${type} ${card.getIssuerName()} ${options.cardNumber}`;
-            card.setAlias(options.alias);
-        }
-
-        // once the card is updated, modify the related expense category and all of its records
-        category.alias = card.getAlias();
-        // TODO verify that when this category is updated, all the existing expenses related to this category are update too
-
-        return res.status(200).json(card);
+        throw new BadRequestError(`An error occurred while updating "${cardNumber}" card. `);
     } catch(error) { return next(error); }
 });
 
