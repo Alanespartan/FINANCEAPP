@@ -3,8 +3,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { Expense, ExpenseCategory } from "@common/types/payments";
 import { randomUUID }  from "crypto";
-import { Card }        from "@backend/lib/entities/cards";
-import { Loan }        from "@backend/lib/entities/loans";
+import { Card, Loan }  from "@backend/lib/entities";
 import { IUser }       from "@common/types/users";
 import { LoanOptions } from "@common/types/loans";
 import { ECardTypes }  from "@common/types/cards";
@@ -67,7 +66,7 @@ export class User implements IUser {
     /*---------------- CARDS ---------------- */
     /**
     * Save a new card in user information.
-    * @param {AvailableCards} newCard Contains information of new card.
+    * @param {Card} newCard Contains information of new card.
     */
     public addCard(newCard: Card) {
         this.cards.push(newCard);
@@ -111,7 +110,6 @@ export class User implements IUser {
     /*---------------- LOANS ----------------*/
     /**
     * Save a new loan in user information.
-    * @param {AvailableCards} newCard Contains information of new card.
     */
     public addLoan(options: LoanOptions, alias?: string) {
         options.alias = `Préstamo ${options.issuer.name} ${options.borrowed}`;

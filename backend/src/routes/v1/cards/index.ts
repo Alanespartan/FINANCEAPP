@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Card } from "@backend/lib/entities/cards";
+import { Card } from "@backend/lib/entities";
 import { CreateCardPayload, ECardTypes, UpdateCardPayload } from "@common/types/cards";
 import { ExpenseCategory } from "@common/types/payments";
 import { randomUUID } from "crypto";
