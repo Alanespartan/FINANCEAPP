@@ -15,7 +15,10 @@
             "@tools/*":  [ "./src/routes/v1/tools/*"]
         },
 
-        "skipLibCheck": true
+        "skipLibCheck": true,
+
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true
     },
     "tsc-alias": {
         "replacers": {
