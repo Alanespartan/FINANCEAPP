@@ -1,14 +1,15 @@
-import { Bank } from "../util";
+import { IUser } from "../users";
+import { IBank } from "../util";
 
 /**
 * @swagger
 * components:
 *   schemas:
-*       CardTypes:
+*       TCardFilters:
 *           type: integer
-*           description: Enum representing different types of card categories.
+*           description: A multi-option type representing all the available card types a user can filter for.
 *           enum: [0, 1, 2, 3]
-*           x-enum-varnames: [ALL, DEBIT, CREDIT, VOUCHER, SERVICES]
+*           x-enum-varnames: [ALL, DEBIT, CREDIT, SERVICES]
 *           properties:
 *               0:
 *                   description: Represents all types of cards.
@@ -18,20 +19,118 @@ import { Bank } from "../util";
 *                   description: Credit card.
 *               3:
 *                   description: Services (e.g., AMEX PLATINUM).
+*       TCardTypes:
+*           type: integer
+*           description: A multi-option type representing all the available card types a user can create.
+*           enum: [0, 1, 2, 3]
+*           x-enum-varnames: [ALL, DEBIT, CREDIT, SERVICES]
+*           properties:
+*               1:
+*                   description: Debit card.
+*               2:
+*                   description: Credit card.
+*               3:
+*                   description: Services (e.g., AMEX PLATINUM).
 */
-/** Enum used to identify all the possible cards the application can manipulate. */
-export enum CardTypes {
-    ALL      = 0,
-    DEBIT    = 1,
-    CREDIT   = 2,
-    SERVICES = 3 // e.g AMEX PLATINUM
+/** Object Enum representing all the possible cards the application can manipulate. */
+export const OECardTypesFilters = {
+    ALL: 0,
+    DEBIT: 1,
+    CREDIT: 2,
+    SERVICES: 3
+} as const;
+/** A multi-option type representing all the available card types a user can create. */
+export type TCardTypes = typeof OECardTypesFilters.DEBIT | typeof OECardTypesFilters.CREDIT | typeof OECardTypesFilters.SERVICES;
+/** A multi-option type representing all the available card types a user can filter for. */
+export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
+
+/**
+* @swagger
+* components:
+*   schemas:
+*       ICard:
+*           type: object
+*           properties:
+*               cardNumber:
+*                   type: string
+*                   description: The card number.
+*                   example: 4815 6973 7892 1530
+*               owner:
+*                   $ref: "#/components/schemas/IUser"
+*               alias:
+*                   type: string
+*                   description: The alias for the card.
+*                   example: Visa (Crédito|Débito) BBVA Digital
+*               expires:
+*                   type: string
+*                   format: date
+*                   example: 2029-04-01
+*                   description: The expiration date of the card.
+*               issuer:
+*                   $ref: "#/components/schemas/IBank"
+*               balance:
+*                   type: number
+*                   format: double
+*                   description: The balance available on the card.
+*                   example: 4000.00
+*               type:
+*                   $ref: "#/components/schemas/TCardTypes"
+*                   example: 2
+*                   description: The type of card, represented as the value 2 from the TCardTypes enum.
+*               archived:
+*                   type: boolean
+*                   example: false
+*               limit:
+*                   type: number
+*                   format: double
+*                   description: The credit limit in case the card is a credit card.
+*                   example: 10000.00
+*               isVoucher:
+*                   type: boolean
+*                   description: Indicates whether the card is a debit voucher card.
+*           required:
+*               - cardNumber
+*               - owner
+*               - alias
+*               - expires
+*               - issuer
+*               - balance
+*               - type
+*               - archived
+*/
+/** Interface used to have a representation of all attributes within the Card Class */
+export interface ICard {
+    /** Card ID */
+    cardNumber: string;
+    owner: IUser;
+    alias: string;
+    expires: Date;
+    issuer: IBank;
+    balance: number;
+    type: TCardTypes;
+    archived: boolean;
+    limit?: number;
+    isVoucer?: boolean;
+}
+
+/*************************************/
+/*********   HELPER SCHEMAS   ********/
+/* e.g.                              */
+/* - Request Payloads                */
+/* - Basic Representation of Classes */
+/*************************************/
+
+/** Interface that serves as a basic representation of a user card. */
+export interface SimpleCardOptions {
+    cardNumber: string;
+    alias: string;
 }
 
 /**
 * @swagger
 * components:
 *   schemas:
-*       CardOptions:
+*       CreateCardPayload:
 *           type: object
 *           properties:
 *               cardNumber:
@@ -45,7 +144,7 @@ export enum CardTypes {
 *                   format: date
 *                   example: 2029-04-01
 *               issuer:
-*                   $ref: "#/components/schemas/Bank"
+*                   $ref: "#/components/schemas/IBank"
 *               balance:
 *                   type: number
 *                   format: double
@@ -67,150 +166,23 @@ export enum CardTypes {
 *               - issuer
 *               - balance
 */
-/** Interface that serves as the payload for creating a new user card. */
-export interface CardOptions {
+/** Interface that defines all the attributes the payload for creating a new user card needs. */
+export interface CreateCardPayload {
     cardNumber: string;
     holderName: string;
     expires: Date;
-    issuer: Bank;
+    issuer: IBank;
     balance: number;
     alias?: string;
     limit?: number;
     isVoucher?: boolean;
 }
 
-/** Interface that serves as a basic representation of a user card. */
-export interface SimpleCardOptions {
-    cardNumber: string;
-    alias: string;
-}
-
 /**
 * @swagger
 * components:
 *   schemas:
-*       Card:
-*           type: object
-*           properties:
-*               cardNumber:
-*                   type: string
-*                   description: The card number.
-*                   example: 4815 6973 7892 1530
-*               alias:
-*                   type: string
-*                   description: The alias for the card.
-*                   example: Visa (Crédito|Débito) BBVA Digital
-*               holderName:
-*                   type: string
-*                   description: The name of the cardholder.
-*                   example: Juan Arturo Cruz Cardona
-*               expires:
-*                   type: string
-*                   format: date
-*                   example: 2029-04-01
-*                   description: The expiration date of the card.
-*               issuer:
-*                   $ref: "#/components/schemas/Bank"
-*               balance:
-*                   type: number
-*                   format: double
-*                   description: The balance available on the card.
-*                   example: 4000.00
-*               archived:
-*                   type: boolean
-*                   example: false
-*           required:
-*               - cardNumber
-*               - alias
-*               - holderName
-*               - expires
-*               - issuer
-*               - balance
-*               - archived
-*/
-/** Interface used to have a representation of all attributes within the Card Class */
-export interface Card {
-    cardNumber: string;
-    alias: string;
-    holderName: string;
-    expires: Date;
-    issuer: Bank;
-    balance: number;
-    archived: boolean;
-}
-
-/**
-* @swagger
-* components:
-*   schemas:
-*       CreditCard:
-*           allOf:
-*               - $ref: "#/components/schemas/Card"
-*               - type: object
-*                 properties:
-*                   limit:
-*                       type: number
-*                       format: double
-*                       description: The credit limit for the credit card.
-*                       example: 10000.00
-*                   type:
-*                       $ref: "#/components/schemas/CardTypes"
-*                       example: 2
-*                       description: The type of card, represented as the value 2 from the CardTypes enum.
-*                 required:
-*                   - limit
-*                   - type
-*/
-/** Interface used to have a representation of all attributes within the CreditCard Class */
-export interface CreditCard extends Card {
-    limit: number;
-    type: CardTypes.CREDIT
-}
-
-/**
-* @swagger
-* components:
-*   schemas:
-*       DebitCard:
-*           allOf:
-*               - $ref: "#/components/schemas/Card"
-*               - type: object
-*                 properties:
-*                   isVoucher:
-*                       type: boolean
-*                       description: Indicates whether the debit card is a voucher card.
-*                   type:
-*                       $ref: "#/components/schemas/CardTypes"
-*                       example: 1
-*                       description: The type of card, represented as the value 1 from the CardTypes enum.
-*                 required:
-*                   - isVoucher
-*                   - type
-*/
-/** Interface used to have a representation of all attributes within the DebitCard Class */
-export interface DebitCard extends Card {
-    isVoucher: boolean;
-    type: CardTypes.DEBIT;
-}
-
-/**
-* @swagger
-* components:
-*   schemas:
-*       AvailableCards:
-*           anyOf:
-*               - $ref: "#/components/schemas/CreditCard"
-*               - $ref: "#/components/schemas/DebitCard"
-*           description: Represents a possible type of either DebitCard or CreditCard.
-*/
-/** Represents a possible type of either DebitCard or CreditCard */
-export type AvailableCards = DebitCard | CreditCard;
-
-/**
-* @swagger
-* components:
-*   schemas:
-*       UpdateCardOptions:
+*       UpdateCardPayload:
 *           type: object
 *           properties:
 *               cardNumber:
@@ -225,7 +197,7 @@ export type AvailableCards = DebitCard | CreditCard;
 *                   format: date
 *                   example: 2029-04-01
 *               type:
-*                   $ref: "#/components/schemas/CardTypes"
+*                   $ref: "#/components/schemas/TCardTypes"
 *                   example: 1
 *                   description: The type of card, it can be either debit (1), credit (2) or service (3) card.
 *               limit:
@@ -239,14 +211,14 @@ export type AvailableCards = DebitCard | CreditCard;
 *                   example: Visa (Crédito|Débito) BBVA Digital
 */
 /** Representes the expected and possible parameters during a PUT request to update a user card. */
-export interface UpdateCardOptions {
+export interface UpdateCardPayload {
     /** New card number. */
     cardNumber?: string;
     /** If user decides to delete a card, archived instead for data safety and governance. */
     archived?: boolean;
     expires?: Date;
     /** The type of card, it can be either debit (1), credit (2) or service (3) card. */
-    type?: CardTypes.DEBIT | CardTypes.CREDIT | CardTypes.SERVICES;
+    type?: TCardTypes;
     /** This only must appear when dealing with credit cards. */
     limit?: number;
     /** If user set a new alias to the card. */

@@ -1,75 +1,65 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { Logger } from "@common/types/logger";
-import { randomUUID } from "crypto";
-import { UserSession } from "@common/types/auth";
-import { AvailableCards } from "@cards";
-import { Loan } from "@loans";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { Expense, ExpenseCategory } from "@common/types/payments";
-import { LoanOptions } from "@common/types/loans";
-import { CardTypes } from "@common/types/cards";
+import { CreateLoanPayload } from "@common/types/loans";
+import { randomUUID }   from "crypto";
+import { Card, Loan }   from "@backend/lib/entities";
+import { IUser }        from "@common/types/users";
+import { TCardFilters } from "@common/types/cards";
 
-// const logger = new Logger("session/user.ts");
+@Entity()
+export class User implements IUser {
+    @PrimaryGeneratedColumn()
+    public readonly id!: number; // Assertion added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
+    @Column()
+    public readonly email!: string;
+    @Column()
+    public readonly password!: string;
+    @Column()
+    public readonly firstName!: string;
+    @Column()
+    public readonly lastName!: string;
+    @Column()
+    public cash!: number;
+    // One-to-Many relationship: A user can have many cards
+    // eager: when i fetch the user, typeorm will automatically fetch all cards
+    @OneToMany(() => Card, (card) => card.owner, {
+        eager: true
+    })
+    public cards!: Card[];
+    // One-to-Many relationship: A user can have many cards
+    @OneToMany(() => Loan, (loan) => loan.owner, {
+        eager: true
+    })
+    public loans!: Loan[];
+    public expenses!: Expense[];
+    public expenseCategories!: ExpenseCategory[];
+    public incomes!: any[]; // todo create interface
 
-export class UserController {
-    // mimic a database storage
-    userStore: Record<string, User> = {};
-
-    public create(email: string, password: string, firstName: string, lastName: string) {
-        const id = randomUUID();
-        if(!this.userStore[id]) this.userStore[id] = new User(id, email, password, firstName, lastName);
-    }
-
-    public get(id: string) {
-        if(this.userStore[id]) return this.userStore[id];
-        return undefined;
-    }
-
-    public getByEmail(email: string) {
-        for(const key in this.userStore) {
-            const user = this.userStore[key];
-            if(email === user.email) return user;
+    // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
+    constructor(email?: string, password?: string, firstName?: string, lastName?: string) {
+        if(email && password && firstName && lastName) {
+            // USE DATA
+            this.email     = email;
+            this.password  = password;
+            this.firstName = firstName;
+            this.lastName  = lastName;
+            // USER FINANCE STUFF
+            this.cash     = 0;
+            this.cards    = [];
+            this.expenses = [];
+            this.loans    = [];
+            this.incomes  = [];
+            // CUSTOM USER EXPERIENCE
+            this.expenseCategories = [
+                {
+                    id:        randomUUID(),
+                    alias:     "Other",
+                    isDefault: true
+                } as ExpenseCategory
+            ];
         }
-        return undefined;
-    }
-
-    public discard(id: string) {
-        return delete this.userStore[id];
-    }
-}
-
-export class User implements UserSession {
-    public readonly id: string;
-    public readonly email: string;
-    public readonly password: string;
-    public readonly firstName: string;
-    public readonly lastName: string;
-    protected cards: AvailableCards[];
-    protected cash: number;
-    protected loans: Loan[];
-    protected expenses: Expense[];
-    protected expenseCategories: ExpenseCategory[];
-    protected incomes: any[]; // todo create interface
-
-    constructor(id: string, email: string, password: string, firstName: string, lastName: string) {
-        this.id        = id;
-        this.email     = email;
-        this.password  = password;
-        this.firstName = firstName;
-        this.lastName  = lastName;
-        // USER FINANCE STUFF
-        this.cash     = 0;
-        this.cards    = [];
-        this.expenses = [];
-        this.loans    = [];
-        this.incomes  = [];
-        // CUSTOM USER EXPERIENCE
-        this.expenseCategories = [
-            {
-                id:        randomUUID(),
-                alias:     "Other",
-                isDefault: true
-            } as ExpenseCategory
-        ];
     }
 
     /*---------------- CASH ----------------*/
@@ -88,24 +78,24 @@ export class User implements UserSession {
     /*---------------- CARDS ---------------- */
     /**
     * Save a new card in user information.
-    * @param {AvailableCards} newCard Contains information of new card.
+    * @param {Card} newCard Contains information of new card.
     */
-    public addCard(newCard: AvailableCards) {
+    public addCard(newCard: Card) {
         this.cards.push(newCard);
     }
     /**
     * Get a specific stored user card using its card number id.
     * @param {string} cardNumber Card number to search for.
     */
-    public getCard(cardNumber: string): AvailableCards | undefined {
+    public getCard(cardNumber: string): Card | undefined {
         // do comparision removing whitespaces for safety and to avoid user errors
         return this.cards.find((c) => c.getCardNumber().replace(/\s+/g, "") === cardNumber.replace(/\s+/g, ""));
     }
     /**
     * Get all stored user cards.
-    * @param {number} type Used to filter user cards if a type was given in the request.
+    * @param {TCardFilters} type Used to filter user cards if a type was given in the request. Otherwise, it returns all cards the user has.
     */
-    public getCards(type: CardTypes) {
+    public getCards(type: TCardFilters) {
         if(type !== 0) {
             return this.cards.filter((c) => c.getCardType() === type);
         }
@@ -115,7 +105,7 @@ export class User implements UserSession {
     * Get a specific stored user card using its card alias.
     * @param {string} cardAlias Card alias to search for.
     */
-    public getCardByAlias(cardAlias: string): AvailableCards | undefined {
+    public getCardByAlias(cardAlias: string): Card | undefined {
         return this.cards.find((c) => c.getAlias() === cardAlias);
     }
     /**
@@ -132,26 +122,9 @@ export class User implements UserSession {
     /*---------------- LOANS ----------------*/
     /**
     * Save a new loan in user information.
-    * @param {AvailableCards} newCard Contains information of new card.
     */
-    public addLoan(options: LoanOptions, alias?: string) {
-        options.alias = `Préstamo ${options.issuer.name} ${options.borrowed}`;
-        if(alias) options.alias = alias; // in case user did set an alias manually
+    public addLoan(options: CreateLoanPayload) {
         this.loans.push(new Loan(options));
-    }
-    /**
-    * Helper function that verifies that the given loan does really exist in user information.
-    * @param {string} alias Loan alias to search for.
-    */
-    public hasLoan(alias: string) {
-        return this.getLoanIndex(alias) < 0 ? false : true;
-    }
-    /**
-    * Helper function that obtains the index of the given loan alias.
-    * @param {string} alias Loan alias to search for.
-    */
-    public getLoanIndex(alias: string) {
-        return this.loans.map((l) => l.getAlias()).indexOf(alias);
     }
     /**
     * Get stored user loan.
@@ -159,15 +132,6 @@ export class User implements UserSession {
     */
     public getLoan(index: number) {
         return this.loans[index];
-    }
-    /**
-    * Delete loan from user data.
-    * @param {number} index Array index of the selected loan.
-    */
-    public removeLoan(index: number) {
-        if(index < this.loans.length || index > this.loans.length) { throw new Error("Loan index out of bounds."); }
-        const deleted = this.loans.splice(index, 1);
-        console.log("The following loan was deleted correctly: " + deleted[0].getAlias());
     }
 
 
@@ -224,6 +188,3 @@ export class User implements UserSession {
         return JSON.stringify(userObj);
     }
 }
-
-export const userController = new UserController();
-userController.create("test@gmail.com", "admin", "John", "Doe");

@@ -1,4 +1,4 @@
-import { SimpleUser } from "./auth";
+import { ISimpleUser } from "./users";
 
 export interface OIDCSession {
     country: string;
@@ -9,5 +9,5 @@ export interface OIDCSession {
 export interface SimpleSession {
     sso: string;
     server: string;
-    userCache?: SimpleUser[];
+    userCache?: ISimpleUser[];
 }
