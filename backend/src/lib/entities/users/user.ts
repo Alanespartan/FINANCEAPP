@@ -2,10 +2,10 @@
 // import { Logger } from "@common/types/logger";
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { Expense, ExpenseCategory } from "@common/types/payments";
+import { CreateLoanPayload } from "@common/types/loans";
 import { randomUUID }  from "crypto";
 import { Card, Loan }  from "@backend/lib/entities";
 import { IUser }       from "@common/types/users";
-import { LoanOptions } from "@common/types/loans";
 import { ECardTypes }  from "@common/types/cards";
 
 @Entity()
@@ -116,7 +116,7 @@ export class User implements IUser {
     /**
     * Save a new loan in user information.
     */
-    public addLoan(options: LoanOptions, alias?: string) {
+    public addLoan(options: CreateLoanPayload, alias?: string) {
         options.alias = `Préstamo ${options.issuer.name} ${options.borrowed}`;
         if(alias) options.alias = alias; // in case user did set an alias manually
         this.loans.push(new Loan(options));

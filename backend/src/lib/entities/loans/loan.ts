@@ -1,8 +1,8 @@
 import { IBank } from "@common/types/util";
-import { LoanOptions } from "@common/types/loans";
+import { ILoan, CreateLoanPayload } from "@common/types/loans";
 import { randomUUID } from "crypto";
 
-export class Loan {
+export class Loan implements ILoan {
     protected id: string;
     protected alias: string; // default is bank name + borrowed number but can be updated by set by user
     protected holderName: string;
@@ -13,7 +13,7 @@ export class Loan {
     protected isPaid: boolean;
     protected interests: number;
 
-    public constructor(options: LoanOptions) {
+    public constructor(options: CreateLoanPayload) {
         this.id         = randomUUID();
         this.holderName = options.holderName;
         this.issuer     = options.issuer;
