@@ -30,7 +30,7 @@ export interface IBank {
 * @swagger
 * components:
 *   schemas:
-*       OEPayFrequency:
+*       TPayFrequency:
 *           type: integer
 *           description: Object Enum representing all the pay frenquency options available.
 *           enum: [0, 1, 2, 3]
@@ -45,7 +45,6 @@ export interface IBank {
 *               3:
 *                   description: Every month
 */
-/** Enum used to identify all the possible cards the application can manipulate. */
 /** Object Enum representing all the pay frenquency options available. */
 export const OEPayFrequency = {
     /** Twice a week (Every wednesday and friday): 104 pay checks per year. */
@@ -57,5 +56,5 @@ export const OEPayFrequency = {
     /** Every month (Last working day): 12 pay checks per year. */
     Monthly: 3
 } as const;
-
-
+/** A multi-option type representing all the pay frenquency options available. */
+export type TPayFrequency = typeof OEPayFrequency.SemiWeekly | typeof OEPayFrequency.Weekly | typeof OEPayFrequency.SemiMonthly | typeof OEPayFrequency.Monthly;
