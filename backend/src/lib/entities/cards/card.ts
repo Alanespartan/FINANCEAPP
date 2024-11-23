@@ -96,14 +96,15 @@ export class Card implements ICard {
     public getUsedBalance() {
         if(this.type === OECardTypesFilters.CREDIT && this.limit !== undefined) {
             return this.limit - this.balance;
+        } else {
+            throw new BadRequestError("Can't get used balance since the credit is a non credit card.");
         }
-        throw new BadRequestError("Can't get used balance since the credit is a non credit card.");
     }
     public setLimit(limit: number) {
-        if(this.type === OECardTypesFilters.CREDIT) {
-            this.limit = limit;
+        if(this.type !== OECardTypesFilters.CREDIT) {
+            throw new BadRequestError("Can't set limit since the card is a non credit card.");
         }
-        throw new BadRequestError("Can't set limit since the card is a non credit card.");
+        this.limit = limit;
     }
     public getLimit() {
         if(this.type === OECardTypesFilters.CREDIT && this.limit !== undefined) {
