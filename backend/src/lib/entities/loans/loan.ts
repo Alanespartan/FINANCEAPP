@@ -7,12 +7,6 @@ import { User, Bank }  from "../../entities";
 export class Loan implements ILoan {
     @PrimaryGeneratedColumn()
     public id!: number; // Assertion added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
-    @ManyToOne(() => User, (user) => user.cards)
-    public owner!: User;
-    // Many-to-One relationship: A card is issued by one bank
-    // There is only nagivation from loan to bank, bank class does not know the relationship with loan (missing One-to-Many relationship)
-    @ManyToOne(() => Bank, (bank) => bank.id)
-    public issuer!: Bank;
     @Column()
     public name!: string;
     // Many-to-One relationship: A card belongs to one user
@@ -30,6 +24,17 @@ export class Loan implements ILoan {
     public isFinished!: boolean;
     @Column()
     public payFrequency!: TPayFrequency;
+    // Many-to-One relationship: A loan belongs to one user, but a user can have multiple loans
+    @ManyToOne(() => User, (user) => user.cards, {
+        nullable: false
+    })
+    public owner!: User;
+    // Many-to-One relationship: A card is issued by one bank
+    // There is only nagivation from loan to bank, bank class does not know the relationship with loan (missing One-to-Many relationship)
+    @ManyToOne(() => Bank, (bank) => bank.id, {
+        nullable: false
+    })
+    public issuer!: Bank;
 
     public constructor(options?: CreateLoanPayload) {
         if(options) {

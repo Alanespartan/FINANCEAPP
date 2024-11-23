@@ -5,19 +5,12 @@ import { BadRequestError } from "../../errors";
 
 @Entity()
 export class Card implements ICard {
-    // Many-to-One relationship: A card belongs to one user
-    @ManyToOne(() => User, (user) => user.cards)
-    public owner!: User; // Assertion added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
     @PrimaryColumn()
     public cardNumber!: string; // id
     @Column()
     public alias!: string;
     @Column()
     public expires!: Date;
-    // Many-to-One relationship: A card is issued by one bank
-    // There is only nagivation from card to bank, bank class does not know the relationship with card (missing One-to-Many relationship)
-    @ManyToOne(() => Bank, (bank) => bank.id)
-    public issuer!: Bank;
     @Column()
     public balance!: number;
     @Column()
@@ -28,6 +21,13 @@ export class Card implements ICard {
     public limit?: number;
     @Column()
     public isVoucher?: boolean;
+    // Many-to-One relationship: A card belongs to one user, but a user can have many cards
+    @ManyToOne(() => User, (user) => user.cards)
+    public owner!: User; // Assertion added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
+    // Many-to-One relationship: A card is issued by one bank
+    // There is only nagivation from card to bank, bank class does not know the relationship with card (missing One-to-Many relationship)
+    @ManyToOne(() => Bank, (bank) => bank.id)
+    public issuer!: Bank;
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
     public constructor(options?: CreateCardPayload, type?: TCardTypes) {
