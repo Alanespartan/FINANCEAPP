@@ -1,9 +1,9 @@
-import { Entity, PrimaryColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 import { IBank } from "@common/types/util";
 
 @Entity()
 export class Bank implements IBank {
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     public id!: number;
     @Column()
     public name!: string;
