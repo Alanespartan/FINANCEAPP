@@ -23,10 +23,15 @@ export class User implements IUser {
     @Column()
     public cash!: number;
     // One-to-Many relationship: A user can have many cards
-    @OneToMany(() => Card, (card) => card.owner)
+    // eager: when i fetch the user, typeorm will automatically fetch all cards
+    @OneToMany(() => Card, (card) => card.owner, {
+        eager: true
+    })
     public cards!: Card[];
     // One-to-Many relationship: A user can have many cards
-    @OneToMany(() => Loan, (loan) => loan.owner)
+    @OneToMany(() => Loan, (loan) => loan.owner, {
+        eager: true
+    })
     public loans!: Loan[];
     public expenses!: Expense[];
     public expenseCategories!: ExpenseCategory[];
