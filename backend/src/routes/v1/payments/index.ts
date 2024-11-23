@@ -44,10 +44,10 @@ router.post("/add-payment", (req, res) => {
         paidCard.addBalance(newExpense.total);
     }
 
-    // if what the user paid was a loan, add balance to that loan
+    /* if what the user paid was a loan, add balance to that loan
     if(user.hasLoan(newExpense.category.alias)) {
         user.getLoan(user.getLoanIndex(newExpense.category.alias)).pay(newExpense.total);
-    }
+    } */
 
     user.addExpense(newExpense);
 
