@@ -57,14 +57,11 @@ router.post("/", (req, res, next) => {
             throw new BadRequestError("Invalid type for creating a new card.");
         }
 
+        // normalizing the card number by removing white spaces
+        options.cardNumber = options.cardNumber.replace(/\s+/g, "");
         // remove any whitespace and then validate the cardNumber contains only numbers
-        if( !( /^[0-9]+$/.test(options.cardNumber.replace(/\s+/g, "")) ) ) {
+        if( !( /^[0-9]+$/.test(options.cardNumber) ) ) {
             throw new BadRequestError(`Invalid card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
-        }
-
-        // avoid creating a duplicate if the card number already exists
-        if(user.getCard(options.cardNumber)) {
-            throw new BadRequestError(`A card with the "${options.cardNumber}" card number already exist in user data.`);
         }
 
         const newCard: Card = new Card(options, parsedType);
