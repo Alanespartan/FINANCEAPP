@@ -3,10 +3,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { Expense, ExpenseCategory } from "@common/types/payments";
 import { CreateLoanPayload } from "@common/types/loans";
-import { randomUUID }  from "crypto";
-import { Card, Loan }  from "@backend/lib/entities";
-import { IUser }       from "@common/types/users";
-import { ECardTypes }  from "@common/types/cards";
+import { randomUUID }   from "crypto";
+import { Card, Loan }   from "@backend/lib/entities";
+import { IUser }        from "@common/types/users";
+import { TCardFilters } from "@common/types/cards";
 
 @Entity()
 export class User implements IUser {
@@ -25,6 +25,8 @@ export class User implements IUser {
     // One-to-Many relationship: A user can have many cards
     @OneToMany(() => Card, (card) => card.owner)
     public cards!: Card[];
+    // One-to-Many relationship: A user can have many cards
+    @OneToMany(() => Loan, (loan) => loan.owner)
     public loans!: Loan[];
     public expenses!: Expense[];
     public expenseCategories!: ExpenseCategory[];
@@ -86,9 +88,9 @@ export class User implements IUser {
     }
     /**
     * Get all stored user cards.
-    * @param {number} type Used to filter user cards if a type was given in the request.
+    * @param {TCardFilters} type Used to filter user cards if a type was given in the request. Otherwise, it returns all cards the user has.
     */
-    public getCards(type: ECardTypes) {
+    public getCards(type: TCardFilters) {
         if(type !== 0) {
             return this.cards.filter((c) => c.getCardType() === type);
         }
@@ -116,24 +118,8 @@ export class User implements IUser {
     /**
     * Save a new loan in user information.
     */
-    public addLoan(options: CreateLoanPayload, alias?: string) {
-        options.alias = `Préstamo ${options.issuer.name} ${options.borrowed}`;
-        if(alias) options.alias = alias; // in case user did set an alias manually
+    public addLoan(options: CreateLoanPayload) {
         this.loans.push(new Loan(options));
-    }
-    /**
-    * Helper function that verifies that the given loan does really exist in user information.
-    * @param {string} alias Loan alias to search for.
-    */
-    public hasLoan(alias: string) {
-        return this.getLoanIndex(alias) < 0 ? false : true;
-    }
-    /**
-    * Helper function that obtains the index of the given loan alias.
-    * @param {string} alias Loan alias to search for.
-    */
-    public getLoanIndex(alias: string) {
-        return this.loans.map((l) => l.getAlias()).indexOf(alias);
     }
     /**
     * Get stored user loan.
@@ -141,15 +127,6 @@ export class User implements IUser {
     */
     public getLoan(index: number) {
         return this.loans[index];
-    }
-    /**
-    * Delete loan from user data.
-    * @param {number} index Array index of the selected loan.
-    */
-    public removeLoan(index: number) {
-        if(index < this.loans.length || index > this.loans.length) { throw new Error("Loan index out of bounds."); }
-        const deleted = this.loans.splice(index, 1);
-        console.log("The following loan was deleted correctly: " + deleted[0].getAlias());
     }
 
 
