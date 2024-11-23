@@ -5,11 +5,11 @@ import { IBank } from "../util";
 * @swagger
 * components:
 *   schemas:
-*       ECardTypes:
+*       OECardTypes:
 *           type: integer
-*           description: Enum representing different types of card categories.
+*           description: Object Enum representing all the possible cards the application can manipulate.
 *           enum: [0, 1, 2, 3]
-*           x-enum-varnames: [ALL, DEBIT, CREDIT, VOUCHER, SERVICES]
+*           x-enum-varnames: [ALL, DEBIT, CREDIT, SERVICES]
 *           properties:
 *               0:
 *                   description: Represents all types of cards.
@@ -20,13 +20,13 @@ import { IBank } from "../util";
 *               3:
 *                   description: Services (e.g., AMEX PLATINUM).
 */
-/** Enum used to identify all the possible cards the application can manipulate. */
-export enum ECardTypes {
-    ALL      = 0,
-    DEBIT    = 1,
-    CREDIT   = 2,
-    SERVICES = 3 // e.g AMEX PLATINUM
-}
+/** Object Enum representing all the possible cards the application can manipulate. */
+export const OECardTypes = {
+    ALL: 0,
+    DEBIT: 1,
+    CREDIT: 2,
+    SERVICES: 3
+} as const;
 
 /**
 * @swagger
@@ -58,9 +58,9 @@ export enum ECardTypes {
 *                   description: The balance available on the card.
 *                   example: 4000.00
 *               type:
-*                   $ref: "#/components/schemas/ECardTypes"
+*                   $ref: "#/components/schemas/OECardTypes"
 *                   example: 2
-*                   description: The type of card, represented as the value 2 from the ECardTypes enum.
+*                   description: The type of card, represented as the value 2 from the OECardTypes enum.
 *               archived:
 *                   type: boolean
 *                   example: false
@@ -91,7 +91,7 @@ export interface ICard {
     expires: Date;
     issuer: IBank;
     balance: number;
-    type: ECardTypes;
+    type: typeof OECardTypes.DEBIT | typeof OECardTypes.CREDIT | typeof OECardTypes.SERVICES;
     archived: boolean;
     limit?: number;
     isVoucer?: boolean;
@@ -181,7 +181,7 @@ export interface CreateCardPayload {
 *                   format: date
 *                   example: 2029-04-01
 *               type:
-*                   $ref: "#/components/schemas/ECardTypes"
+*                   $ref: "#/components/schemas/OECardTypes"
 *                   example: 1
 *                   description: The type of card, it can be either debit (1), credit (2) or service (3) card.
 *               limit:
@@ -202,7 +202,7 @@ export interface UpdateCardPayload {
     archived?: boolean;
     expires?: Date;
     /** The type of card, it can be either debit (1), credit (2) or service (3) card. */
-    type?: ECardTypes.DEBIT | ECardTypes.CREDIT | ECardTypes.SERVICES;
+    type?: typeof OECardTypes.DEBIT | typeof OECardTypes.CREDIT | typeof OECardTypes.SERVICES;
     /** This only must appear when dealing with credit cards. */
     limit?: number;
     /** If user set a new alias to the card. */
