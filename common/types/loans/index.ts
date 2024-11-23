@@ -1,5 +1,5 @@
 import { IUser } from "../users";
-import { IBank } from "../util";
+import { IBank, TPayFrequency } from "../util";
 
 /**
 * @swagger
@@ -8,64 +8,67 @@ import { IBank } from "../util";
 *       ICard:
 *           type: object
 *           properties:
-*               cardNumber:
+*               id:
+*                   type: number
+*                   example: 1
+*               name:
 *                   type: string
-*                   description: The card number.
-*                   example: 4815 6973 7892 1530
-*               alias:
+*                   example: Crédito Nissan Versa BBVA
+*               owner:
+*                   $ref: "#/components/schemas/IUser"
+*               issuer:
+*                   $ref: "#/components/schemas/IBank"
+*               createdOn:
 *                   type: string
-*                   description: The alias for the card.
-*                   example: Visa (Crédito|Débito) BBVA Digital
-*               holderName:
-*                   type: string
-*                   description: The name of the cardholder.
-*                   example: Juan Arturo Cruz Cardona
+*                   format: date
+*                   example: 2029-04-01
 *               expires:
 *                   type: string
 *                   format: date
 *                   example: 2029-04-01
-*                   description: The expiration date of the card.
-*               issuer:
-*                   $ref: "#/components/schemas/IBank"
-*               balance:
+*               borrowed:
 *                   type: number
 *                   format: double
-*                   description: The balance available on the card.
-*                   example: 4000.00
-*               type:
-*                   $ref: "#/components/schemas/ECardTypes"
-*                   example: 2
-*                   description: The type of card, represented as the value 2 from the ECardTypes enum.
-*               archived:
+*                   example: 40000.00
+*               paid:
+*                   type: number
+*                   format: double
+*                   example: 15000.00
+*               interests:
+*                   type: number
+*                   format: double
+*                   example: 1500.00
+*               isFinished:
 *                   type: boolean
 *                   example: false
-*               limit:
-*                   type: number
-*                   format: double
-*                   description: The credit limit in case the card is a credit card.
-*                   example: 10000.00
-*               isVoucher:
-*                   type: boolean
-*                   description: Indicates whether the card is a debit voucher card.
+*               payFrequency:
+*                   $ref: "#/components/schemas/TPayFrequency"
 *           required:
-*               - holderName
-*               - expires
+*               - id
+*               - name
+*               - owner
 *               - issuer
-*               - balance
-*               - type
-*               - archived
+*               - createdOn
+*               - expires
+*               - borrowed
+*               - paid
+*               - interests
+*               - isFinished
+*               - payFrequency
 */
-/** Interface used to have a representation of all attributes within the Card Class */
+/** Interface used to have a representation of all attributes within the Loan Class */
 export interface ILoan {
-    id: string;
-    name: string; // default is bank name + borrowed number but can be updated by set by user
+    id: number;
+    name: string;
     owner: IUser;
     issuer: IBank;
+    createdOn: Date;
     expires: Date;
     borrowed: number;
     paid: number;
-    isFinished: boolean;
     interests: number;
+    isFinished: boolean;
+    payFrequency: TPayFrequency;
 }
 
 /*************************************/
@@ -82,45 +85,32 @@ export interface ILoan {
 *       CreateLoanPayload:
 *           type: object
 *           properties:
-*               cardNumber:
+*               name:
 *                   type: string
-*                   example: 4815 6973 7892 1530
-*               holderName:
-*                   type: string
-*                   example: Juan Arturo Cruz Cardona
+*                   example: Crédito Nissan Versa BBVA
 *               expires:
 *                   type: string
 *                   format: date
 *                   example: 2029-04-01
 *               issuer:
 *                   $ref: "#/components/schemas/IBank"
-*               balance:
+*               borrowed:
 *                   type: number
 *                   format: double
-*                   example: 4000.00
-*               alias:
-*                   type: string
-*                   example: Visa Crédito BBVA Digital
-*               limit:
-*                   type: number
-*                   format: double
-*                   example: 10000.00
-*               isVoucher:
-*                   type: boolean
-*                   example: false
+*                   example: 40000.00
+*               payFrequency:
+*                   $ref: "#/components/schemas/TPayFrequency"
 *           required:
-*               - cardNumber
-*               - holderName
+*               - alias
 *               - expires
 *               - issuer
-*               - balance
+*               - borrowed
 */
 /** Interface that defines all the attributes the payload for creating a new loan needs. */
 export interface CreateLoanPayload {
-    holderName: string;
+    name: string;
     expires: Date;
     issuer: IBank;
     borrowed: number;
-    alias: string;
-    limit?: number;
+    payFrequency: TPayFrequency;
 }
