@@ -1,44 +1,50 @@
 import { Entity, PrimaryColumn, Column, ManyToOne } from "typeorm";
 import { CreateCardPayload, ECardTypes } from "@common/types/cards";
-import { IBank } from "@common/types/util";
 import { ICard } from "@common/types/cards";
 import { User }  from "../users/user";
+import { Bank }  from "../banks/bank";
 import { BadRequestError } from "../../errors";
 
 @Entity()
 export class Card implements ICard {
+    // Many-to-One relationship: A card belongs to one user
     @ManyToOne(() => User, (user) => user.cards)
-    public owner!: User;
+    public owner!: User; // Assertion added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
     @PrimaryColumn()
-    public cardNumber: string; // id
+    public cardNumber!: string; // id
     @Column()
-    public alias: string;
+    public alias!: string;
     @Column()
-    public holderName: string;
+    public holderName!: string;
     @Column()
-    public expires: Date;
+    public expires!: Date;
+    // Many-to-One relationship: A card is issued by one bank
+    // There is only nagivation from card to bank, bank class does not know the relationship with card (missing One-to-Many relationship)
+    @ManyToOne(() => Bank, (bank) => bank.id)
+    public issuer!: Bank;
     @Column()
-    public issuer: IBank;
+    public balance!: number;
     @Column()
-    public balance: number;
+    public type!: ECardTypes;
     @Column()
-    public type: ECardTypes;
-    @Column()
-    public archived: boolean;
+    public archived!: boolean;
     @Column()
     public limit?: number;
     @Column()
     public isVoucher?: boolean;
 
-    public constructor(options: CreateCardPayload, type: ECardTypes) {
-        this.cardNumber = options.cardNumber;
-        this.holderName = options.holderName;
-        this.issuer     = options.issuer;
-        this.expires    = options.expires;
-        this.balance    = options.balance;
-        this.alias      = options.alias ?? `Tarjeta ${options.issuer.name} ${options.cardNumber}`;
-        this.type       = type;
-        this.archived   = false;
+    // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
+    public constructor(options?: CreateCardPayload, type?: ECardTypes) {
+        if(options && type) {
+            this.cardNumber = options.cardNumber;
+            this.holderName = options.holderName;
+            this.issuer     = options.issuer;
+            this.expires    = options.expires;
+            this.balance    = options.balance;
+            this.alias      = options.alias ?? `Tarjeta ${options.issuer.name} ${options.cardNumber}`;
+            this.type       = type;
+            this.archived   = false;
+        }
     }
 
     public addBalance(amount: number) {

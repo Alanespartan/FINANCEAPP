@@ -11,43 +11,48 @@ import { ECardTypes }  from "@common/types/cards";
 @Entity()
 export class User implements IUser {
     @PrimaryGeneratedColumn()
-    public readonly id!: number; // Assertion added since TypeORM will generate the value
+    public readonly id!: number; // Assertion added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
     @Column()
-    public readonly email: string;
+    public readonly email!: string;
     @Column()
-    public readonly password: string;
+    public readonly password!: string;
     @Column()
-    public readonly firstName: string;
+    public readonly firstName!: string;
     @Column()
-    public readonly lastName: string;
+    public readonly lastName!: string;
     @Column()
-    public cash: number;
+    public cash!: number;
+    // One-to-Many relationship: A user can have many cards
     @OneToMany(() => Card, (card) => card.owner)
-    public cards: Card[];
-    public loans: Loan[];
-    public expenses: Expense[];
-    public expenseCategories: ExpenseCategory[];
-    public incomes: any[]; // todo create interface
+    public cards!: Card[];
+    public loans!: Loan[];
+    public expenses!: Expense[];
+    public expenseCategories!: ExpenseCategory[];
+    public incomes!: any[]; // todo create interface
 
-    constructor(email: string, password: string, firstName: string, lastName: string) {
-        this.email     = email;
-        this.password  = password;
-        this.firstName = firstName;
-        this.lastName  = lastName;
-        // USER FINANCE STUFF
-        this.cash     = 0;
-        this.cards    = [];
-        this.expenses = [];
-        this.loans    = [];
-        this.incomes  = [];
-        // CUSTOM USER EXPERIENCE
-        this.expenseCategories = [
-            {
-                id:        randomUUID(),
-                alias:     "Other",
-                isDefault: true
-            } as ExpenseCategory
-        ];
+    // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
+    constructor(email?: string, password?: string, firstName?: string, lastName?: string) {
+        if(email && password && firstName && lastName) {
+            // USE DATA
+            this.email     = email;
+            this.password  = password;
+            this.firstName = firstName;
+            this.lastName  = lastName;
+            // USER FINANCE STUFF
+            this.cash     = 0;
+            this.cards    = [];
+            this.expenses = [];
+            this.loans    = [];
+            this.incomes  = [];
+            // CUSTOM USER EXPERIENCE
+            this.expenseCategories = [
+                {
+                    id:        randomUUID(),
+                    alias:     "Other",
+                    isDefault: true
+                } as ExpenseCategory
+            ];
+        }
     }
 
     /*---------------- CASH ----------------*/
