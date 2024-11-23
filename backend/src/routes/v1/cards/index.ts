@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { Card } from "@backend/lib/entities";
-import { CreateCardPayload, ECardTypes, UpdateCardPayload } from "@common/types/cards";
+import { CreateCardPayload, OECardTypesFilters, UpdateCardPayload } from "@common/types/cards";
 import { ExpenseCategory } from "@common/types/payments";
 import { randomUUID } from "crypto";
 import { BadRequestError } from "@backend/lib/errors";
 import { User } from "@backend/lib/entities/users/user";
 import { getHeaders } from "@backend/utils/requests";
-import { ValidateUpdateCardPayload } from "./functions";
+import { isValidCardFilter, isValidCardType, ValidateUpdateCardPayload } from "./functions";
 
 const router = Router();
 
@@ -52,6 +52,11 @@ router.post("/", (req, res, next) => {
             [ "cardType", "Expected 'cardType' header was not provided." ]
         );
 
+        const parsedType = parseInt(cardType);
+        if(!isValidCardType(parsedType)) {
+            throw new BadRequestError("Invalid type for creating a new card.");
+        }
+
         // remove any whitespace and then validate the cardNumber contains only numbers
         if( !( /^[0-9]+$/.test(options.cardNumber.replace(/\s+/g, "")) ) ) {
             throw new BadRequestError(`Invalid card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
@@ -62,27 +67,22 @@ router.post("/", (req, res, next) => {
             throw new BadRequestError(`A card with the "${options.cardNumber}" card number already exist in user data.`);
         }
 
-        let newCard: Card;
-        switch (parseInt(cardType)) {
-            case ECardTypes.DEBIT:
-                options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
-                newCard = new Card(options, ECardTypes.DEBIT);
+        const newCard: Card = new Card(options, parsedType);
+        switch (parsedType) {
+            case OECardTypesFilters.DEBIT:
                 if(options.isVoucher) {
                     newCard.setIsVoucher(true);
                 }
                 break;
-            case ECardTypes.CREDIT:
-                options.alias = `Tarjeta de Crédito ${options.issuer.name} ${options.cardNumber}`;
-                newCard = new Card(options, ECardTypes.CREDIT);
-                if(options.limit) {
-                    newCard.setLimit(options.limit);
+            case OECardTypesFilters.CREDIT:
+                if(!options.limit) {
+                    throw new BadRequestError("No limit value was given to create the new credit card.");
                 }
+                newCard.setLimit(options.limit);
                 break;
-            case ECardTypes.SERVICES:
-                options.alias = `Tarjeta de Servicios ${options.issuer.name} ${options.cardNumber}`;
-                newCard = new Card(options, ECardTypes.SERVICES);
+            case OECardTypesFilters.SERVICES:
+                // services extra logic here
                 break;
-            default: throw new BadRequestError("Invalid type for creating a new card.");
         }
 
         // add card to user array of cards
@@ -96,7 +96,7 @@ router.post("/", (req, res, next) => {
             isDefault: false
         } as ExpenseCategory);
 
-        const cards: Card[] = user.getCards(ECardTypes.ALL);
+        const cards: Card[] = user.getCards(OECardTypesFilters.ALL);
         return res.status(200).json(cards);
     } catch(error) { return next(error); }
 });
@@ -135,8 +135,9 @@ router.get("/", (req, res, next) => {
             throw new BadRequestError("No card type filter was given in the correct format.");
         }
 
-        const filterBy = cardType ? parseInt(cardType) : ECardTypes.ALL; // Default get all
-        if(!(filterBy in ECardTypes)) {
+        // If no cardType given, default is to get all
+        const filterBy = cardType ? parseInt(cardType) : OECardTypesFilters.ALL;
+        if(!isValidCardFilter(filterBy)) {
             throw new BadRequestError("Invalid type for filtering cards.");
         }
 
