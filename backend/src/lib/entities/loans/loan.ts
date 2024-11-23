@@ -1,28 +1,50 @@
-import { IBank } from "@common/types/util";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
 import { ILoan, CreateLoanPayload } from "@common/types/loans";
-import { randomUUID } from "crypto";
+import { TPayFrequency } from "@common/types/util";
+import { User, Bank }  from "../../entities";
 
+@Entity()
 export class Loan implements ILoan {
-    protected id: string;
-    protected alias: string; // default is bank name + borrowed number but can be updated by set by user
-    protected holderName: string;
-    protected expires: Date;
-    protected issuer: IBank;
-    protected borrowed: number;
-    protected paid: number;
-    protected isPaid: boolean;
-    protected interests: number;
+    @PrimaryGeneratedColumn()
+    public id!: number; // Assertion added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
+    @ManyToOne(() => User, (user) => user.cards)
+    public owner!: User;
+    // Many-to-One relationship: A card is issued by one bank
+    // There is only nagivation from loan to bank, bank class does not know the relationship with loan (missing One-to-Many relationship)
+    @ManyToOne(() => Bank, (bank) => bank.id)
+    public issuer!: Bank;
+    @Column()
+    public name!: string;
+    // Many-to-One relationship: A card belongs to one user
+    @Column()
+    public createdOn!: Date;
+    @Column()
+    public expires!: Date;
+    @Column()
+    public borrowed!: number;
+    @Column()
+    public paid!: number;
+    @Column()
+    public interests!: number;
+    @Column()
+    public isFinished!: boolean;
+    @Column()
+    public payFrequency!: TPayFrequency;
 
-    public constructor(options: CreateLoanPayload) {
-        this.id         = randomUUID();
-        this.holderName = options.holderName;
-        this.issuer     = options.issuer;
-        this.expires    = options.expires;
-        this.borrowed   = options.borrowed;
-        this.alias      = options.alias;
-        this.paid       = 0;
-        this.interests  = 0;
-        this.isPaid     = false;
+    public constructor(options?: CreateLoanPayload) {
+        if(options) {
+            // from payload
+            this.name         = options.name;
+            this.expires      = options.expires;
+            this.issuer       = options.issuer;
+            this.borrowed     = options.borrowed;
+            this.payFrequency = options.payFrequency;
+            // default options
+            this.paid         = 0;
+            this.interests    = 0;
+            this.isFinished   = false;
+            this.createdOn    = new Date();
+        }
     }
 
     public pay(amount: number) {
@@ -31,16 +53,18 @@ export class Loan implements ILoan {
 
     public closeLoan() {
         // todo add error class
-        if(this.borrowed > this.paid) { throw new Error("Couldn't complete the operation. Amount paid has not covered what was lent and interest."); }
-        this.isPaid    = true;
-        this.interests = this.paid - this.borrowed;
+        if(this.borrowed > this.paid) {
+            throw new Error("Couldn't complete the operation. Amount paid has not covered what was lent and interest.");
+        }
+        this.isFinished = true;
+        this.interests  = this.paid - this.borrowed;
     }
 
-    public setAlias(alias: string) {
-        this.alias = alias;
+    public setName(name: string) {
+        this.name = name;
     }
 
-    public getAlias() {
-        return this.alias;
+    public getName() {
+        return this.name;
     }
 }
