@@ -5,9 +5,9 @@ import { IBank } from "../util";
 * @swagger
 * components:
 *   schemas:
-*       OECardTypes:
+*       TCardFilters:
 *           type: integer
-*           description: Object Enum representing all the possible cards the application can manipulate.
+*           description: A multi-option type representing all the available card types a user can filter for.
 *           enum: [0, 1, 2, 3]
 *           x-enum-varnames: [ALL, DEBIT, CREDIT, SERVICES]
 *           properties:
@@ -19,14 +19,30 @@ import { IBank } from "../util";
 *                   description: Credit card.
 *               3:
 *                   description: Services (e.g., AMEX PLATINUM).
+*       TCardTypes:
+*           type: integer
+*           description: A multi-option type representing all the available card types a user can create.
+*           enum: [0, 1, 2, 3]
+*           x-enum-varnames: [ALL, DEBIT, CREDIT, SERVICES]
+*           properties:
+*               1:
+*                   description: Debit card.
+*               2:
+*                   description: Credit card.
+*               3:
+*                   description: Services (e.g., AMEX PLATINUM).
 */
 /** Object Enum representing all the possible cards the application can manipulate. */
-export const OECardTypes = {
+const OECardTypesFilters = {
     ALL: 0,
     DEBIT: 1,
     CREDIT: 2,
     SERVICES: 3
 } as const;
+/** A multi-option type representing all the available card types a user can create. */
+export type TCardTypes = typeof OECardTypesFilters.DEBIT | typeof OECardTypesFilters.CREDIT | typeof OECardTypesFilters.SERVICES;
+/** A multi-option type representing all the available card types a user can filter for. */
+export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
 
 /**
 * @swagger
@@ -58,9 +74,9 @@ export const OECardTypes = {
 *                   description: The balance available on the card.
 *                   example: 4000.00
 *               type:
-*                   $ref: "#/components/schemas/OECardTypes"
+*                   $ref: "#/components/schemas/TCardTypes"
 *                   example: 2
-*                   description: The type of card, represented as the value 2 from the OECardTypes enum.
+*                   description: The type of card, represented as the value 2 from the TCardTypes enum.
 *               archived:
 *                   type: boolean
 *                   example: false
@@ -91,7 +107,7 @@ export interface ICard {
     expires: Date;
     issuer: IBank;
     balance: number;
-    type: typeof OECardTypes.DEBIT | typeof OECardTypes.CREDIT | typeof OECardTypes.SERVICES;
+    type: TCardTypes;
     archived: boolean;
     limit?: number;
     isVoucer?: boolean;
@@ -181,7 +197,7 @@ export interface CreateCardPayload {
 *                   format: date
 *                   example: 2029-04-01
 *               type:
-*                   $ref: "#/components/schemas/OECardTypes"
+*                   $ref: "#/components/schemas/TCardTypes"
 *                   example: 1
 *                   description: The type of card, it can be either debit (1), credit (2) or service (3) card.
 *               limit:
@@ -202,7 +218,7 @@ export interface UpdateCardPayload {
     archived?: boolean;
     expires?: Date;
     /** The type of card, it can be either debit (1), credit (2) or service (3) card. */
-    type?: typeof OECardTypes.DEBIT | typeof OECardTypes.CREDIT | typeof OECardTypes.SERVICES;
+    type?: TCardTypes;
     /** This only must appear when dealing with credit cards. */
     limit?: number;
     /** If user set a new alias to the card. */
