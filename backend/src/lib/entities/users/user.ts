@@ -7,6 +7,7 @@ import { randomUUID }   from "crypto";
 import { Card, Loan }   from "@backend/lib/entities";
 import { IUser }        from "@common/types/users";
 import { TCardFilters } from "@common/types/cards";
+import cardController   from "../cards/cardController";
 
 @Entity()
 export class User implements IUser {
@@ -33,9 +34,9 @@ export class User implements IUser {
         eager: true
     })
     public loans!: Loan[];
-    public expenses!: Expense[];
-    public expenseCategories!: ExpenseCategory[];
-    public incomes!: any[]; // todo create interface
+    public expenses: Expense[] = [];
+    public expenseCategories: ExpenseCategory[] = [];
+    public incomes: any[] = []; // todo create interface
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
     constructor(email?: string, password?: string, firstName?: string, lastName?: string) {
@@ -77,12 +78,17 @@ export class User implements IUser {
 
     /*---------------- CARDS ---------------- */
     /**
-    * Save a new card in user information.
+    * Create a new card in user information.
     * @param {Card} newCard Contains information of new card.
     */
     public addCard(newCard: Card) {
+        // save card in db
+        cardController.create(newCard);
+
+        // save card locally to persist data and avoid re fetch again
         this.cards.push(newCard);
     }
+
     /**
     * Get a specific stored user card using its card number id.
     * @param {string} cardNumber Card number to search for.
@@ -91,6 +97,7 @@ export class User implements IUser {
         // do comparision removing whitespaces for safety and to avoid user errors
         return this.cards.find((c) => c.getCardNumber().replace(/\s+/g, "") === cardNumber.replace(/\s+/g, ""));
     }
+
     /**
     * Get all stored user cards.
     * @param {TCardFilters} type Used to filter user cards if a type was given in the request. Otherwise, it returns all cards the user has.
@@ -101,6 +108,7 @@ export class User implements IUser {
         }
         return this.cards;
     }
+
     /**
     * Get a specific stored user card using its card alias.
     * @param {string} cardAlias Card alias to search for.
@@ -108,6 +116,7 @@ export class User implements IUser {
     public getCardByAlias(cardAlias: string): Card | undefined {
         return this.cards.find((c) => c.getAlias() === cardAlias);
     }
+
     /**
     * Delete card from user data.
     * @param {number} index Array index of the selected card.
@@ -117,7 +126,6 @@ export class User implements IUser {
         const deleted = this.cards.splice(index, 1);
         console.log("The following card was deleted correctly: " + deleted[0].getAlias());
     }
-
 
     /*---------------- LOANS ----------------*/
     /**
