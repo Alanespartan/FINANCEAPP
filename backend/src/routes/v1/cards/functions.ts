@@ -1,6 +1,19 @@
 import { BadRequestError, NotFoundError } from "@backend/lib/errors";
-import { ECardTypes, UpdateCardPayload }   from "@common/types/cards";
+import { TCardFilters, TCardTypes, OECardTypesFilters, UpdateCardPayload }   from "@common/types/cards";
 import { User } from "@backend/lib/entities/users/user";
+
+export const isValidCardFilter = (value: number): value is TCardFilters => {
+    return value === OECardTypesFilters.ALL
+        || value === OECardTypesFilters.DEBIT
+        || value === OECardTypesFilters.CREDIT
+        || value === OECardTypesFilters.SERVICES;
+};
+
+export const isValidCardType = (value: number): value is TCardTypes => {
+    return value === OECardTypesFilters.DEBIT
+        || value === OECardTypesFilters.CREDIT
+        || value === OECardTypesFilters.SERVICES;
+};
 
 export function ValidateUpdateCardPayload(user: User, cardNumber: string, options: UpdateCardPayload): boolean {
     // remove any whitespace and then validate the cardNumber contains only numbers
@@ -42,12 +55,12 @@ export function ValidateUpdateCardPayload(user: User, cardNumber: string, option
 
     // CARD TYPE
     if(options.type) {
-        if(!(options.type in ECardTypes)) {
+        if(!isValidCardType(options.type)) {
             throw new BadRequestError(`Invalid card type: "${options.type}" for updating "${card.getAlias()}" card.`);
         }
 
         // if new type is credit card
-        if(options.type === ECardTypes.CREDIT) {
+        if(options.type === OECardTypesFilters.CREDIT) {
             // ensure a limit was sent in the payload
             if(!options.limit) {
                 throw new BadRequestError(`No limit value was provided for updating "${card.getAlias()}" card to be a Credit Card.`);
@@ -59,7 +72,7 @@ export function ValidateUpdateCardPayload(user: User, cardNumber: string, option
 
     // LIMIT
     if(options.limit) {
-        if(card.getCardType() !== ECardTypes.CREDIT) {
+        if(card.getCardType() !== OECardTypesFilters.CREDIT) {
             throw new BadRequestError("Can't modify the limit attribute from a non credit card.");
         }
 
