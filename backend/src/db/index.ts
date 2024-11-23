@@ -19,7 +19,7 @@ if(port <= 0) throw new ServerError("Must provide a port environment variable");
 if(!database) throw new ServerError("Must provide a database environment variable");
 
 import {
-    User, Card, Loan
+    User, Card, Loan, Bank
 } from "@backend/lib/entities";
 
 logger.info("Creating TypeORM Connection...");
@@ -41,7 +41,8 @@ const TypeORMConfig: DataSourceOptions = {
     entities: [
         User,
         Card,
-        Loan
+        Loan,
+        Bank
     ],
     subscribers: [],
     migrations: []
