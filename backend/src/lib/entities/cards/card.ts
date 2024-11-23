@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, ManyToOne } from "typeorm";
-import { CreateCardPayload, ECardTypes } from "@common/types/cards";
+import { CreateCardPayload, TCardTypes, OECardTypesFilters } from "@common/types/cards";
 import { ICard } from "@common/types/cards";
 import { User }  from "../users/user";
 import { Bank }  from "../banks/bank";
@@ -23,7 +23,7 @@ export class Card implements ICard {
     @Column()
     public balance!: number;
     @Column()
-    public type!: ECardTypes;
+    public type!: TCardTypes;
     @Column()
     public archived!: boolean;
     @Column()
@@ -32,7 +32,7 @@ export class Card implements ICard {
     public isVoucher?: boolean;
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
-    public constructor(options?: CreateCardPayload, type?: ECardTypes) {
+    public constructor(options?: CreateCardPayload, type?: TCardTypes) {
         if(options && type) {
             this.cardNumber = options.cardNumber;
             this.issuer     = options.issuer;
@@ -78,7 +78,7 @@ export class Card implements ICard {
         return this.issuer.name;
     }
 
-    public setCardType(type: ECardTypes) {
+    public setCardType(type: TCardTypes) {
         this.type = type;
     }
 
@@ -96,19 +96,19 @@ export class Card implements ICard {
 
     /* CREDIT CARD METHODS */
     public getUsedBalance() {
-        if(this.type === ECardTypes.CREDIT && this.limit !== undefined) {
+        if(this.type === OECardTypesFilters.CREDIT && this.limit !== undefined) {
             return this.limit - this.balance;
         }
         throw new BadRequestError("Can't get used balance since the credit is a non credit card.");
     }
     public setLimit(limit: number) {
-        if(this.type === ECardTypes.CREDIT) {
+        if(this.type === OECardTypesFilters.CREDIT) {
             this.limit = limit;
         }
         throw new BadRequestError("Can't set limit since the card is a non credit card.");
     }
     public getLimit() {
-        if(this.type === ECardTypes.CREDIT && this.limit !== undefined) {
+        if(this.type === OECardTypesFilters.CREDIT && this.limit !== undefined) {
             return this.limit;
         }
         throw new BadRequestError("Can't get limit since the card is a non credit card.");

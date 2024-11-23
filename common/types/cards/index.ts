@@ -33,7 +33,7 @@ import { IBank } from "../util";
 *                   description: Services (e.g., AMEX PLATINUM).
 */
 /** Object Enum representing all the possible cards the application can manipulate. */
-const OECardTypesFilters = {
+export const OECardTypesFilters = {
     ALL: 0,
     DEBIT: 1,
     CREDIT: 2,
