@@ -15,8 +15,6 @@ export class Card implements ICard {
     @Column()
     public alias!: string;
     @Column()
-    public holderName!: string;
-    @Column()
     public expires!: Date;
     // Many-to-One relationship: A card is issued by one bank
     // There is only nagivation from card to bank, bank class does not know the relationship with card (missing One-to-Many relationship)
@@ -37,7 +35,6 @@ export class Card implements ICard {
     public constructor(options?: CreateCardPayload, type?: ECardTypes) {
         if(options && type) {
             this.cardNumber = options.cardNumber;
-            this.holderName = options.holderName;
             this.issuer     = options.issuer;
             this.expires    = options.expires;
             this.balance    = options.balance;

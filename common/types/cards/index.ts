@@ -1,3 +1,4 @@
+import { IUser } from "../users";
 import { IBank } from "../util";
 
 /**
@@ -38,14 +39,12 @@ export enum ECardTypes {
 *                   type: string
 *                   description: The card number.
 *                   example: 4815 6973 7892 1530
+*               owner:
+*                   $ref: "#/components/schemas/IUser"
 *               alias:
 *                   type: string
 *                   description: The alias for the card.
 *                   example: Visa (Crédito|Débito) BBVA Digital
-*               holderName:
-*                   type: string
-*                   description: The name of the cardholder.
-*                   example: Juan Arturo Cruz Cardona
 *               expires:
 *                   type: string
 *                   format: date
@@ -75,8 +74,8 @@ export enum ECardTypes {
 *                   description: Indicates whether the card is a debit voucher card.
 *           required:
 *               - cardNumber
+*               - owner
 *               - alias
-*               - holderName
 *               - expires
 *               - issuer
 *               - balance
@@ -85,9 +84,10 @@ export enum ECardTypes {
 */
 /** Interface used to have a representation of all attributes within the Card Class */
 export interface ICard {
+    /** Card ID */
     cardNumber: string;
+    owner: IUser;
     alias: string;
-    holderName: string;
     expires: Date;
     issuer: IBank;
     balance: number;
