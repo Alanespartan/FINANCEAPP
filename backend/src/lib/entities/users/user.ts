@@ -4,7 +4,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { Expense, ExpenseCategory } from "@common/types/payments";
 import { CreateLoanPayload } from "@common/types/loans";
 import { randomUUID }   from "crypto";
-import { Card, Loan }   from "@backend/lib/entities";
+import { Card, Loan }   from "@entities";
 import { IUser }        from "@common/types/users";
 import { TCardFilters } from "@common/types/cards";
 import cardController   from "@entities/cards/cardController";
@@ -83,10 +83,10 @@ export class User implements IUser {
     * Create a new card in user information.
     * @param {Card} newCard Contains information of new card.
     */
-    public addCard(newCard: Card) {
+    public async addCard(newCard: Card) {
         newCard.owner = this;
         // save card in db
-        cardController.create(newCard);
+        // await cardController.create(newCard);
 
         // save card locally to persist data and avoid re fetch
         this.cards.push(newCard);
