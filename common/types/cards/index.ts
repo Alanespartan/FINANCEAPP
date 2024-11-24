@@ -118,7 +118,7 @@ export interface ICard {
     type: TCardTypes;
     archived: boolean;
     limit?: number;
-    isVoucer?: boolean;
+    isVoucher?: boolean;
 }
 
 /*************************************/
