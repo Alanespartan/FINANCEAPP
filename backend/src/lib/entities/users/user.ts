@@ -84,8 +84,9 @@ export class User implements IUser {
     * @param {Card} newCard Contains information of new card.
     */
     public addCard(newCard: Card) {
+        newCard.owner = this;
         // save card in db
-        // cardController.create(newCard);
+        cardController.create(newCard);
 
         // save card locally to persist data and avoid re fetch
         this.cards.push(newCard);

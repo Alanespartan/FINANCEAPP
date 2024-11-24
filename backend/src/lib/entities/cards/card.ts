@@ -41,9 +41,8 @@ export class Card implements ICard {
     public issuerId!: number; // Explicitly define the foreign key column
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
-    public constructor(options?: CreateCardPayload, type?: TCardTypes, owner?: User) {
-        if(options && type && owner) {
-            this.owner      = owner;
+    public constructor(options?: CreateCardPayload, type?: TCardTypes) {
+        if(options && type) {
             this.cardNumber = options.cardNumber;
             this.issuer     = options.issuer;
             this.expires    = options.expires;

@@ -71,7 +71,7 @@ router.post("/", (req, res, next) => {
             throw new BadRequestError(`Invalid card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
         }
 
-        const newCard: Card = new Card(options, parsedType, user);
+        const newCard: Card = new Card(options, parsedType);
         switch (parsedType) {
             case OECardTypesFilters.DEBIT:
                 if(options.isVoucher) {
