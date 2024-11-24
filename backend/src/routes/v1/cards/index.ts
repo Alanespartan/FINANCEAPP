@@ -1,12 +1,19 @@
 import { Router } from "express";
-import { Card } from "@backend/lib/entities";
-import { CreateCardPayload, OECardTypesFilters, UpdateCardPayload } from "@common/types/cards";
-import { ExpenseCategory } from "@common/types/payments";
 import { randomUUID } from "crypto";
+import {
+    CreateCardPayload,
+    OECardTypesFilters,
+    UpdateCardPayload
+} from "@common/types/cards";
+import { ExpenseCategory } from "@common/types/payments";
+import { getHeaders }      from "@backend/utils/requests";
 import { BadRequestError } from "@backend/lib/errors";
-import { User } from "@backend/lib/entities/users/user";
-import { getHeaders } from "@backend/utils/requests";
-import { isValidCardFilter, isValidCardType, ValidateUpdateCardPayload } from "./functions";
+import { User, Card }      from "@entities/index";
+import {
+    isValidCardFilter,
+    isValidCardType,
+    ValidateUpdateCardPayload
+} from "./functions";
 
 const router = Router();
 
