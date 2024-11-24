@@ -1,10 +1,11 @@
-import { Entity, PrimaryColumn, Column, ManyToOne } from "typeorm";
+import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn, Index } from "typeorm";
 import { CreateCardPayload, TCardTypes, OECardTypesFilters, ICard } from "@common/types/cards";
 import { User, Bank } from "@entities/index";
 import { BadRequestError } from "@errors";
 
 @Entity()
 export class Card implements ICard {
+    // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
     @PrimaryColumn()
     public cardNumber!: string; // id
     @Column()
@@ -17,21 +18,32 @@ export class Card implements ICard {
     public type!: TCardTypes;
     @Column()
     public archived!: boolean;
-    @Column()
+    @Column({ nullable: true })
     public limit?: number;
-    @Column()
+    @Column({ nullable: true })
     public isVoucher?: boolean;
+
     // Many-to-One relationship: A card belongs to one user, but a user can have many cards
-    @ManyToOne(() => User, (user) => user.cards)
-    public owner!: User; // Assertion added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
+    // Since querying by owner is frequent, adding database indexes to improve performance
+    @ManyToOne(() => User, (user) => user.cards, { nullable: false })
+    @JoinColumn({ name: "ownerId" }) // Explicitly map the foreign key column
+    @Index()
+    public owner!: User;
+    @Column()
+    public ownerId!: number; // Explicitly define the foreign key column
+
     // Many-to-One relationship: A card is issued by one bank
     // There is only nagivation from card to bank, bank class does not know the relationship with card (missing One-to-Many relationship)
-    @ManyToOne(() => Bank, (bank) => bank.id)
+    @ManyToOne(() => Bank, (bank) => bank.id, { nullable: false })
+    @JoinColumn({ name: "issuerId" }) // Explicitly map the foreign key column
     public issuer!: Bank;
+    @Column()
+    public issuerId!: number; // Explicitly define the foreign key column
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
-    public constructor(options?: CreateCardPayload, type?: TCardTypes) {
-        if(options && type) {
+    public constructor(options?: CreateCardPayload, type?: TCardTypes, owner?: User) {
+        if(options && type && owner) {
+            this.owner      = owner;
             this.cardNumber = options.cardNumber;
             this.issuer     = options.issuer;
             this.expires    = options.expires;

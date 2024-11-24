@@ -23,12 +23,14 @@ export class User implements IUser {
     public readonly lastName!: string;
     @Column()
     public cash!: number;
+
     // One-to-Many relationship: A user can have many cards
     // eager: when i fetch the user, typeorm will automatically fetch all cards
     @OneToMany(() => Card, (card) => card.owner, {
         eager: true
     })
     public cards!: Card[];
+
     // One-to-Many relationship: A user can have many cards
     @OneToMany(() => Loan, (loan) => loan.owner, {
         eager: true
@@ -83,7 +85,7 @@ export class User implements IUser {
     */
     public addCard(newCard: Card) {
         // save card in db
-        cardController.create(newCard);
+        // cardController.create(newCard);
 
         // save card locally to persist data and avoid re fetch
         this.cards.push(newCard);

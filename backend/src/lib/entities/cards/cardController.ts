@@ -6,13 +6,15 @@ import DBContextSource from "@db";
 class CardController {
     protected cardStore = DBContextSource.getRepository(Card);
 
+    /*
     public async create(newCard: Card) {
+        console.log(newCard);
         const foundCard = await this.getByCardNumber(newCard.cardNumber);
         if(foundCard) {
             throw new BadRequestError(`A card with the same "${newCard.cardNumber}" card number already exists.`);
         }
         await this.cardStore.save(newCard);
-    }
+    }*/
 
     public async getByCardNumber(cardNumber: string) {
         return await this.cardStore.findOne({
@@ -28,7 +30,8 @@ class CardController {
                 issuer: {
                     id: bankId
                 }
-            }
+            },
+            relations: [ "issuer" ] // Explicitly load the `issuer` relation
         });
     }
 
@@ -38,7 +41,8 @@ class CardController {
                 owner: {
                     id: userId
                 }
-            }
+            },
+            relations: [ "owner" ] // Explicitly load the `owner` relation
         });
     }
 }

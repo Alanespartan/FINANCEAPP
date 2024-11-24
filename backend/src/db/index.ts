@@ -59,6 +59,7 @@ DBContextSource.initialize()
     .then(() => {
         logger.info("DB connection successfully established!");
         logger.info(`Entities loaded: ${DBContextSource.entityMetadatas.map((e) => e.name)}`);
+        console.log(DBContextSource.getMetadata(Card).columns.map((col) => col.propertyName));
     })
     .catch((error) => console.log(error));
 
