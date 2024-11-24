@@ -46,17 +46,20 @@ const TypeORMConfig: DataSourceOptions = {
     migrations: []
 };
 
-const DBContextSource = new DataSource(TypeORMConfig);
-
 // https://www.npmjs.com/package/typeorm
 // to initialize the initial connection with the database, register all entities
 // and "synchronize" database schema, call "initialize()" method of a newly created database
 // once in your application bootstrap
-(async () => {
-    await DBContextSource.initialize();
-    logger.info("DB connection successfully established!");
-    logger.info(`Entities loaded: ${DBContextSource.entityMetadatas.map((e) => e.name)}`);
-    console.log(DBContextSource.getMetadata(Card).columns.map((col) => col.propertyName));
-})().catch((error) => console.log(error));
+const DBContextSource = new DataSource(TypeORMConfig);
+DBContextSource.initialize()
+    .then(() => {
+        logger.info("DB connection successfully established!");
+        logger.info(`Entities loaded: ${DBContextSource.entityMetadatas.map((e) => e.name)}`);
+        console.log(DBContextSource.getMetadata(Card).columns.map((col) => col.propertyName));
+    })
+    .catch((error) => console.log(error));
+
+export const cardStore = DBContextSource.getRepository(Card);
+export const userStore = DBContextSource.getRepository(User);
 
 export default DBContextSource;
