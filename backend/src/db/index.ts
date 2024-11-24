@@ -18,9 +18,10 @@ if(!host)     throw new ServerError("Must provide a host environment variable");
 if(port <= 0) throw new ServerError("Must provide a port environment variable");
 if(!database) throw new ServerError("Must provide a database environment variable");
 
-import {
-    User, Card, Loan, Bank
-} from "@backend/lib/entities";
+import { User } from "../lib/entities/users/user";
+import { Card } from "../lib/entities/cards/card";
+import { Loan } from "../lib/entities/loans/loan";
+import { Bank } from "../lib/entities/banks/bank";
 
 logger.info("Creating TypeORM Connection...");
 logger.info(`Type: ${type}`);
@@ -57,6 +58,7 @@ const DBContextSource = new DataSource(TypeORMConfig);
 DBContextSource.initialize()
     .then(() => {
         logger.info("DB connection successfully established!");
+        logger.info(`Entities loaded: ${DBContextSource.entityMetadatas.map((e) => e.name)}`);
     })
     .catch((error) => console.log(error));
 
