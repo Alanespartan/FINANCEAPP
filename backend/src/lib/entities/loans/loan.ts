@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
 import { ILoan, CreateLoanPayload } from "@common/types/loans";
 import { TPayFrequency } from "@common/types/util";
-import { User, Bank }  from "../../entities";
+import { User, Bank }  from "@entities/index";
 
 @Entity()
 export class Loan implements ILoan {

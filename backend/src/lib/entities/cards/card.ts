@@ -1,7 +1,7 @@
 import { Entity, PrimaryColumn, Column, ManyToOne } from "typeorm";
 import { CreateCardPayload, TCardTypes, OECardTypesFilters, ICard } from "@common/types/cards";
-import { User, Bank }  from "../../entities";
-import { BadRequestError } from "../../errors";
+import { User, Bank } from "@entities/index";
+import { BadRequestError } from "@errors";
 
 @Entity()
 export class Card implements ICard {

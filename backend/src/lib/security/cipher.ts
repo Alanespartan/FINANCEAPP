@@ -1,4 +1,4 @@
-// import { cipherKey } from "../../app";
+// import { cipherKey } from "@backend/app";
 // import CryptoJs from "crypto-js";
 
 // export function encrypt(plainText: string) {

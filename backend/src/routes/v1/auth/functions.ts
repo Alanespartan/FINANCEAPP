@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { LoginPayload, SignUpPayload } from "@common/types/auth";
 import { v4 as uuid } from "uuid";
 import { ServerError } from "@errors";
-import { environment } from "../../../app";
+import { environment } from "@backend/app";
 
 /**
  * Ensures login body is in correct format and all required information is present.
