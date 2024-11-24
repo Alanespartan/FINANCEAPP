@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BadRequestError } from "@backend/lib/errors";
-import { Card, Bank }  from "@entities/index";
+import { Card }  from "@entities/index";
 import DBContextSource from "@db";
 
 class CardController {
@@ -22,10 +22,22 @@ class CardController {
         });
     }
 
-    public async getByBank(bank: Bank) {
+    public async getByBank(bankId: number) {
         return await this.cardStore.find({
             where: {
-                issuer: bank
+                issuer: {
+                    id: bankId
+                }
+            }
+        });
+    }
+
+    public async getUserCards(userId: number) {
+        return await this.cardStore.find({
+            where: {
+                owner: {
+                    id: userId
+                }
             }
         });
     }
