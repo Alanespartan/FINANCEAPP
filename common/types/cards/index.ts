@@ -90,7 +90,6 @@ export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
 *                   description: Indicates whether the card is a debit voucher card.
 *           required:
 *               - cardNumber
-*               - owner
 *               - alias
 *               - expires
 *               - issuer
@@ -102,13 +101,13 @@ export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
 export interface ICard {
     /** Card ID */
     cardNumber: string;
-    owner: IUser;
     alias: string;
     expires: Date;
     issuer: IBank;
     balance: number;
     type: TCardTypes;
     archived: boolean;
+    owner?: IUser;
     limit?: number;
     isVoucer?: boolean;
 }
