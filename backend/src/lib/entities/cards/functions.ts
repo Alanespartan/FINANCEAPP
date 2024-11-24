@@ -14,8 +14,7 @@ export async function getByBank(bankId: number) {
             issuer: {
                 id: bankId
             }
-        },
-        relations: [ "issuer" ] // Explicitly load the `issuer` relation
+        }
     });
 }
 
@@ -25,9 +24,6 @@ export async function getUserCards(userId: number) {
             owner: {
                 id: userId
             }
-        },
-        relations: {
-            owner: false // Explicitly load or not the `owner` relation to load this field in the response
         }
     });
 }
