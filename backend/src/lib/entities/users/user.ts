@@ -7,7 +7,7 @@ import { randomUUID }   from "crypto";
 import { Card, Loan }   from "@backend/lib/entities";
 import { IUser }        from "@common/types/users";
 import { TCardFilters } from "@common/types/cards";
-import cardController   from "../cards/cardController";
+import cardController   from "@entities/cards/cardController";
 
 @Entity()
 export class User implements IUser {
@@ -85,7 +85,7 @@ export class User implements IUser {
         // save card in db
         cardController.create(newCard);
 
-        // save card locally to persist data and avoid re fetch again
+        // save card locally to persist data and avoid re fetch
         this.cards.push(newCard);
     }
 
