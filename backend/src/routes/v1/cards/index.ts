@@ -14,6 +14,7 @@ import {
     isValidCardType,
     ValidateUpdateCardPayload
 } from "./functions";
+import DBContextSource from "@db";
 
 const router = Router();
 
@@ -71,7 +72,8 @@ router.post("/", async (req, res, next) => {
             throw new BadRequestError(`Invalid card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
         }
 
-        const newCard: Card = new Card(options, parsedType);
+        const newCard = new Card(options, parsedType, user);
+
         switch (parsedType) {
             case OECardTypesFilters.DEBIT:
                 if(options.isVoucher) {
@@ -89,8 +91,7 @@ router.post("/", async (req, res, next) => {
                 break;
         }
 
-        // add card to user array of cards
-        await user.addCard(newCard);
+        await DBContextSource.manager.save(newCard);
 
         // create expense category using card alias
         // so we can register when paying "TO A CARD"

@@ -7,7 +7,6 @@ import { randomUUID }   from "crypto";
 import { Card, Loan }   from "@entities";
 import { IUser }        from "@common/types/users";
 import { TCardFilters } from "@common/types/cards";
-import cardController   from "@entities/cards/cardController";
 
 @Entity()
 export class User implements IUser {
@@ -36,6 +35,7 @@ export class User implements IUser {
         eager: true
     })
     public loans!: Loan[];
+
     public expenses: Expense[] = [];
     public expenseCategories: ExpenseCategory[] = [];
     public incomes: any[] = []; // todo create interface
@@ -83,12 +83,7 @@ export class User implements IUser {
     * Create a new card in user information.
     * @param {Card} newCard Contains information of new card.
     */
-    public async addCard(newCard: Card) {
-        newCard.owner = this;
-        // save card in db
-        // await cardController.create(newCard);
-
-        // save card locally to persist data and avoid re fetch
+    public addCard(newCard: Card) {
         this.cards.push(newCard);
     }
 
