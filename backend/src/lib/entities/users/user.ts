@@ -110,7 +110,7 @@ export class User implements IUser {
     }
 
     /**
-    * Get a specific stored user card using its card alias.
+    * Get a specific stored user card using its card alias. // TODO CARD make this get by field (options payload)
     * @param {string} cardAlias Card alias to search for.
     */
     public getCardByAlias(cardAlias: string): Card | undefined {
