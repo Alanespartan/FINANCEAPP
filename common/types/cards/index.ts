@@ -55,19 +55,25 @@ export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
 *                   type: string
 *                   description: The card number.
 *                   example: 4815 6973 7892 1530
-*               owner:
-*                   $ref: "#/components/schemas/IUser"
-*               alias:
+*               name:
 *                   type: string
-*                   description: The alias for the card.
+*                   description: The name of the card.
 *                   example: Visa (Crédito|Débito) BBVA Digital
 *               expires:
 *                   type: string
 *                   format: date
 *                   example: 2029-04-01
 *                   description: The expiration date of the card.
-*               issuer:
-*                   $ref: "#/components/schemas/IBank"
+*               ownerId:
+*                   type: number
+*                   format: integer
+*                   description: The associated user id.
+*                   example: 1
+*               issuerId:
+*                   type: number
+*                   format: integer
+*                   description: The associated bank id.
+*                   example: 1
 *               balance:
 *                   type: number
 *                   format: double
@@ -90,9 +96,10 @@ export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
 *                   description: Indicates whether the card is a debit voucher card.
 *           required:
 *               - cardNumber
-*               - alias
+*               - name
 *               - expires
-*               - issuer
+*               - ownerId
+*               - issuerId
 *               - balance
 *               - type
 *               - archived
@@ -101,13 +108,15 @@ export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
 export interface ICard {
     /** Card ID */
     cardNumber: string;
-    alias: string;
+    name: string;
     expires: Date;
-    issuer: IBank;
+    /** User ID */
+    ownerId: number;
+    /** Bank ID */
+    issuerId: number;
     balance: number;
     type: TCardTypes;
     archived: boolean;
-    owner?: IUser;
     limit?: number;
     isVoucer?: boolean;
 }
@@ -148,7 +157,7 @@ export interface SimpleCardOptions {
 *                   type: number
 *                   format: double
 *                   example: 4000.00
-*               alias:
+*               name:
 *                   type: string
 *                   example: Visa Crédito BBVA Digital
 *               limit:
@@ -172,7 +181,7 @@ export interface CreateCardPayload {
     expires: Date;
     issuer: IBank;
     balance: number;
-    alias?: string;
+    name?: string;
     limit?: number;
     isVoucher?: boolean;
 }

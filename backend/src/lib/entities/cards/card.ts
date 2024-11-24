@@ -9,7 +9,7 @@ export class Card implements ICard {
     @PrimaryColumn()
     public cardNumber!: string; // id
     @Column()
-    public alias!: string;
+    public name!: string;
     @Column()
     public expires!: Date;
     @Column()
@@ -48,7 +48,7 @@ export class Card implements ICard {
             this.issuer     = options.issuer;
             this.expires    = options.expires;
             this.balance    = options.balance;
-            this.alias      = options.alias ?? `Tarjeta ${options.issuer.name} ${options.cardNumber}`;
+            this.name       = options.name ?? `Tarjeta ${options.issuer.name} ${options.cardNumber}`;
             this.type       = type;
             this.archived   = false;
         }
@@ -60,16 +60,16 @@ export class Card implements ICard {
 
     // decrease balance
     public pay(amount: number) {
-        if(this.balance < amount) throw new Error(`Couldn't complete the transaction. Insufficient funds in ${this.alias}.`);
+        if(this.balance < amount) throw new Error(`Couldn't complete the transaction. Insufficient funds in ${this.name}.`);
         this.balance -= amount;
     }
 
-    public setAlias(alias: string) {
-        this.alias = alias;
+    public setName(name: string) {
+        this.name = name;
     }
 
-    public getAlias() {
-        return this.alias;
+    public getName() {
+        return this.name;
     }
 
     public setCardNumber(cardNumber: string) {
