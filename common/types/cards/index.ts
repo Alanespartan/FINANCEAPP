@@ -213,9 +213,9 @@ export interface CreateCardPayload {
 *                   format: double
 *                   description: The credit limit for the credit card.
 *                   example: 10000.00
-*               alias:
+*               name:
 *                   type: string
-*                   description: The alias for the card.
+*                   description: The name of the card.
 *                   example: Visa (Crédito|Débito) BBVA Digital
 */
 /** Representes the expected and possible parameters during a PUT request to update a user card. */
@@ -229,6 +229,6 @@ export interface UpdateCardPayload {
     type?: TCardTypes;
     /** This only must appear when dealing with credit cards. */
     limit?: number;
-    /** If user set a new alias to the card. */
-    alias?: string;
+    /** If user set a new name to the card. */
+    name?: string;
 }

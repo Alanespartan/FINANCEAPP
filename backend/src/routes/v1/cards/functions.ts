@@ -25,8 +25,8 @@ export function ValidateUpdateCardPayload(user: User, cardNumber: string, option
     const card = user.getCard(cardNumber);
     if(!card) throw new NotFoundError(`There is no "${cardNumber}" card in the user data.`);
 
-    const category = user.getCategory(card.getAlias()); // use current alias to get existing category
-    if(!category) throw new NotFoundError(`There is no "${card.getAlias()}" registered as an expense category.`);
+    const category = user.getCategory(card.getName()); // use current alias to get existing category
+    if(!category) throw new NotFoundError(`There is no "${card.getName()}" registered as an expense category.`);
 
     // NEW CARD NUMBER
     if(options.cardNumber) {
@@ -56,14 +56,14 @@ export function ValidateUpdateCardPayload(user: User, cardNumber: string, option
     // CARD TYPE
     if(options.type) {
         if(!isValidCardType(options.type)) {
-            throw new BadRequestError(`Invalid card type: "${options.type}" for updating "${card.getAlias()}" card.`);
+            throw new BadRequestError(`Invalid card type: "${options.type}" for updating "${card.getName()}" card.`);
         }
 
         // if new type is credit card
         if(options.type === OECardTypesFilters.CREDIT) {
             // ensure a limit was sent in the payload
             if(!options.limit) {
-                throw new BadRequestError(`No limit value was provided for updating "${card.getAlias()}" card to be a Credit Card.`);
+                throw new BadRequestError(`No limit value was provided for updating "${card.getName()}" card to be a Credit Card.`);
             }
         }
 
