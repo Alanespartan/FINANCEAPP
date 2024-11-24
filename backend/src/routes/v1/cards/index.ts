@@ -8,7 +8,7 @@ import {
 import { ExpenseCategory } from "@common/types/payments";
 import { getHeaders }      from "@backend/utils/requests";
 import { BadRequestError } from "@backend/lib/errors";
-import { User, Card }      from "@entities/index";
+import { User, Card }      from "@entities";
 import {
     isValidCardFilter,
     isValidCardType,

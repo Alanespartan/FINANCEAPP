@@ -12,6 +12,7 @@
             "@errors":     [ "./src/lib/errors" ],
             "@db":         [ "./src/db" ],
             "@tools/*":    [ "./src/routes/v1/tools/*"],
+            "@entities":   [ "./src/lib/entities"],
             "@entities/*": [ "./src/lib/entities/*"]
         },
 

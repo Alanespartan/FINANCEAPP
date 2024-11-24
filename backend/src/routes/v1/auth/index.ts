@@ -2,7 +2,7 @@ import { Router } from "express";
 import { ConnectionStore } from "@backend/session/connectionStore";
 import { BadRequestError, ForbiddenError, UnauthorizedError } from "@errors";
 import { clearSession, verifyLoginBody, verifySignUpBody } from "./functions";
-import userController from "@backend/lib/entities/users/userController";
+import userController from "@entities/users/userController";
 
 const router = Router();
 

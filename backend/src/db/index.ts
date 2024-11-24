@@ -18,10 +18,7 @@ if(!host)     throw new ServerError("Must provide a host environment variable");
 if(port <= 0) throw new ServerError("Must provide a port environment variable");
 if(!database) throw new ServerError("Must provide a database environment variable");
 
-import { User } from "../lib/entities/users/user";
-import { Card } from "../lib/entities/cards/card";
-import { Loan } from "../lib/entities/loans/loan";
-import { Bank } from "../lib/entities/banks/bank";
+import { User, Card, Loan, Bank } from "@entities";
 
 logger.info("Creating TypeORM Connection...");
 logger.info(`Type: ${type}`);
@@ -55,12 +52,11 @@ const DBContextSource = new DataSource(TypeORMConfig);
 // to initialize the initial connection with the database, register all entities
 // and "synchronize" database schema, call "initialize()" method of a newly created database
 // once in your application bootstrap
-DBContextSource.initialize()
-    .then(() => {
-        logger.info("DB connection successfully established!");
-        logger.info(`Entities loaded: ${DBContextSource.entityMetadatas.map((e) => e.name)}`);
-        console.log(DBContextSource.getMetadata(Card).columns.map((col) => col.propertyName));
-    })
-    .catch((error) => console.log(error));
+(async () => {
+    await DBContextSource.initialize();
+    logger.info("DB connection successfully established!");
+    logger.info(`Entities loaded: ${DBContextSource.entityMetadatas.map((e) => e.name)}`);
+    console.log(DBContextSource.getMetadata(Card).columns.map((col) => col.propertyName));
+})().catch((error) => console.log(error));
 
 export default DBContextSource;

@@ -1,6 +1,6 @@
 import { BadRequestError, NotFoundError } from "@backend/lib/errors";
 import { TCardFilters, TCardTypes, OECardTypesFilters, UpdateCardPayload }   from "@common/types/cards";
-import { User } from "@backend/lib/entities/users/user";
+import { User } from "@backend/lib/entities";
 
 export const isValidCardFilter = (value: number): value is TCardFilters => {
     return value === OECardTypesFilters.ALL

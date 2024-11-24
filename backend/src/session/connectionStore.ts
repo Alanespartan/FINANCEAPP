@@ -1,4 +1,4 @@
-import { User } from "@backend/lib/entities/users/user";
+import { User } from "@entities";
 
 /**
  * This class server as an in-memory store of users connections.

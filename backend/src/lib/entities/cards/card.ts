@@ -1,6 +1,6 @@
 import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn, Index } from "typeorm";
 import { CreateCardPayload, TCardTypes, OECardTypesFilters, ICard } from "@common/types/cards";
-import { User, Bank } from "@entities/index";
+import { User, Bank } from "@entities";
 import { BadRequestError } from "@errors";
 
 @Entity()
