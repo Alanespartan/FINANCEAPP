@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BadRequestError } from "@backend/lib/errors";
-import { Card, Bank } from "../index";
+import { Card, Bank }  from "@entities/index";
 import DBContextSource from "@db";
 
 class CardController {

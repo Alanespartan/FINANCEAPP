@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BadRequestError } from "@backend/lib/errors";
-import { User } from "./user";
+import { User } from "@entities/index";
 import DBContextSource from "@db";
 
 class UserController {
