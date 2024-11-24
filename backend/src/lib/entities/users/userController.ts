@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BadRequestError } from "@backend/lib/errors";
+import { BadRequestError } from "@errors";
 import { User } from "@entities";
 import DBContextSource from "@db";
 

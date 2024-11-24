@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BadRequestError } from "@backend/lib/errors";
+import { BadRequestError } from "@errors";
 import { Card }  from "@entities";
 import DBContextSource from "@db";
 
 class CardController {
     protected cardStore = DBContextSource.getRepository(Card);
 
-    /*
     public async create(newCard: Card) {
         console.log(newCard);
         const foundCard = await this.getByCardNumber(newCard.cardNumber);
@@ -14,7 +13,7 @@ class CardController {
             throw new BadRequestError(`A card with the same "${newCard.cardNumber}" card number already exists.`);
         }
         await this.cardStore.save(newCard);
-    }*/
+    }
 
     public async getByCardNumber(cardNumber: string) {
         return await this.cardStore.findOne({

@@ -1,5 +1,5 @@
 // https://aws.amazon.com/es/rds/free/
-import { ServerError } from "@backend/lib/errors";
+import { ServerError } from "@errors";
 import { DataSource, DataSourceOptions } from "typeorm";
 import { Logger } from "@common/types/logger";
 

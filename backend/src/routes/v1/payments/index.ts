@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { Router } from "express";
 import { Expense, PaymentConfig, PaymentMethod } from "@common/types/payments";
-import { BadRequestError } from "@backend/lib/errors";
+import { BadRequestError } from "@errors";
 
 const router = Router();
 

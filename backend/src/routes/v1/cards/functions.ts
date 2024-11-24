@@ -1,4 +1,4 @@
-import { BadRequestError, NotFoundError } from "@backend/lib/errors";
+import { BadRequestError, NotFoundError } from "@errors";
 import { TCardFilters, TCardTypes, OECardTypesFilters, UpdateCardPayload }   from "@common/types/cards";
 import { User } from "@entities";
 

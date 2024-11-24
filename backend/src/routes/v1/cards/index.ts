@@ -7,7 +7,7 @@ import {
 } from "@common/types/cards";
 import { ExpenseCategory } from "@common/types/payments";
 import { getHeaders }      from "@backend/utils/requests";
-import { BadRequestError } from "@backend/lib/errors";
+import { BadRequestError } from "@errors";
 import { User, Card }      from "@entities";
 import {
     isValidCardFilter,
@@ -50,7 +50,7 @@ const router = Router();
 *           400:
 *               description: Bad Request Error
 */
-router.post("/", (req, res, next) => {
+router.post("/", async (req, res, next) => {
     try {
         const user    = req.userData;
         const options = req.body as CreateCardPayload;
@@ -90,7 +90,7 @@ router.post("/", (req, res, next) => {
         }
 
         // add card to user array of cards
-        user.addCard(newCard);
+        await user.addCard(newCard);
 
         // create expense category using card alias
         // so we can register when paying "TO A CARD"
