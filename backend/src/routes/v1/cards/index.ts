@@ -204,9 +204,7 @@ router.get("/", async (req, res, next) => {
 *               content:
 *                   application/json:
 *                       schema:
-*                           type: array
-*                           items:
-*                               $ref: "#/components/schemas/ICard"
+*                           $ref: "#/components/schemas/ICard"
 *           400:
 *               description: Bad Request Error
 *           404:
@@ -229,6 +227,7 @@ router.put("/:cardNumber", async (req, res, next) => {
             throw new NotFoundError(`There is no "${cardNumber}" card to update.`);
         }
 
+        let cardNumberToReturn = cardNumber;
         /* NEW CARD NUMBER */
         if(options.cardNumber) {
             // normalizing the given card number by removing white spaces
@@ -243,6 +242,8 @@ router.put("/:cardNumber", async (req, res, next) => {
             if(user.hasCard(options.cardNumber)) {
                 throw new BadRequestError(`A card with the "${options.cardNumber}" number already exists.`);
             }
+
+            cardNumberToReturn = options.cardNumber; // to know what card number to search for when returning json data
         }
 
         /* CARD EXPIRATION DATE */
@@ -305,7 +306,7 @@ router.put("/:cardNumber", async (req, res, next) => {
         user.cards = [];
         user.cards = cards;
 
-        return res.status(200).json(cards);
+        return res.status(200).json(cards.find((card) => card.getCardNumber() === cardNumberToReturn));
     } catch(error) { return next(error); }
 });
 
