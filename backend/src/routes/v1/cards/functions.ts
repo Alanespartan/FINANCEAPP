@@ -1,6 +1,6 @@
 import { BadRequestError, NotFoundError } from "@errors";
 import { TCardFilters, TCardTypes, OECardTypesFilters, UpdateCardPayload }   from "@common/types/cards";
-import { User } from "@entities";
+import { Card, User } from "@entities";
 
 export const isValidCardFilter = (value: number): value is TCardFilters => {
     return value === OECardTypesFilters.ALL
@@ -82,4 +82,19 @@ export function ValidateUpdateCardPayload(user: User, cardNumber: string, option
     }
 
     return true;
+}
+
+export function MapNewToExistingArray(newCard: Card) {
+    return {
+        cardNumber: newCard.getCardNumber(),
+        name:       newCard.getName(),
+        expires:    newCard.getExpirationDate(),
+        balance:    newCard.getBalance(),
+        type:       newCard.getCardType(),
+        archived:   newCard.getArchived(),
+        limit:      newCard.getCardType() === OECardTypesFilters.CREDIT ? newCard.getLimit() : null,
+        isVoucher:  newCard.getIsVoucher(),
+        ownerId:    newCard.ownerId,
+        issuerId:   newCard.issuerId,
+    } as Card;
 }
