@@ -6,7 +6,7 @@ import { CreateLoanPayload } from "@common/types/loans";
 import { randomUUID }   from "crypto";
 import { Card, Loan }   from "@entities";
 import { IUser }        from "@common/types/users";
-import { TCardFilters } from "@common/types/cards";
+import { TCardFilters, TCardTypes } from "@common/types/cards";
 
 @Entity()
 export class User implements IUser {
@@ -88,23 +88,41 @@ export class User implements IUser {
     }
 
     /**
+    * Checks if a card already exists in user data.
+    * @param {string} cardNumber Card number to search for.
+    */
+    public hasCard(cardNumber: string): boolean {
+        return this.getCard(cardNumber) ? true : false;
+    }
+
+    /**
     * Get a specific stored user card using its card number id.
     * @param {string} cardNumber Card number to search for.
     */
     public getCard(cardNumber: string): Card | undefined {
-        // do comparision removing whitespaces for safety and to avoid user errors
-        return this.cards.find((c) => c.getCardNumber().replace(/\s+/g, "") === cardNumber.replace(/\s+/g, ""));
+        return this.cards.find((c) => c.getCardNumber() === cardNumber);
     }
 
     /**
     * Get all stored user cards.
     * @param {TCardFilters} type Used to filter user cards if a type was given in the request. Otherwise, it returns all cards the user has.
     */
-    public getCards(type: TCardFilters) {
+    public getCards(type: TCardFilters): Card[] {
         if(type !== 0) {
             return this.cards.filter((c) => c.getCardType() === type);
         }
         return this.cards;
+    }
+
+    /**
+    * Get the type of a desired stored user card.
+    *
+    * Always use "getCard()" method first so you validate the card exist in user data.
+    * @param {string} cardNumber Card number to search for.
+    */
+    public getCardType(cardNumber: string): TCardTypes {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return this.getCard(cardNumber)!.getCardType();
     }
 
     /**
