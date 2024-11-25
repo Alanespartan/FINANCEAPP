@@ -116,9 +116,20 @@ export class User implements IUser {
     }
 
     /**
+    * Get the db id of a desired stored user card.
+    *
+    * Always use "hasCard()" method first so you validate the card exist in user data.
+    * @param {string} cardNumber Card number to search for.
+    */
+    public getCardId(cardNumber: string): number {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return this.getCard(cardNumber)!.getId();
+    }
+
+    /**
     * Get the type of a desired stored user card.
     *
-    * Always use "getCard()" method first so you validate the card exist in user data.
+    * Always use "hasCard()" method first so you validate the card exist in user data.
     * @param {string} cardNumber Card number to search for.
     */
     public getCardType(cardNumber: string): TCardTypes {
