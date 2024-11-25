@@ -58,6 +58,10 @@ export class Card implements ICard {
         }
     }
 
+    public getId() {
+        return this.id;
+    }
+
     public addBalance(amount: number) {
         this.balance += amount;
     }
