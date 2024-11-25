@@ -45,10 +45,10 @@ export class Card implements ICard {
         if(options && type && owner) {
             this.owner      = owner;
             this.cardNumber = options.cardNumber;
-            this.issuer     = options.issuer;
+            this.issuerId   = options.issuerId;
             this.expires    = options.expires;
             this.balance    = options.balance;
-            this.name       = options.name ?? `Tarjeta ${options.issuer.name} ${options.cardNumber}`;
+            this.name       = options.name ?? `Tarjeta ${options.cardNumber}`;
             this.type       = type;
             this.archived   = false;
         }
@@ -56,6 +56,10 @@ export class Card implements ICard {
 
     public addBalance(amount: number) {
         this.balance += amount;
+    }
+
+    public getBalance() {
+        return this.balance;
     }
 
     // decrease balance
@@ -82,6 +86,10 @@ export class Card implements ICard {
 
     public setExpirationDate(expires: Date) {
         this.expires = expires;
+    }
+
+    public getExpirationDate() {
+        return this.expires;
     }
 
     public getIssuerName() {
@@ -128,5 +136,9 @@ export class Card implements ICard {
     /* VOUCHER CARD METHODS */
     public setIsVoucher(isVoucher: boolean) {
         this.isVoucher = isVoucher;
+    }
+
+    public getIsVoucher() {
+        return this.isVoucher;
     }
 }
