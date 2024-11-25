@@ -187,7 +187,7 @@ export interface CreateCardPayload {
 *       UpdateCardPayload:
 *           type: object
 *           properties:
-*               cardNumber:
+*               newCardNumber:
 *                   type: string
 *                   description: The card number.
 *                   example: 4815 6973 7892 1530
@@ -215,7 +215,7 @@ export interface CreateCardPayload {
 /** Representes the expected and possible parameters during a PUT request to update a user card. */
 export interface UpdateCardPayload {
     /** New card number. */
-    cardNumber?: string;
+    newCardNumber?: string;
     /** If user decides to delete a card, archived instead for data safety and governance. */
     archived?: boolean;
     expires?: Date;
