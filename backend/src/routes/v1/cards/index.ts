@@ -5,20 +5,17 @@ import {
     OECardTypesFilters,
     UpdateCardPayload
 } from "@common/types/cards";
+import { BadRequestError, NotFoundError } from "@errors";
+import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 import { ExpenseCategory } from "@common/types/payments";
-import { getHeaders }      from "@backend/utils/requests";
-import { BadRequestError } from "@errors";
-import { User, Card }      from "@entities";
+import { getHeaders } from "@backend/utils/requests";
+import { User, Card } from "@entities";
 import {
     isValidCardFilter,
     isValidCardType,
-    ValidateUpdateCardPayload,
     MapNewToExistingArray
 } from "./functions";
-import {
-    getUserCards
-} from "@entities/cards/functions";
-import { ConvertToUTCTimestamp } from "@backend/utils/functions";
+import { getUserCards, updateCard } from "@entities/cards/functions";
 import DBContextSource from "@db";
 
 const router = Router();
@@ -120,7 +117,7 @@ router.post("/", async (req, res, next) => {
             isDefault: false
         } as ExpenseCategory);
 
-        const data  = user.getCards(OECardTypesFilters.ALL);
+        const data = user.getCards(OECardTypesFilters.ALL);
 
         return res.status(200).json(data);
     } catch(error) { return next(error); }
@@ -166,7 +163,12 @@ router.get("/", async (req, res, next) => {
             throw new BadRequestError("Invalid type for filtering cards.");
         }
 
-        const cards: Card[] = await getUserCards(user.id);
+        // get data from db
+        const cards = await getUserCards(user.id);
+        // update cached data for future operations
+        user.cards = [];
+        user.cards = cards;
+
         if(filterBy === OECardTypesFilters.ALL) {
             return res.status(200).json(cards);
         } else {
@@ -202,53 +204,108 @@ router.get("/", async (req, res, next) => {
 *               content:
 *                   application/json:
 *                       schema:
-*                           $ref: "#/components/schemas/ICard"
+*                           type: array
+*                           items:
+*                               $ref: "#/components/schemas/ICard"
 *           400:
 *               description: Bad Request Error
 *           404:
 *               description: Not Found Error
 */
-router.put("/:cardNumber", (req, res, next) => {
+router.put("/:cardNumber", async (req, res, next) => {
     try {
         const user       = req.userData;
-        const cardNumber = req.params.cardNumber;
+        const cardNumber = req.params.cardNumber.replace(/\s+/g, ""); // normalizing the given card number by removing white spaces
         const options    = req.body as UpdateCardPayload;
 
-        if(ValidateUpdateCardPayload(user, cardNumber, options)) {
-            const card     = user.getCard(cardNumber) as Card;
-            const category = user.getCategory(card.getName()) as ExpenseCategory;
+        /* CARD TO UPDATE */
+        // the given cardNumber to update contains only numbers
+        if( !( /^[0-9]+$/.test(cardNumber) ) ) {
+            throw new BadRequestError(`Invalid card number "${cardNumber}". A card number can not contain non numeric chars.`);
+        }
 
-            // CARD NUMBER
-            if(options.cardNumber) card.setCardNumber(options.cardNumber);
+        // a card with the given card number exists to be updated
+        if(!user.hasCard(cardNumber)) {
+            throw new NotFoundError(`There is no "${cardNumber}" card to update.`);
+        }
 
-            // ARCHIVED
-            if(options.archived) card.setArchived(options.archived);
+        /* NEW CARD NUMBER */
+        if(options.cardNumber) {
+            // normalizing the given card number by removing white spaces
+            options.cardNumber = options.cardNumber.replace(/\s+/g, "");
 
-            // CARD EXPIRATION DATE
-            if(options.expires) card.setExpirationDate(ConvertToUTCTimestamp(options.expires));
-
-            // CARD TYPE
-            if(options.type) card.setCardType(options.type);
-
-            // LIMIT
-            if(options.limit) card.setLimit(options.limit);
-
-            // If no new alias, number nor card type were given, generate 1 automatically that matches the new card settings
-            if(options.name) {
-                card.setName(options.name);
-            } else {
-                const type = `${card.getCardType() === 1 ? "Débito" : card.getCardType() === 2 ? "Crédito" : card.getCardType() === 3 ? "Servicios" : "UNDEFINED_TYPE" }`;
-                options.name = `Tarjeta de ${type} ${card.getIssuerName()} ${options.cardNumber}`;
-                card.setName(options.name);
+            // the new cardNumber contains only numbers
+            if(!( /^[0-9]+$/.test(options.cardNumber) )) {
+                throw new BadRequestError(`Invalid new card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
             }
 
-            // once the card is updated, modify the related expense category and all of its records
-            category.alias = card.getName();
-            // TODO verify that when this category is updated, all the existing expenses related to this category are update too
-
-            return res.status(200).json(card);
+            // avoid creating a duplicate if a card with the new card number already exists
+            if(user.hasCard(options.cardNumber)) {
+                throw new BadRequestError(`A card with the "${options.cardNumber}" number already exists.`);
+            }
         }
-        throw new BadRequestError(`An error occurred while updating "${cardNumber}" card. `);
+
+        /* CARD EXPIRATION DATE */
+        if(options.expires) {
+            // using UTC function for correct timestamp comparision
+            if(ConvertToUTCTimestamp(options.expires) < ConvertToUTCTimestamp(new Date())) {
+                throw new BadRequestError(`New expiration date "${options.expires}" can't be less than today's date.`);
+            }
+        }
+
+        /* CARD TYPE */
+        let typeModified = false;
+        if(options.type) {
+            typeModified = true;
+            if(!isValidCardType(options.type)) {
+                throw new BadRequestError(`Invalid card type: "${options.type}" given for updating "${cardNumber}" card.`);
+            }
+
+            // if new type is debit card
+            if(options.type === OECardTypesFilters.DEBIT) {
+                // ensure a limit was sent in the payload
+                if(options.limit) {
+                    throw new BadRequestError(`Can't update the limit of "${cardNumber}" card if it's going to be a Debit Card.`);
+                }
+            }
+
+            // if new type is credit card
+            if(options.type === OECardTypesFilters.CREDIT) {
+                // ensure a limit was sent in the payload
+                if(!options.limit) {
+                    throw new BadRequestError(`No limit value was provided for updating "${cardNumber}" card to be a Credit Card.`);
+                }
+
+                if(options.limit <= 0) {
+                    throw new BadRequestError("Can't set the limit of a credit card to have a value of less or equal to 0.");
+                }
+            }
+
+            // TODO CARD if new type is service card add constraints (e.g. AMEX PLATINUM no limit)
+        }
+
+        /* LIMIT */
+        if(options.limit && !typeModified) {
+            // if user wants to set a limit to the given card to update but its not a credit card
+            if(user.getCardType(cardNumber) !== OECardTypesFilters.CREDIT) {
+                throw new BadRequestError("Can't modify the limit attribute of a non credit card.");
+            }
+            // if the new limit of a credit card is less or equal to 0
+            if(options.limit <= 0) {
+                throw new BadRequestError("Can't modify the limit of a credit card to have a value of less or equal to 0.");
+            }
+        }
+
+        // update card data in db
+        await updateCard(user.getCardId(cardNumber), options);
+
+        // get updated data from db
+        const cards = await getUserCards(user.id);
+        // update cached data for future operations
+        user.cards = [];
+        user.cards = cards;
+
+        return res.status(200).json(cards);
     } catch(error) { return next(error); }
 });
 
