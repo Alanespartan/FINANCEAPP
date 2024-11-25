@@ -112,7 +112,7 @@ export class User implements IUser {
     * @param {string} cardAlias Card alias to search for.
     */
     public getCardByAlias(cardAlias: string): Card | undefined {
-        return this.cards.find((c) => c.getAlias() === cardAlias);
+        return this.cards.find((c) => c.getName() === cardAlias);
     }
 
     /**
@@ -122,7 +122,7 @@ export class User implements IUser {
     public removeCard(index: number) {
         if(index < this.cards.length || index > this.cards.length) { throw new Error("Card index out of bounds."); }
         const deleted = this.cards.splice(index, 1);
-        console.log("The following card was deleted correctly: " + deleted[0].getAlias());
+        console.log("The following card was deleted correctly: " + deleted[0].getName());
     }
 
     /*---------------- LOANS ----------------*/
