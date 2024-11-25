@@ -26,7 +26,7 @@ export class Card implements ICard {
     public limit?: number;
     @Column({ nullable: true })
     public isVoucher?: boolean;
-    test = new Date().toISOString;
+
     // Many-to-One relationship: A card belongs to one user, but a user can have many cards
     // Since querying by owner is frequent, adding database indexes to improve performance
     @ManyToOne(() => User, (user) => user.cards, { nullable: false })
