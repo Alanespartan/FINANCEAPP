@@ -196,7 +196,7 @@ export interface CreateCardPayload {
 *                   example: false
 *               expires:
 *                   type: number
-*                   example: 1732497156317
+*                   example: 1869696000000
 *                   description: The expiration date of the card in timestamp format.
 *               type:
 *                   $ref: "#/components/schemas/TCardTypes"
