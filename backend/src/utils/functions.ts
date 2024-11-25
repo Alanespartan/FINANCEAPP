@@ -20,7 +20,7 @@ export function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     return chunks;
 }
 
-export function ConvertToUTCTimestamp(date?: string | Date) {
+export function ConvertToUTCTimestamp(date?: string | Date | number) {
     const toUTC = date ? new Date(date) : new Date();
     return Date.UTC(
         toUTC.getUTCFullYear(),
