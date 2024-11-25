@@ -10,16 +10,17 @@ import { TCardFilters, TCardTypes } from "@common/types/cards";
 
 @Entity()
 export class User implements IUser {
+    // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
     @PrimaryGeneratedColumn()
-    public readonly id!: number; // Assertion added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
+    public readonly id!: number;
     @Column()
-    public readonly email!: string;
+    public email!: string;
     @Column()
-    public readonly password!: string;
+    public password!: string;
     @Column()
-    public readonly firstName!: string;
+    public firstName!: string;
     @Column()
-    public readonly lastName!: string;
+    public lastName!: string;
     @Column()
     public cash!: number;
 
