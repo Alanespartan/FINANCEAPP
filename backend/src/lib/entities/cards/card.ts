@@ -1,14 +1,17 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn, Index } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index, Unique } from "typeorm";
 import { CreateCardPayload, TCardTypes, OECardTypesFilters, ICard } from "@common/types/cards";
 import { User, Bank } from "@entities";
 import { BadRequestError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 
 @Entity()
+@Unique([ "cardNumber" ]) // This creates a unique constraint on the cardNumber column
 export class Card implements ICard {
     // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
-    @PrimaryColumn()
-    public cardNumber!: string; // id
+    @PrimaryGeneratedColumn() // id
+    public readonly id!: number;
+    @Column()
+    public cardNumber!: string;  // unique key
     @Column()
     public name!: string;
     @Column({ type: "bigint" })
