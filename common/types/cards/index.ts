@@ -1,6 +1,3 @@
-import { IUser } from "../users";
-import { IBank } from "../util";
-
 /**
 * @swagger
 * components:
@@ -60,10 +57,9 @@ export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
 *                   description: The name of the card.
 *                   example: Visa (Crédito|Débito) BBVA Digital
 *               expires:
-*                   type: string
-*                   format: date
-*                   example: 2029-04-01
-*                   description: The expiration date of the card.
+*                   type: number
+*                   example: 1732497156317
+*                   description: The expiration date of the card in timestamp format.
 *               ownerId:
 *                   type: number
 *                   format: integer
@@ -109,7 +105,8 @@ export interface ICard {
     /** Card ID */
     cardNumber: string;
     name: string;
-    expires: Date;
+    /** Date timestamp */
+    expires: number;
     /** User ID */
     ownerId: number;
     /** Bank ID */
@@ -144,15 +141,14 @@ export interface SimpleCardOptions {
 *               cardNumber:
 *                   type: string
 *                   example: 4815 6973 7892 1530
-*               holderName:
-*                   type: string
-*                   example: Juan Arturo Cruz Cardona
 *               expires:
 *                   type: string
 *                   format: date
 *                   example: 2029-04-01
-*               issuer:
-*                   $ref: "#/components/schemas/IBank"
+*               issuerId:
+*                   type: number
+*                   format: integer
+*                   example: 1
 *               balance:
 *                   type: number
 *                   format: double
@@ -169,17 +165,15 @@ export interface SimpleCardOptions {
 *                   example: false
 *           required:
 *               - cardNumber
-*               - holderName
 *               - expires
-*               - issuer
+*               - issuerId
 *               - balance
 */
 /** Interface that defines all the attributes the payload for creating a new user card needs. */
 export interface CreateCardPayload {
     cardNumber: string;
-    holderName: string;
     expires: Date;
-    issuer: IBank;
+    issuerId: number;
     balance: number;
     name?: string;
     limit?: number;
