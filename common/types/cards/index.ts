@@ -187,7 +187,7 @@ export interface CreateCardPayload {
 *       UpdateCardPayload:
 *           type: object
 *           properties:
-*               newCardNumber:
+*               cardNumber:
 *                   type: string
 *                   description: The card number.
 *                   example: 4815 6973 7892 1530
@@ -195,9 +195,9 @@ export interface CreateCardPayload {
 *                   type: boolean
 *                   example: false
 *               expires:
-*                   type: string
-*                   format: date
-*                   example: 2029-04-01
+*                   type: number
+*                   example: 1732497156317
+*                   description: The expiration date of the card in timestamp format.
 *               type:
 *                   $ref: "#/components/schemas/TCardTypes"
 *                   example: 1
@@ -215,10 +215,10 @@ export interface CreateCardPayload {
 /** Representes the expected and possible parameters during a PUT request to update a user card. */
 export interface UpdateCardPayload {
     /** New card number. */
-    newCardNumber?: string;
+    cardNumber?: string;
     /** If user decides to delete a card, archived instead for data safety and governance. */
     archived?: boolean;
-    expires?: Date;
+    expires?: number;
     /** The type of card, it can be either debit (1), credit (2) or service (3) card. */
     type?: TCardTypes;
     /** This only must appear when dealing with credit cards. */
