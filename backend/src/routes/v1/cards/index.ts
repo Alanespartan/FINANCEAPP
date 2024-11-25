@@ -12,11 +12,13 @@ import { User, Card }      from "@entities";
 import {
     isValidCardFilter,
     isValidCardType,
-    ValidateUpdateCardPayload
+    ValidateUpdateCardPayload,
+    MapNewToExistingArray
 } from "./functions";
 import {
     getUserCards
 } from "@entities/cards/functions";
+import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 import DBContextSource from "@db";
 
 const router = Router();
@@ -75,10 +77,17 @@ router.post("/", async (req, res, next) => {
             throw new BadRequestError(`Invalid card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
         }
 
+        if(user.cards.find((c) => c.cardNumber === options.cardNumber)) {
+            throw new BadRequestError(`A card with the "${options.cardNumber}" number already exists.`);
+        }
+
         const newCard = new Card(options, parsedType, user);
 
         switch (parsedType) {
             case OECardTypesFilters.DEBIT:
+                if(options.limit) {
+                    throw new BadRequestError("A debit card can't have a limit.");
+                }
                 if(options.isVoucher) {
                     newCard.setIsVoucher(true);
                 }
@@ -87,6 +96,9 @@ router.post("/", async (req, res, next) => {
                 if(!options.limit) {
                     throw new BadRequestError("No limit value was given to create the new credit card.");
                 }
+                if(options.isVoucher) {
+                    throw new BadRequestError("A credit card can't be categorized as a voucher card.");
+                }
                 newCard.setLimit(options.limit);
                 break;
             case OECardTypesFilters.SERVICES:
@@ -94,7 +106,11 @@ router.post("/", async (req, res, next) => {
                 break;
         }
 
+        // save new card in db
         await DBContextSource.manager.save(newCard);
+        // save new card in server cache
+        const mapped = MapNewToExistingArray(newCard);
+        user.addCard(mapped);
 
         // create expense category using card alias
         // so we can register when paying "TO A CARD"
@@ -104,8 +120,9 @@ router.post("/", async (req, res, next) => {
             isDefault: false
         } as ExpenseCategory);
 
-        const cards: Card[] = await getUserCards(user.id);
-        return res.status(200).json(cards);
+        const data  = user.getCards(OECardTypesFilters.ALL);
+
+        return res.status(200).json(data);
     } catch(error) { return next(error); }
 });
 
@@ -208,7 +225,7 @@ router.put("/:cardNumber", (req, res, next) => {
             if(options.archived) card.setArchived(options.archived);
 
             // CARD EXPIRATION DATE
-            if(options.expires) card.setExpirationDate(options.expires);
+            if(options.expires) card.setExpirationDate(ConvertToUTCTimestamp(options.expires));
 
             // CARD TYPE
             if(options.type) card.setCardType(options.type);

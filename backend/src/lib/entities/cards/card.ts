@@ -2,6 +2,7 @@ import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn, Index } from "typ
 import { CreateCardPayload, TCardTypes, OECardTypesFilters, ICard } from "@common/types/cards";
 import { User, Bank } from "@entities";
 import { BadRequestError } from "@errors";
+import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 
 @Entity()
 export class Card implements ICard {
@@ -10,8 +11,8 @@ export class Card implements ICard {
     public cardNumber!: string; // id
     @Column()
     public name!: string;
-    @Column()
-    public expires!: Date;
+    @Column({ type: "bigint" })
+    public expires!: number;
     @Column()
     public balance!: number;
     @Column()
@@ -22,7 +23,7 @@ export class Card implements ICard {
     public limit?: number;
     @Column({ nullable: true })
     public isVoucher?: boolean;
-
+    test = new Date().toISOString;
     // Many-to-One relationship: A card belongs to one user, but a user can have many cards
     // Since querying by owner is frequent, adding database indexes to improve performance
     @ManyToOne(() => User, (user) => user.cards, { nullable: false })
@@ -46,11 +47,11 @@ export class Card implements ICard {
             this.owner      = owner;
             this.cardNumber = options.cardNumber;
             this.issuerId   = options.issuerId;
-            this.expires    = options.expires;
             this.balance    = options.balance;
             this.name       = options.name ?? `Tarjeta ${options.cardNumber}`;
             this.type       = type;
             this.archived   = false;
+            this.expires    = ConvertToUTCTimestamp(options.expires);
         }
     }
 
@@ -84,7 +85,7 @@ export class Card implements ICard {
         return this.cardNumber;
     }
 
-    public setExpirationDate(expires: Date) {
+    public setExpirationDate(expires: number) {
         this.expires = expires;
     }
 
