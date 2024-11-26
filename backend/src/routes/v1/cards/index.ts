@@ -73,7 +73,7 @@ router.post("/", async (req, res, next) => {
         if( !( /^[0-9]+$/.test(options.cardNumber) ) ) {
             throw new BadRequestError(`Invalid card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
         }
-
+        // avoid creating a duplicate if a card with the given card number already exists
         if(user.cards.find((c) => c.cardNumber === options.cardNumber)) {
             throw new BadRequestError(`A card with the "${options.cardNumber}" number already exists.`);
         }
@@ -92,6 +92,9 @@ router.post("/", async (req, res, next) => {
             case OECardTypesFilters.CREDIT:
                 if(!options.limit) {
                     throw new BadRequestError("No limit value was given to create the new credit card.");
+                }
+                if(options.limit <= 0) {
+                    throw new BadRequestError("Can't set the limit of a credit card to have a value of less or equal to 0.");
                 }
                 if(options.isVoucher) {
                     throw new BadRequestError("A credit card can't be categorized as a voucher card.");
@@ -264,7 +267,7 @@ router.put("/:cardNumber", async (req, res, next) => {
 
             // if new type is debit card
             if(options.type === OECardTypesFilters.DEBIT) {
-                // ensure a limit was sent in the payload
+                // ensure no limit was sent in the payload
                 if(options.limit) {
                     throw new BadRequestError(`Can't update the limit of "${cardNumber}" card if it's going to be a Debit Card.`);
                 }
