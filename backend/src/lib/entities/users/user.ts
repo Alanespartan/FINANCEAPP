@@ -1,16 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { Logger } from "@common/types/logger";
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
-import { Expense, ExpenseCategory } from "@common/types/payments";
+import { Expense } from "@common/types/payments";
 import { CreateLoanPayload } from "@common/types/loans";
 import { randomUUID }   from "crypto";
-import { Card, Loan }   from "@entities";
+import { Card, Loan, ExpenseType }   from "@entities";
 import { IUser }        from "@common/types/users";
 import { TCardFilters, TCardTypes } from "@common/types/cards";
 
 @Entity()
 export class User implements IUser {
-    // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
     @PrimaryGeneratedColumn()
     public readonly id!: number;
     @Column()
@@ -25,7 +24,6 @@ export class User implements IUser {
     public cash!: number;
 
     // One-to-Many relationship: A user can have many cards
-    // eager: when i fetch the user, typeorm will automatically fetch all cards
     @OneToMany(() => Card, (card) => card.owner, {
         eager: true
     })
@@ -37,8 +35,13 @@ export class User implements IUser {
     })
     public loans!: Loan[];
 
+    // One-to-Many relationship: A user can have many expense categories
+    @OneToMany(() => Loan, (loan) => loan.owner, {
+        eager: true
+    })
+    public expenseTypes: ExpenseType[] = [];
+
     public expenses: Expense[] = [];
-    public expenseCategories: ExpenseCategory[] = [];
     public incomes: any[] = []; // todo create interface
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
