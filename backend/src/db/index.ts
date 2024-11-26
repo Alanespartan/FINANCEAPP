@@ -18,7 +18,7 @@ if(!host)     throw new ServerError("Must provide a host environment variable");
 if(port <= 0) throw new ServerError("Must provide a port environment variable");
 if(!database) throw new ServerError("Must provide a database environment variable");
 
-import { User, Card, Loan, Bank } from "@entities";
+import { User, Card, Loan, Bank, ExpenseType } from "@entities";
 
 logger.info("Creating TypeORM Connection...");
 logger.info(`Type: ${type}`);
@@ -36,12 +36,7 @@ const TypeORMConfig: DataSourceOptions = {
     database,
     synchronize: true,
     logging: true,
-    entities: [
-        User,
-        Card,
-        Loan,
-        Bank
-    ],
+    entities: [ User, Card, Bank, Loan, ExpenseType ],
     subscribers: [],
     migrations: []
 };
@@ -59,7 +54,10 @@ DBContextSource.initialize()
     })
     .catch((error) => console.log(error));
 
-export const cardStore = DBContextSource.getRepository(Card);
 export const userStore = DBContextSource.getRepository(User);
+export const cardStore = DBContextSource.getRepository(Card);
+export const bankStore = DBContextSource.getRepository(Bank);
+export const loanStore = DBContextSource.getRepository(Loan);
+export const expenseCategoryStore = DBContextSource.getRepository(ExpenseType);
 
 export default DBContextSource;
