@@ -7,15 +7,19 @@
         "outDir": "dist",
         "baseUrl": ".",
         "paths": {
-            "@common/*": [ "../common/*" ],
-            "@backend/*":[ "./src/*"],
-            "@errors":   [ "./src/lib/errors" ],
-            "@cards":    [ "./src/lib/cards"],
-            "@loans":    [ "./src/lib/loans"],
-            "@tools/*":  [ "./src/routes/v1/tools/*"]
+            "@common/*":   [ "../common/*" ],
+            "@backend/*":  [ "./src/*"],
+            "@errors":     [ "./src/lib/errors" ],
+            "@db":         [ "./src/db" ],
+            "@tools/*":    [ "./src/routes/v1/tools/*"],
+            "@entities":   [ "./src/lib/entities"],
+            "@entities/*": [ "./src/lib/entities/*"]
         },
 
-        "skipLibCheck": true
+        "skipLibCheck": true,
+
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true
     },
     "tsc-alias": {
         "replacers": {

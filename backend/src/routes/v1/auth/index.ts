@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { ConnectionStore } from "@backend/session/connectionStore";
-import { userController } from "@backend/session/user";
 import { BadRequestError, ForbiddenError, UnauthorizedError } from "@errors";
-import { clearSession, verifyLoginBody } from "./functions";
+import { clearSession, verifyLoginBody, verifySignUpBody } from "./functions";
+import userController from "@entities/users/userController";
 
 const router = Router();
 
@@ -23,26 +23,16 @@ const BAD_LOGIN_TIMEOUT = 5 * 60 * 1000;
 * /api/v1/login:
 *   post:
 *       summary: Login to Express App
-*       description: Stablish connection against ELM Servers and create Express App session.
+*       description: Use credentials to validate the user has a valid account registered in the app server database.
 *       tags:
 *           - Auth
 *       requestBody:
-*           description: Payload that includes user, password, server, tool parameters.
+*           description: Payload that includes user email and password to perform a log in operation.
 *           required: true
 *           content:
 *               application/json:
 *                   schema:
-*                       type: object
-*                       properties:
-*                           email:
-*                               type: string
-*                               example: test@gmail.com
-*                           password:
-*                               type: string
-*                               example: admin
-*                       required:
-*                           - email
-*                           - password
+*                       $ref: "#/components/schemas/LoginPayload"
 *       responses:
 *           200:
 *               description: A successful login
@@ -52,18 +42,20 @@ const BAD_LOGIN_TIMEOUT = 5 * 60 * 1000;
 *               description: Unauthorized Error
 *           403:
 *               description: Forbidden Error
-*           500:
-*               description: Internal server error
 */
 router.post("/login", async (req, res, next) => {
     try {
-        if(!verifyLoginBody(req.body)) throw new BadRequestError("Malformed login body sent.");
+        if(!verifyLoginBody(req.body)) {
+            throw new BadRequestError("Malformed login body sent.");
+        }
 
         const email    = req.body.email;
         const password = req.body.password;
 
-        const foundUser = userController.getByEmail(email);
-        if(!foundUser) throw new UnauthorizedError("User does not exist. Please check credentials and try again.");
+        const foundUser = await userController.getByEmail(email);
+        if(!foundUser) {
+            throw new UnauthorizedError("User does not exist. Please check credentials and try again.");
+        }
 
         if(foundUser.password !== password) {
             if(badLoginAttempts[email]) {
@@ -93,7 +85,7 @@ router.post("/login", async (req, res, next) => {
 * @swagger
 * /api/v1/logout:
 *   post:
-*       summary: Logs out a user of Express App
+*       summary: Logs out a user
 *       description: Delete connection from connection store and clear express request session.
 *       tags:
 *           - Auth
@@ -101,13 +93,46 @@ router.post("/login", async (req, res, next) => {
 *           200:
 *               description: A successful log out
 *           500:
-*               description: There was an unexpected server error trying to log out
+*               description: Server Error
 */
 router.post("/logout", async (req, res, next) => {
     try {
         ConnectionStore.deleteConnection(req.sessionID);
         await clearSession(req);
         return res.status(200).json({ status: "success" });
+    } catch(error) { next(error); }
+});
+
+/**
+* @swagger
+* /api/v1/signup:
+*   post:
+*       summary: Sign Up
+*       description: Create a new account in the database from the given payload.
+*       tags:
+*           - Auth
+*       requestBody:
+*           description: Payload that includes all required attributes to create a new user account.
+*           required: true
+*           content:
+*               application/json:
+*                   schema:
+*                       $ref: "#/components/schemas/SignUpPayload"
+*       responses:
+*           200:
+*               description: A successful login
+*           400:
+*               description: Bad Request Error
+*/
+router.post("/signup", async (req, res, next) => {
+    try {
+        if(!verifySignUpBody(req.body)) {
+            throw new BadRequestError("Malformed sign up body sent.");
+        }
+
+        userController.create("test@gmail.com", "admin", "John", "Doe");
+
+        return res.sendStatus(200);
     } catch(error) { next(error); }
 });
 

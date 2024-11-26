@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Request } from "express";
 import type { SessionData } from "express-session";
-import { User } from "@backend/session/user";
+import { User } from "@entities";
 
 declare global {
     namespace Express {

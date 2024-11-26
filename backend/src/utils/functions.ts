@@ -19,3 +19,16 @@ export function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     }
     return chunks;
 }
+
+export function ConvertToUTCTimestamp(date?: string | Date | number) {
+    const toUTC = date ? new Date(date) : new Date();
+    return Date.UTC(
+        toUTC.getUTCFullYear(),
+        toUTC.getUTCMonth(),
+        toUTC.getUTCDate(),
+        toUTC.getUTCHours(),
+        toUTC.getUTCMinutes(),
+        toUTC.getUTCSeconds(),
+        toUTC.getUTCMilliseconds()
+    ); // Returns the timestamp in UTC
+}

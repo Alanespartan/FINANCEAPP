@@ -1,18 +1,31 @@
 import { Request, Response } from "express";
-import { LoginRequest } from "@common/types/auth";
+import { LoginPayload, SignUpPayload } from "@common/types/auth";
 import { v4 as uuid } from "uuid";
 import { ServerError } from "@errors";
-import { environment } from "../../../app";
+import { environment } from "@backend/app";
 
 /**
  * Ensures login body is in correct format and all required information is present.
  * @param {unknown} body Body from login request.
  * @returns bodyisLoginBody wheter or not the body is valid
  */
-export function verifyLoginBody(body: unknown): body is LoginRequest {
+export function verifyLoginBody(body: unknown): body is LoginPayload {
     return typeof body === "object" && body !== null
-        && typeof(body as LoginRequest).email    === "string"
-        && typeof(body as LoginRequest).password === "string";
+        && typeof(body as LoginPayload).email    === "string"
+        && typeof(body as LoginPayload).password === "string";
+}
+
+/**
+ * Ensures signup body is in correct format and all required information is present.
+ * @param {unknown} body Body from login request.
+ * @returns bodyisSignUpBody wheter or not the body is valid
+ */
+export function verifySignUpBody(body: unknown): body is SignUpPayload {
+    return typeof body === "object" && body !== null
+        && typeof(body as SignUpPayload).firstName    === "string"
+        && typeof(body as SignUpPayload).lastName === "string"
+        && typeof(body as SignUpPayload).email    === "string"
+        && typeof(body as SignUpPayload).password === "string"; // TODO AUTH hash password and add rules for length
 }
 
 const timeoutMinutes = 30;

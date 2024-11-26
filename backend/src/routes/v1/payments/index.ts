@@ -1,41 +1,53 @@
 import { randomUUID } from "crypto";
 import { Router } from "express";
 import { Expense, PaymentConfig, PaymentMethod } from "@common/types/payments";
+import { BadRequestError } from "@errors";
 
 const router = Router();
 
 router.post("/add-payment", (req, res) => {
     const user    = req.userData;
-    const options = req.body.options as PaymentConfig;
+    const options = req.body as PaymentConfig;
 
     // create expense record
     const newExpense = {
         id:          randomUUID(),
         total:       options.total,
         category:    options.category,
+        comment:     options.comment,
         paymentDate: new Date(),
-        comment:     options.comment
     } as Expense;
-    newExpense.method.type = options.method;
+    newExpense.method = options.method; // e.g. CARD or CARD for easy filtering
+
     if(options.method === PaymentMethod.CASH) {
-        newExpense.method.name = options.method;
         user.decreaseCash(newExpense.total);
     } else if(options.method === PaymentMethod.CARD && options.cardOptions) {
-        if(!user.hasCard(options.cardOptions.cardAlias)) { throw new Error(`${options.cardOptions.cardAlias} used to pay doesn't exist in user information.`); }
-        if(options.cardOptions.cardAlias === newExpense.category.alias) { throw new Error(`Can't use ${options.cardOptions.cardAlias} to pay for ${newExpense.category.alias}.`); }
-        newExpense.method.name = options.cardOptions.cardAlias; // e.g. Paid with Tarjeta de Débito NU 4444 1515 3030 1313
-        user.getCard(user.getCardIndex(options.cardOptions.cardAlias)).pay(newExpense.total); // reduce card balance by making a payment
+        // can't use the card to pay its missing balance
+        if(options.cardOptions.alias === newExpense.category.alias) {
+            throw new BadRequestError(`Can't use ${options.cardOptions.cardNumber} to pay for ${newExpense.category.alias}.`);
+        }
+
+        const card = user.getCard(options.cardOptions.cardNumber);
+        if(!card) {
+            throw new BadRequestError(`There is no "${options.cardOptions.cardNumber}" card in the user data.`);
+        }
+
+        card.pay(newExpense.total); // reduce balance from card used for payment
     }
 
-    // check if user paid a card
-    if(user.hasCard(newExpense.category.alias)) {
-        user.getCard(user.getCardIndex(newExpense.category.alias)).addBalance(newExpense.total);
+    // if what the user paid was a card, add balance to that other card
+    if(newExpense.category.isCard && options.cardOptions) {
+        const paidCard = user.getCardByAlias(newExpense.category.alias);
+        if(!paidCard) {
+            throw new BadRequestError(`Can not register a payment against "${newExpense.category.alias}" card since it does not exist in the user data.`);
+        }
+        paidCard.addBalance(newExpense.total);
     }
 
-    // check if user paid a loan
+    /* if what the user paid was a loan, add balance to that loan
     if(user.hasLoan(newExpense.category.alias)) {
         user.getLoan(user.getLoanIndex(newExpense.category.alias)).pay(newExpense.total);
-    }
+    } */
 
     user.addExpense(newExpense);
 

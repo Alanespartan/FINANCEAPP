@@ -1,11 +1,22 @@
 import { Router } from "express";
-import { AvailableCards, CreditCard, DebitCard } from "@cards";
-import { CardOptions, CardTypes, UpdateCardOptions } from "@common/types/cards";
-import { ExpenseCategory } from "@common/types/payments";
 import { randomUUID } from "crypto";
-import { BadRequestError } from "@backend/lib/errors";
-import { User } from "@backend/session/user";
+import {
+    CreateCardPayload,
+    OECardTypesFilters,
+    UpdateCardPayload
+} from "@common/types/cards";
+import { BadRequestError, NotFoundError } from "@errors";
+import { ConvertToUTCTimestamp } from "@backend/utils/functions";
+import { ExpenseCategory } from "@common/types/payments";
 import { getHeaders } from "@backend/utils/requests";
+import { User, Card } from "@entities";
+import {
+    isValidCardFilter,
+    isValidCardType,
+    MapNewToExistingArray
+} from "./functions";
+import { getUserCards, updateCard } from "@entities/cards/functions";
+import DBContextSource from "@db";
 
 const router = Router();
 
@@ -29,7 +40,7 @@ const router = Router();
 *           content:
 *               application/json:
 *                   schema:
-*                       $ref: "#/components/schemas/CardOptions"
+*                       $ref: "#/components/schemas/CreateCardPayload"
 *       responses:
 *           200:
 *               description: An array of cards a user has registered including the recently added.
@@ -38,53 +49,80 @@ const router = Router();
 *                       schema:
 *                           type: array
 *                           items:
-*                               $ref: "#/components/schemas/AvailableCards"
+*                               $ref: "#/components/schemas/ICard"
 *           400:
 *               description: Bad Request Error
 */
-router.post("/", (req, res, next) => {
+router.post("/", async (req, res, next) => {
     try {
         const user    = req.userData;
-        const options = req.body as CardOptions;
+        const options = req.body as CreateCardPayload;
 
         const { cardType } = getHeaders(req,
             [ "cardType", "Expected 'cardType' header was not provided." ]
         );
 
-        let newCard: CreditCard | DebitCard;
-        switch (parseInt(cardType)) {
-            case CardTypes.DEBIT:
-                options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
-                newCard = new DebitCard(options, false);
-                break;
-            case CardTypes.CREDIT:
-                options.alias = `Tarjeta de Crédito ${options.issuer.name} ${options.cardNumber}`;
-                newCard = new CreditCard(options, options.limit ?? 0);
-                break;
-            case CardTypes.VOUCHER:
-                options.alias = `Tarjeta de Débito ${options.issuer.name} ${options.cardNumber}`;
-                newCard = new DebitCard(options, true);
-                break;
-            case CardTypes.SERVICES:
-                options.alias = `Tarjeta de Servicios ${options.issuer.name} ${options.cardNumber}`;
-                newCard = new CreditCard(options, options.limit ?? 0); // Add class for services class (e.g. amex platinum)
-                break;
-            default: throw new BadRequestError("Invalid type for creating a new card.");
+        const parsedType = parseInt(cardType);
+        if(!isValidCardType(parsedType)) {
+            throw new BadRequestError("Invalid type for creating a new card.");
         }
 
-        // add card to user array of cards
-        user.addCard(newCard);
+        // normalizing the card number by removing white spaces
+        options.cardNumber = options.cardNumber.replace(/\s+/g, "");
+        // remove any whitespace and then validate the cardNumber contains only numbers
+        if( !( /^[0-9]+$/.test(options.cardNumber) ) ) {
+            throw new BadRequestError(`Invalid card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
+        }
+        // avoid creating a duplicate if a card with the given card number already exists
+        if(user.cards.find((c) => c.cardNumber === options.cardNumber)) {
+            throw new BadRequestError(`A card with the "${options.cardNumber}" number already exists.`);
+        }
+
+        const newCard = new Card(options, parsedType, user);
+
+        switch (parsedType) {
+            case OECardTypesFilters.DEBIT:
+                if(options.limit) {
+                    throw new BadRequestError("A debit card can't have a limit.");
+                }
+                if(options.isVoucher) {
+                    newCard.setIsVoucher(true);
+                }
+                break;
+            case OECardTypesFilters.CREDIT:
+                if(!options.limit) {
+                    throw new BadRequestError("No limit value was given to create the new credit card.");
+                }
+                if(options.limit <= 0) {
+                    throw new BadRequestError("Can't set the limit of a credit card to have a value of less or equal to 0.");
+                }
+                if(options.isVoucher) {
+                    throw new BadRequestError("A credit card can't be categorized as a voucher card.");
+                }
+                newCard.setLimit(options.limit);
+                break;
+            case OECardTypesFilters.SERVICES:
+                // services extra logic here
+                break;
+        }
+
+        // save new card in db
+        await DBContextSource.manager.save(newCard);
+        // save new card in server cache
+        const mapped = MapNewToExistingArray(newCard);
+        user.addCard(mapped);
 
         // create expense category using card alias
         // so we can register when paying "TO A CARD"
         user.addCategory({
             id:        randomUUID(),
-            alias:     newCard.getAlias(),
+            alias:     newCard.getName(),
             isDefault: false
         } as ExpenseCategory);
 
-        const cards: AvailableCards[] = user.getCards(CardTypes.ALL);
-        return res.status(200).json(cards);
+        const data = user.getCards(OECardTypesFilters.ALL);
+
+        return res.status(200).json(data);
     } catch(error) { return next(error); }
 });
 
@@ -109,11 +147,11 @@ router.post("/", (req, res, next) => {
 *                       schema:
 *                           type: array
 *                           items:
-*                               $ref: "#/components/schemas/AvailableCards"
+*                               $ref: "#/components/schemas/ICard"
 *           400:
 *               description: Bad Request Error
 */
-router.get("/", (req, res, next) => {
+router.get("/", async (req, res, next) => {
     try {
         const user: User = req.userData;
         const cardType = req.query.cardType; // by default is always "ALL" cards (if not modified by user in the front end)
@@ -122,65 +160,157 @@ router.get("/", (req, res, next) => {
             throw new BadRequestError("No card type filter was given in the correct format.");
         }
 
-        const filterBy = cardType ? parseInt(cardType) : CardTypes.ALL; // Default get all
-        if(!(filterBy in CardTypes)) {
+        // If no cardType given, default is to get all
+        const filterBy = cardType ? parseInt(cardType) : OECardTypesFilters.ALL;
+        if(!isValidCardFilter(filterBy)) {
             throw new BadRequestError("Invalid type for filtering cards.");
         }
 
-        const cards: AvailableCards[] = user.getCards(filterBy);
-        return res.status(200).json(cards);
+        // get data from db
+        const cards = await getUserCards(user.id);
+        // update cached data for future operations
+        user.cards = [];
+        user.cards = cards;
+
+        if(filterBy === OECardTypesFilters.ALL) {
+            return res.status(200).json(cards);
+        } else {
+            return res.status(200).json(cards.filter((card) => card.type === filterBy));
+        }
     } catch(error) { return next(error); }
 });
 
-router.post("/delete-card/:alias", (req, res) => {
-    const user  = req.userData;
-    const alias = req.params.alias;
+/**
+* @swagger
+* /api/v1/cards/{cardNumber}:
+*   put:
+*       summary: Update user card
+*       description: From a given card number, fetch the desired card and apply all the updates that appear in the payload configuration.
+*       tags:
+*           - Cards
+*       parameters:
+*           - in: path
+*             name: cardNumber
+*             schema:
+*               type: string
+*               description: The current card number assigned to the desired card to update.
+*       requestBody:
+*           description: Payload that includes all the desired updates for the given card.
+*           required: true
+*           content:
+*               application/json:
+*                   schema:
+*                       $ref: "#/components/schemas/UpdateCardPayload"
+*       responses:
+*           200:
+*               description: A JSON representation of the updated card.
+*               content:
+*                   application/json:
+*                       schema:
+*                           $ref: "#/components/schemas/ICard"
+*           400:
+*               description: Bad Request Error
+*           404:
+*               description: Not Found Error
+*/
+router.put("/:cardNumber", async (req, res, next) => {
+    try {
+        const user       = req.userData;
+        const cardNumber = req.params.cardNumber.replace(/\s+/g, ""); // normalizing the given card number by removing white spaces
+        const options    = req.body as UpdateCardPayload;
 
-    if(!user.hasCard(alias) || !user.hasCategory(alias)) { throw new Error(`${alias} doesn't exist.`); }
+        /* CARD TO UPDATE */
+        // the given cardNumber to update contains only numbers
+        if( !( /^[0-9]+$/.test(cardNumber) ) ) {
+            throw new BadRequestError(`Invalid card number "${cardNumber}". A card number can not contain non numeric chars.`);
+        }
 
-    user.removeCard(user.getCardIndex(alias));
-    user.removeCategory(user.getCategoryIndex(alias)); // once card is deleted, remove related category
+        // a card with the given card number exists to be updated
+        if(!user.hasCard(cardNumber)) {
+            throw new NotFoundError(`There is no "${cardNumber}" card to update.`);
+        }
 
-    return res.status(200);
-});
+        let cardNumberToReturn = cardNumber;
+        /* NEW CARD NUMBER */
+        if(options.cardNumber) {
+            // normalizing the given card number by removing white spaces
+            options.cardNumber = options.cardNumber.replace(/\s+/g, "");
 
-router.post("/update-information/:alias", (req, res) => {
-    const user    = req.userData;
-    const alias   = req.params.alias;
-    const options = req.body.newInfo as UpdateCardOptions;
+            // the new cardNumber contains only numbers
+            if(!( /^[0-9]+$/.test(options.cardNumber) )) {
+                throw new BadRequestError(`Invalid new card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
+            }
 
-    if(!user.hasCard(alias) || !user.hasCategory(alias)) { throw new Error(`${alias} doesn't exist.`); }
+            // avoid creating a duplicate if a card with the new card number already exists
+            if(user.hasCard(options.cardNumber)) {
+                throw new BadRequestError(`A card with the "${options.cardNumber}" number already exists.`);
+            }
 
-    const card     = user.getCard(user.getCardIndex(alias));
-    const category = user.getCategory(user.getCategoryIndex(alias)); // use current alias to get existing category
+            cardNumberToReturn = options.cardNumber; // to know what card number to search for when returning json data
+        }
 
-    card.setCardNumber(options.cardNumber);
-    card.setExpiryDate(options.expires);
+        /* CARD EXPIRATION DATE */
+        if(options.expires) {
+            // using UTC function for correct timestamp comparision
+            if(ConvertToUTCTimestamp(options.expires) < ConvertToUTCTimestamp(new Date())) {
+                throw new BadRequestError(`New expiration date "${options.expires}" can't be less than today's date.`);
+            }
+        }
 
-    if(options.alias) {
-        card.setAlias(options.alias);
-    } else {
-        options.alias = `Tarjeta de ${card instanceof CreditCard ? "Crédito" : "Débito"} ${card.getIssuerName()} ${options.cardNumber}`;
-        card.setAlias(options.alias);
-    }
+        /* CARD TYPE */
+        let typeModified = false;
+        if(options.type) {
+            typeModified = true;
+            if(!isValidCardType(options.type)) {
+                throw new BadRequestError(`Invalid card type: "${options.type}" given for updating "${cardNumber}" card.`);
+            }
 
-    category.alias = card.getAlias(); // once card is updated, modify related category
+            // if new type is debit card
+            if(options.type === OECardTypesFilters.DEBIT) {
+                // ensure no limit was sent in the payload
+                if(options.limit) {
+                    throw new BadRequestError(`Can't update the limit of "${cardNumber}" card if it's going to be a Debit Card.`);
+                }
+            }
 
-    return res.status(200);
-});
+            // if new type is credit card
+            if(options.type === OECardTypesFilters.CREDIT) {
+                // ensure a limit was sent in the payload
+                if(!options.limit) {
+                    throw new BadRequestError(`No limit value was provided for updating "${cardNumber}" card to be a Credit Card.`);
+                }
 
-router.post("/update-limit/:alias", (req, res) => {
-    const user     = req.userData;
-    const alias    = req.params.alias;
-    const current  = req.body.current;
-    const newLimit = req.body.newLimit;
+                if(options.limit <= 0) {
+                    throw new BadRequestError("Can't set the limit of a credit card to have a value of less or equal to 0.");
+                }
+            }
 
-    if(!user.hasCard(alias)) { throw new Error(`${alias} doesn't exist.`); }
+            // TODO CARD if new type is service card add constraints (e.g. AMEX PLATINUM no limit)
+        }
 
-    const card = user.getCard(user.getCardIndex(alias)) as CreditCard;
-    card.increaseLimit(current - newLimit);
+        /* LIMIT */
+        if(options.limit && !typeModified) {
+            // if user wants to set a limit to the given card to update but its not a credit card
+            if(user.getCardType(cardNumber) !== OECardTypesFilters.CREDIT) {
+                throw new BadRequestError("Can't modify the limit attribute of a non credit card.");
+            }
+            // if the new limit of a credit card is less or equal to 0
+            if(options.limit <= 0) {
+                throw new BadRequestError("Can't modify the limit of a credit card to have a value of less or equal to 0.");
+            }
+        }
 
-    return res.status(200);
+        // update card data in db
+        await updateCard(user.getCardId(cardNumber), options);
+
+        // get updated data from db
+        const cards = await getUserCards(user.id);
+        // update cached data for future operations
+        user.cards = [];
+        user.cards = cards;
+
+        return res.status(200).json(cards.find((card) => card.getCardNumber() === cardNumberToReturn));
+    } catch(error) { return next(error); }
 });
 
 export default router;
