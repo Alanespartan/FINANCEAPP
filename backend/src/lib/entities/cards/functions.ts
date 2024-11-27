@@ -13,7 +13,7 @@ export async function getByCardNumber(cardNumber: string) {
 export async function getByBank(bankId: number) {
     return await cardStore.find({
         where: {
-            issuer: {
+            bank: {
                 id: bankId
             }
         }
@@ -23,7 +23,7 @@ export async function getByBank(bankId: number) {
 export async function getUserCards(userId: number) {
     return await cardStore.find({
         where: {
-            owner: {
+            user: {
                 id: userId
             }
         }
