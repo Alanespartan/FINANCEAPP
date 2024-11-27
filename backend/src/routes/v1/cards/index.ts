@@ -1,19 +1,17 @@
 import { Router } from "express";
-import { randomUUID } from "crypto";
 import {
     CreateCardPayload,
     OECardTypesFilters,
     UpdateCardPayload
 } from "@common/types/cards";
+import { CreateExpenseTypePayload, ETypesOfExpense } from "@common/types/expenses";
 import { BadRequestError, NotFoundError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
-import { ExpenseCategory } from "@common/types/payments";
+import { User, Card, ExpenseType } from "@entities";
 import { getHeaders } from "@backend/utils/requests";
-import { User, Card } from "@entities";
 import {
     isValidCardFilter,
-    isValidCardType,
-    MapNewToExistingArray
+    isValidCardType
 } from "./functions";
 import { getUserCards, updateCard } from "@entities/cards/functions";
 import DBContextSource from "@db";
@@ -78,7 +76,7 @@ router.post("/", async (req, res, next) => {
             throw new BadRequestError(`A card with the "${options.cardNumber}" number already exists.`);
         }
 
-        const newCard = new Card(options, parsedType, user);
+        const newCard = new Card(options, parsedType, user.id);
 
         switch (parsedType) {
             case OECardTypesFilters.DEBIT:
@@ -108,21 +106,23 @@ router.post("/", async (req, res, next) => {
 
         // save new card in db
         await DBContextSource.manager.save(newCard);
-        // save new card in server cache
-        const mapped = MapNewToExistingArray(newCard);
-        user.addCard(mapped);
+        // get updated data from db (otherwise we don't know the new card id)
+        const cards = await getUserCards(user.id);
+        // update cached data for future get operations
+        user.cards = [];
+        user.cards = cards;
 
         // create expense category using card alias
         // so we can register when paying "TO A CARD"
-        user.addCategory({
-            id:        randomUUID(),
-            alias:     newCard.getName(),
-            isDefault: false
-        } as ExpenseCategory);
+        const newCardExpenseType = new ExpenseType({
+            name: newCard.getName(),
+            type: ETypesOfExpense.CARD,
+            instrumentId: cards.find((c) => c.getCardNumber() === newCard.getCardNumber())?.getId()
+        } as CreateExpenseTypePayload, user.id);
+        user.addExpenseType(newCardExpenseType);
+        await DBContextSource.manager.save(newCardExpenseType);
 
-        const data = user.getCards(OECardTypesFilters.ALL);
-
-        return res.status(200).json(data);
+        return res.status(200).json(cards);
     } catch(error) { return next(error); }
 });
 

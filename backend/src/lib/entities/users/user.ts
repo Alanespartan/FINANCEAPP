@@ -200,15 +200,6 @@ export class User implements IUser {
     public getExpenseTypes() {
         return this.expenseTypes;
     }
-    /**
-    * Delete expense category from user data.
-    * @param {number} index Array index of the selected expense category.
-    */
-    public removeCategory(index: number) {
-        if(index < this.expenseCategories.length || index > this.expenseCategories.length) { throw new Error("Category index out of bounds."); }
-        const deleted = this.expenseCategories.splice(index, 1);
-        console.log("The following expense category was deleted correctly: " + deleted[0].alias);
-    }
 
     /*---------------- EXPENSES ----------------*/
     public addExpense(expense: Expense) {
