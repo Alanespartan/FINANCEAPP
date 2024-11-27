@@ -1,26 +1,11 @@
 import { SimpleCardOptions } from "types/cards";
 
-/** What type of object the user is paying for.
- * Credit/Debit cards are a category
- * Loans are a category
- * Suscriptions are a category
- * */
-export interface ExpenseCategory {
-    id: string;
-    alias: string; // e.g. Gas - Trips - Gifts - Delivery - Gaming - NU CARD 4444 1515 3030 1313
-    description?: string;
-    /** If user creates a new expense category is false, otherwise it was created automatically during user account creation.  */
-    isDefault: boolean;
-    /** If the expense category is a card */
-    isCard: boolean;
-}
-
 /** Used to define a payment done by the user and send it to the server. */
 export interface PaymentConfig {
     /** How much is the user paying. */
     total: number;
     /** What the user is paying for. */
-    category: ExpenseCategory;
+    category: 1;
     /** If it was paid with a cash or card. */
     method: PaymentMethod;
     /** In case payment was done with a card, we have this attribute to get the card basic details. */
@@ -35,7 +20,7 @@ export interface Expense {
     /** How much money was paid. */
     total: number;
     /** What was paid for. */
-    category: ExpenseCategory;
+    category: 1;
     /** If it was paid with cash or card.  */
     method: PaymentMethod;
     /** When they payment was done. */
