@@ -19,7 +19,7 @@ export class Card implements ICard {
     public name!: string;
     @Column({ type: "bigint" })
     public expires!: number;
-    @Column({ type: "double" })
+    @Column({ type: "real" }) // 6 decimal digits precision
     public balance!: number;
     @Column()
     public type!: TCardTypes;
