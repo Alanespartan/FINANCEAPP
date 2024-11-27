@@ -1,5 +1,37 @@
+/**
+* @swagger
+* components:
+*   schemas:
+*       TAvailableExpenseTypes:
+*           type: integer
+*           description: A multi-option type representing all the available card types a user can create.
+*           enum: [0, 1, 2, 3]
+*           x-enum-varnames: [REALEXPENSE, CARD, LOAN, SAVINGS]
+*           properties:
+*               0:
+*                   description: If what you are paying is a real expense (e.g: Gas - Dates - Trip).
+*               1:
+*                   description: If what you are paying is a card.
+*               2:
+*                   description: If what you are paying is a loan.
+*               3:
+*                   description: If you're adding money to a savings account.
+*/
+/** Object Enum representing all the possible expense types a user can have. */
+export const ETypesOfExpense = {
+    /** If what you are paying is a real expense (e.g: Gas - Dates - Trip) */
+    REALEXPENSE: 0,
+    /** If what you are paying is a card */
+    CARD:        1,
+    /** If what you are paying is a loan */
+    LOAN:        2,
+    /** If you're adding money to a savings account */
+    SAVINGS:     3
+} as const;
+export type TAvailableExpenseTypes = typeof ETypesOfExpense[keyof typeof ETypesOfExpense];
+
 /** What type of object the user is paying for. This feature can be similar to a "Tag", it also helps for grouping expenses by type.
-* * Each Credit/Debit cards are a category
+* * Each Card has a category
 * * Each Loan has a category
 * * Each Savings Account has a category
 * * A user can create as many type as he wants.
@@ -9,13 +41,14 @@ export interface IExpenseType {
     id: number;
     /** e.g. Gas - Trips - Gifts - Delivery - Gaming */
     name: string;
-    /** Part 1/2 of DB Unique ID - Depending on the type we refer to a Card, Loan, Saving Account, Real Expense */
-    type: number;
-    /** Part 2/2 of DB Unique ID - Can be DB cardId, loanId, savingId or realExpenseId */
-    instrumentId: number;
+    /** Depending on the type we refer to a Card, Loan, Saving Account, Real Expense */
+    type: TAvailableExpenseTypes;
     archived: boolean;
     /** DB Foreign Key - User ID */
     userId: number;
+
+    /** Can be DB cardId, loanId, savingId or null if type is Real Expense */
+    instrumentId?: number;
 }
 
 /** Used to store the information of a payment. */
@@ -39,8 +72,13 @@ export interface IExpense {
 /* - Basic Representation of Classes */
 /*************************************/
 
-/** Interface that defines all the attributes the payload for creating a new user card needs. */
+/** Interface that defines all the attributes the payload for creating a new user Expense Type needs. */
 export interface CreateExpenseTypePayload {
-    issuerId: number;
-    balance: number;
+    /** e.g. Gas - Trips - Gifts - Delivery - Gaming */
+    name: string;
+    /** Depending on the type we refer to a Card, Loan, Saving Account, Real Expense */
+    type: TAvailableExpenseTypes;
+
+    /** Can be DB cardId, loanId, savingId or null if type is Real Expense */
+    instrumentId?: number;
 }

@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, Unique, ManyToOne, JoinColumn, Index } from "typeorm";
-import { IExpenseType, CreateExpenseTypePayload } from "@common/types/expenses";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from "typeorm";
+import { IExpenseType, CreateExpenseTypePayload, TAvailableExpenseTypes } from "@common/types/expenses";
 import { User } from "@entities";
 
 /* TypeScript and TypeORM Custom Attributes Explanation */
@@ -7,7 +7,6 @@ import { User } from "@entities";
 // @Index is used when querying by certain "field" is frequent, and adding database indexes improves performance
 
 @Entity()
-@Unique([ "type", "instrumentId" ]) // Composite unique key
 export class ExpenseType implements IExpenseType {
     @PrimaryGeneratedColumn()
     public readonly id!: number;
@@ -17,9 +16,9 @@ export class ExpenseType implements IExpenseType {
     public archived!: boolean;
 
     @Column()
-    public type!: number; // TODO EXPENSE CATEGORY create type to handle card, loan, savings, etc
-    @Column()
-    public instrumentId!: number;
+    public type!: TAvailableExpenseTypes;
+    @Column({ nullable: true })
+    public instrumentId?: number;
 
     // Many-to-One relationship: An expense category belongs to one user, but a user can have many categories
     @ManyToOne(() => User, (user) => user.expenseTypes, { nullable: false })
@@ -30,9 +29,18 @@ export class ExpenseType implements IExpenseType {
     public userId!: number; // Explicitly define the foreign key column
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
-    public constructor(options?: CreateExpenseTypePayload) {
-        if(options) {
-            // TODO EXPENSE CATEGORY create pyaload for create operation
+    public constructor(options?: CreateExpenseTypePayload, userId?: number) {
+        if(options && userId) {
+            // FROM PAYLOAD
+            this.name = options.name;
+            this.type = options.type;
+
+            // RELATIONSHIP ATTRIBUTES
+            this.instrumentId = options.instrumentId;
+            this.userId = userId;
+
+            // DEFAULT ATTRIBUTES
+            this.archived = false;
         }
     }
 }
