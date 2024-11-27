@@ -19,7 +19,7 @@
 *       TCardTypes:
 *           type: integer
 *           description: A multi-option type representing all the available card types a user can create.
-*           enum: [0, 1, 2, 3]
+*           enum: [1, 2, 3]
 *           x-enum-varnames: [ALL, DEBIT, CREDIT, SERVICES]
 *           properties:
 *               1:

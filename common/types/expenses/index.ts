@@ -4,12 +4,12 @@
 *   schemas:
 *       TAvailableExpenseTypes:
 *           type: integer
-*           description: A multi-option type representing all the available card types a user can create.
+*           description: A multi-option type representing all the available Expense Types a user can create.
 *           enum: [0, 1, 2, 3]
-*           x-enum-varnames: [REALEXPENSE, CARD, LOAN, SAVINGS]
+*           x-enum-varnames: [ALL, DEBIT, CREDIT, SERVICES]
 *           properties:
 *               0:
-*                   description: If what you are paying is a real expense (e.g: Gas - Dates - Trip).
+*                   description: If what you are paying is a real expense (e.g. Gas - Dates - Trip)
 *               1:
 *                   description: If what you are paying is a card.
 *               2:
