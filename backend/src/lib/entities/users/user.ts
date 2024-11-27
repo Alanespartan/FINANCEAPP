@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { Logger } from "@common/types/logger";
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, Unique } from "typeorm";
 import { Expense } from "@common/types/payments";
 import { CreateLoanPayload } from "@common/types/loans";
 import { Card, Loan, ExpenseType }   from "@entities";
-import { IUser }        from "@common/types/users";
+import { IUser } from "@common/types/users";
 import { TCardFilters, TCardTypes } from "@common/types/cards";
 import { CreateExpenseTypePayload, ETypesOfExpense } from "@common/types/expenses";
 
