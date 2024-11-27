@@ -28,9 +28,49 @@ export const ETypesOfExpense = {
     /** If you're adding money to a savings account */
     SAVINGS:     3
 } as const;
+/** Depending on the type we refer to a Real Expense (0), Card (1), Loan (2) or Saving Account (3) */
 export type TAvailableExpenseTypes = typeof ETypesOfExpense[keyof typeof ETypesOfExpense];
 
-/** What type of object the user is paying for. This feature can be similar to a "Tag", it also helps for grouping expenses by type.
+/**
+* @swagger
+* components:
+*   schemas:
+*       IExpenseType:
+*           type: object
+*           description: What type of object the user is paying for. This feature can be similar to a "Tag", it also helps for grouping expenses by type.
+*           properties:
+*               id:
+*                   type: number
+*                   example: 1
+*                   description: DB Primary Key
+*               name:
+*                   type: string
+*                   example: Gaming
+*               type:
+*                   $ref: "#/components/schemas/TAvailableExpenseTypes"
+*               archived:
+*                   type: boolean
+*                   example: false
+*               userId:
+*                   type: number
+*                   format: integer
+*                   example: 1
+*                   description: DB Foreign Key - User ID
+*               instrumentId:
+*                   type: number
+*                   format: integer
+*                   example: 1
+*                   description: Can be DB cardId, loanId, savingId or undefined if type is Real Expense
+*           required:
+*               - id
+*               - name
+*               - type
+*               - archived
+*               - userId
+*/
+/** Interface used to have a representation of all attributes within the Expense Type Class
+*
+* This interface can be similar to a "Tag", since it also helps for grouping expenses by type.
 * * Each Card has a category
 * * Each Loan has a category
 * * Each Savings Account has a category
@@ -51,7 +91,7 @@ export interface IExpenseType {
     instrumentId?: number;
 }
 
-/** Used to store the information of a payment. */
+/** Interface used to have a representation of all attributes within the Expense Class */
 export interface IExpense {
     /** DB id */
     id: string;
@@ -72,6 +112,27 @@ export interface IExpense {
 /* - Basic Representation of Classes */
 /*************************************/
 
+/**
+* @swagger
+* components:
+*   schemas:
+*       CreateExpenseTypePayload:
+*           type: object
+*           properties:
+*               name:
+*                   type: string
+*                   example: Gaming
+*               type:
+*                   $ref: "#/components/schemas/TAvailableExpenseTypes"
+*               instrumentId:
+*                   type: number
+*                   format: integer
+*                   example: 1
+*                   description: Can be DB cardId, loanId, savingId or undefined if type is Real Expense
+*           required:
+*               - name
+*               - type
+*/
 /** Interface that defines all the attributes the payload for creating a new user Expense Type needs. */
 export interface CreateExpenseTypePayload {
     /** e.g. Gas - Trips - Gifts - Delivery - Gaming */

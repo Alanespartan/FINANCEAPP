@@ -44,6 +44,9 @@ const JSDocsOptions = {
         // USERS
         "../common/types/users/*.ts",
 
+        // EXPENSES
+        "../common/types/expenses/*.ts",
+
         // OTHERS
         "../common/types/*.ts"
     ]
