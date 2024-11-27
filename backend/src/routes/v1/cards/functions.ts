@@ -24,7 +24,7 @@ export function MapNewToExistingArray(newCard: Card) {
         archived:   newCard.getArchived(),
         limit:      newCard.getCardType() === OECardTypesFilters.CREDIT ? newCard.getLimit() : null,
         isVoucher:  newCard.getIsVoucher(),
-        ownerId:    newCard.ownerId,
-        issuerId:   newCard.issuerId,
+        userId:     newCard.userId,
+        bankId:     newCard.bankId,
     } as Card;
 }
