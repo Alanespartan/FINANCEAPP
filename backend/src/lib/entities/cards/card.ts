@@ -7,6 +7,7 @@ import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 /* TypeScript and TypeORM Custom Attributes Explanation */
 // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
 // @Index is used when querying by certain "field" is frequent, and adding database indexes improves performance
+// onDelete: "CASCADE" - When parent entity is deleted, related objects will be deleted too
 
 @Entity()
 @Unique([ "cardNumber" ]) // This creates a unique constraint on the cardNumber column
@@ -31,16 +32,21 @@ export class Card implements ICard {
     public isVoucher?: boolean;
 
     // Many-to-One relationship: A card belongs to one user, but a user can have many cards
-    @ManyToOne(() => User, (user) => user.cards, { nullable: false })
+    @ManyToOne(() => User, (user) => user.cards, {
+        nullable: false,
+        onDelete: "CASCADE"
+    })
     @JoinColumn({ name: "userId" }) // Explicitly map the foreign key column
     @Index()
     public user!: User;
     @Column()
     public userId!: number; // Explicitly define the foreign key column
 
-    // Many-to-One relationship: A card is issued by one bank
-    // There is only nagivation from card to bank, bank class does not know the relationship with card (missing One-to-Many relationship)
-    @ManyToOne(() => Bank, (bank) => bank.id, { nullable: false })
+    // Many-to-One relationship: A card is issued by one bank, but a bank can have many issued cards
+    @ManyToOne(() => Bank, (bank) => bank.cards, {
+        nullable: false,
+        onDelete: "CASCADE"
+    })
     @JoinColumn({ name: "bankId" }) // Explicitly map the foreign key column
     public bank!: Bank;
     @Column()
