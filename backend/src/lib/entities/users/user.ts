@@ -44,7 +44,7 @@ export class User implements IUser {
     @OneToMany(() => ExpenseType, (expenseType) => expenseType.user, {
         eager: true
     })
-    public expenseTypes: ExpenseType[] = [];
+    public expenseTypes!: ExpenseType[];
 
     public expenses: Expense[] = [];
     public incomes: any[] = []; // todo create interface
@@ -52,17 +52,19 @@ export class User implements IUser {
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
     constructor(email?: string, password?: string, firstName?: string, lastName?: string) {
         if(email && password && firstName && lastName) {
-            // USE DATA
+            // FROM PAYLOAD
             this.email     = email;
             this.password  = password;
             this.firstName = firstName;
             this.lastName  = lastName;
-            // USER FINANCE STUFF
+
+            // DEFAULT ATTRIBUTES
             this.cash     = 0;
             this.cards    = [];
             this.expenses = [];
             this.loans    = [];
             this.incomes  = [];
+            this.expenseTypes = [];
 
             // create "Other" expense category
             // so we can register when motive of payment is "Other" or "Unknown"
