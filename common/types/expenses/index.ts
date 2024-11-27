@@ -41,13 +41,13 @@ export interface IExpenseType {
     id: number;
     /** e.g. Gas - Trips - Gifts - Delivery - Gaming */
     name: string;
-    /** Depending on the type we refer to a Card, Loan, Saving Account, Real Expense */
+    /** Depending on the type we refer to a Real Expense (0), Card (1), Loan (2) or Saving Account (3) */
     type: TAvailableExpenseTypes;
     archived: boolean;
     /** DB Foreign Key - User ID */
     userId: number;
 
-    /** Can be DB cardId, loanId, savingId or null if type is Real Expense */
+    /** Can be DB cardId, loanId, savingId or undefined if type is Real Expense */
     instrumentId?: number;
 }
 
@@ -76,9 +76,9 @@ export interface IExpense {
 export interface CreateExpenseTypePayload {
     /** e.g. Gas - Trips - Gifts - Delivery - Gaming */
     name: string;
-    /** Depending on the type we refer to a Card, Loan, Saving Account, Real Expense */
+    /** Depending on the type we refer to a Real Expense (0), Card (1), Loan (2) or Saving Account (3) */
     type: TAvailableExpenseTypes;
 
-    /** Can be DB cardId, loanId, savingId or null if type is Real Expense */
+    /** Can be DB cardId, loanId, savingId or undefined if type is Real Expense */
     instrumentId?: number;
 }

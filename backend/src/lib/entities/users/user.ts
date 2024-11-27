@@ -3,10 +3,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, Unique } from "typeorm";
 import { Expense } from "@common/types/payments";
 import { CreateLoanPayload } from "@common/types/loans";
-import { randomUUID }   from "crypto";
 import { Card, Loan, ExpenseType }   from "@entities";
 import { IUser }        from "@common/types/users";
 import { TCardFilters, TCardTypes } from "@common/types/cards";
+import { CreateExpenseTypePayload, ETypesOfExpense } from "@common/types/expenses";
 
 /* TypeScript and TypeORM Custom Attributes Explanation */
 // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
@@ -63,14 +63,14 @@ export class User implements IUser {
             this.expenses = [];
             this.loans    = [];
             this.incomes  = [];
-            // CUSTOM USER EXPERIENCE
-            this.expenseCategories = [
-                {
-                    id:        randomUUID(),
-                    alias:     "Other",
-                    isDefault: true
-                } as ExpenseCategory
-            ];
+
+            // create "Other" expense category
+            // so we can register when motive of payment is "Other" or "Unknown"
+            const ExpenseTypeOptions = {
+                name: "Other",
+                type: ETypesOfExpense.REALEXPENSE
+            } as CreateExpenseTypePayload;
+            this.addExpenseType(new ExpenseType(ExpenseTypeOptions, this.id));
         }
     }
 
@@ -179,26 +179,26 @@ export class User implements IUser {
     }
 
 
-    /*---------------- CATEGORIES ----------------*/
+    /*---------------- EXPENSE TYPES ----------------*/
     /**
     * Save a new expense category in user information.
-    * @param {ExpenseCategory} newCategory Contains information of new expense category.
+    * @param {ExpenseType} newExpenseType Contains information of new expense category.
     */
-    public addCategory(newCategory: ExpenseCategory) {
-        this.expenseCategories.push(newCategory);
+    public addExpenseType(newExpenseType: ExpenseType) {
+        this.expenseTypes.push(newExpenseType);
     }
     /**
-    * Helper function that obtains the desired expense category using it's alias.
-    * @param {string} alias Expense category alias to search for.
+    * Helper function that obtains the desired expense type.
+    * @param {string} name Expense type name to search for.
     */
-    public getCategory(alias: string) {
-        return this.expenseCategories.find((ec) => ec.alias === alias);
+    public getExpenseType(name: string) {
+        return this.expenseTypes.find((ec) => ec.name === name);
     }
     /**
-    * Get all stored user expense categories.
+    * Get all stored user expense types.
     */
-    public getCategories() {
-        return this.expenseCategories;
+    public getExpenseTypes() {
+        return this.expenseTypes;
     }
     /**
     * Delete expense category from user data.
