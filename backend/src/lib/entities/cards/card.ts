@@ -4,14 +4,17 @@ import { User, Bank } from "@entities";
 import { BadRequestError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 
+/* TypeScript and TypeORM Custom Attributes Explanation */
+// Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
+// @Index is used when querying by certain "field" is frequent, and adding database indexes improves performance
+
 @Entity()
 @Unique([ "cardNumber" ]) // This creates a unique constraint on the cardNumber column
 export class Card implements ICard {
-    // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
-    @PrimaryGeneratedColumn() // id
+    @PrimaryGeneratedColumn()
     public readonly id!: number;
     @Column()
-    public cardNumber!: string;  // unique key
+    public cardNumber!: string;
     @Column()
     public name!: string;
     @Column({ type: "bigint" })
@@ -28,33 +31,37 @@ export class Card implements ICard {
     public isVoucher?: boolean;
 
     // Many-to-One relationship: A card belongs to one user, but a user can have many cards
-    // Since querying by owner is frequent, adding database indexes to improve performance
     @ManyToOne(() => User, (user) => user.cards, { nullable: false })
-    @JoinColumn({ name: "ownerId" }) // Explicitly map the foreign key column
+    @JoinColumn({ name: "userId" }) // Explicitly map the foreign key column
     @Index()
-    public owner!: User;
+    public user!: User;
     @Column()
-    public ownerId!: number; // Explicitly define the foreign key column
+    public userId!: number; // Explicitly define the foreign key column
 
     // Many-to-One relationship: A card is issued by one bank
     // There is only nagivation from card to bank, bank class does not know the relationship with card (missing One-to-Many relationship)
     @ManyToOne(() => Bank, (bank) => bank.id, { nullable: false })
-    @JoinColumn({ name: "issuerId" }) // Explicitly map the foreign key column
-    public issuer!: Bank;
+    @JoinColumn({ name: "bankId" }) // Explicitly map the foreign key column
+    public bank!: Bank;
     @Column()
-    public issuerId!: number; // Explicitly define the foreign key column
+    public bankId!: number; // Explicitly define the foreign key column
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
-    public constructor(options?: CreateCardPayload, type?: TCardTypes, owner?: User) {
-        if(options && type && owner) {
-            this.owner      = owner;
-            this.cardNumber = options.cardNumber;
-            this.issuerId   = options.issuerId;
-            this.balance    = options.balance;
+    public constructor(options?: CreateCardPayload, type?: TCardTypes, userId?: number) {
+        if(options && type && userId) {
+            // FROM PAYLOAD
             this.name       = options.name ?? `Tarjeta ${options.cardNumber}`;
-            this.type       = type;
-            this.archived   = false;
+            this.cardNumber = options.cardNumber;
+            this.balance    = options.balance;
             this.expires    = ConvertToUTCTimestamp(options.expires);
+            this.type       = type;
+
+            // RELATIONSHIP ATTRIBUTES
+            this.userId = userId;
+            this.bankId = options.bankId;
+
+            // DEFAULT ATTRIBUTES
+            this.archived = false;
         }
     }
 
@@ -101,7 +108,7 @@ export class Card implements ICard {
     }
 
     public getIssuerName() {
-        return this.issuer.name;
+        return this.bank.name;
     }
 
     public setCardType(type: TCardTypes) {

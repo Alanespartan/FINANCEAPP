@@ -5,17 +5,17 @@
 * * A user can create as many type as he wants.
 * */
 export interface IExpenseType {
-    /** DB id */
+    /** DB Primary Key */
     id: number;
     /** e.g. Gas - Trips - Gifts - Delivery - Gaming */
     name: string;
-    /** Card, Loan, Saving Account, Real Expense */
+    /** Part 1/2 of DB Unique ID - Depending on the type we refer to a Card, Loan, Saving Account, Real Expense */
     type: number;
-    /** DB cardId, loanId, savingId, expenseId */
+    /** Part 2/2 of DB Unique ID - Can be DB cardId, loanId, savingId or realExpenseId */
     instrumentId: number;
-    /** User ID */
-    ownerId: number;
     archived: boolean;
+    /** DB Foreign Key - User ID */
+    userId: number;
 }
 
 /** Used to store the information of a payment. */

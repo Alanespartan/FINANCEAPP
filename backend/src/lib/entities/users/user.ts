@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { Logger } from "@common/types/logger";
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, Unique } from "typeorm";
 import { Expense } from "@common/types/payments";
 import { CreateLoanPayload } from "@common/types/loans";
 import { randomUUID }   from "crypto";
@@ -8,7 +8,12 @@ import { Card, Loan, ExpenseType }   from "@entities";
 import { IUser }        from "@common/types/users";
 import { TCardFilters, TCardTypes } from "@common/types/cards";
 
+/* TypeScript and TypeORM Custom Attributes Explanation */
+// Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
+// eager: true - When user is fetched, typeorm will automatically fetch all the attached objects
+
 @Entity()
+@Unique([ "email" ]) // This creates a unique constraint on the email column
 export class User implements IUser {
     @PrimaryGeneratedColumn()
     public readonly id!: number;
@@ -24,19 +29,19 @@ export class User implements IUser {
     public cash!: number;
 
     // One-to-Many relationship: A user can have many cards
-    @OneToMany(() => Card, (card) => card.owner, {
+    @OneToMany(() => Card, (card) => card.user, {
         eager: true
     })
     public cards!: Card[];
 
     // One-to-Many relationship: A user can have many cards
-    @OneToMany(() => Loan, (loan) => loan.owner, {
+    @OneToMany(() => Loan, (loan) => loan.user, {
         eager: true
     })
     public loans!: Loan[];
 
     // One-to-Many relationship: A user can have many expense categories
-    @OneToMany(() => Loan, (loan) => loan.owner, {
+    @OneToMany(() => ExpenseType, (expenseType) => expenseType.user, {
         eager: true
     })
     public expenseTypes: ExpenseType[] = [];
@@ -163,7 +168,7 @@ export class User implements IUser {
     * Save a new loan in user information.
     */
     public addLoan(options: CreateLoanPayload) {
-        this.loans.push(new Loan(options));
+        this.loans.push(new Loan(options, this.id));
     }
     /**
     * Get stored user loan.
