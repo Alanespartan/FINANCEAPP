@@ -166,16 +166,10 @@ router.get("/", async (req, res, next) => {
             throw new BadRequestError("Invalid type for filtering cards.");
         }
 
-        // get data from db
-        const cards = await getUserCards(user.id);
-        // update cached data for future operations
-        user.cards = [];
-        user.cards = cards;
-
         if(filterBy === OECardTypesFilters.ALL) {
-            return res.status(200).json(cards);
+            return res.status(200).json(user.cards);
         } else {
-            return res.status(200).json(cards.filter((card) => card.type === filterBy));
+            return res.status(200).json(user.cards.filter((card) => card.type === filterBy));
         }
     } catch(error) { return next(error); }
 });
