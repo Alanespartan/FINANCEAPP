@@ -58,6 +58,6 @@ export const userStore = DBContextSource.getRepository(User);
 export const cardStore = DBContextSource.getRepository(Card);
 export const bankStore = DBContextSource.getRepository(Bank);
 export const loanStore = DBContextSource.getRepository(Loan);
-export const expenseCategoryStore = DBContextSource.getRepository(ExpenseType);
+export const expenseTypeStore = DBContextSource.getRepository(ExpenseType);
 
 export default DBContextSource;
