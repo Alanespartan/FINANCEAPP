@@ -1,6 +1,6 @@
 import { User, Card } from "@entities";
 import { TCardFilters, TCardTypes, UpdateCardPayload } from "@common/types/cards";
-import { filterNonNullableAttributes } from "@backend/routes/v1/cards/functions";
+import { filterNonNullableAttributes } from "@backend/routes/v1/cards/functions/util";
 
 /**
 * Create a new card in user information.
