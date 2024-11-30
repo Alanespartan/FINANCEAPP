@@ -1,13 +1,13 @@
 import { Router } from "express";
 import { BadRequestError } from "@errors";
-import { isValidExpenseType } from "./functions";
-import { User } from "@entities";
+import { isValidExpenseTypeFilter } from "./functions";
+import { OETypesOfExpense } from "@common/types/expenses";
 
 const router = Router();
 
 /**
 * @swagger
-* /api/v1/expenses:
+* /api/v1/expenses/types:
 *   get:
 *       summary: Get user expense types
 *       description: Get all expense types a user has registered.
@@ -30,9 +30,9 @@ const router = Router();
 *           400:
 *               description: Bad Request Error
 */
-router.get("/", async (req, res, next) => {
+router.get("/types", async (req, res, next) => {
     try {
-        const user: User = req.userData;
+        const user = req.userData;
         const expenseType = req.query.expenseType; // by default is always "ALL" (if not modified by user in the front end)
 
         if(expenseType && typeof expenseType !== "string") {
@@ -40,15 +40,15 @@ router.get("/", async (req, res, next) => {
         }
 
         // Verify given expense type is valid
-        const filterBy = expenseType ? parseInt(expenseType) : undefined;
-        if(filterBy && !isValidExpenseType(filterBy)) {
-            throw new BadRequestError("Invalid type for filtering cards.");
+        const filterBy = expenseType ? parseInt(expenseType) : OETypesOfExpense.ALL;
+        if(!isValidExpenseTypeFilter(filterBy)) {
+            throw new BadRequestError("Invalid type for filtering expense types.");
         }
 
-        if(filterBy) {
-            return res.status(200).json(user.cards.filter((card) => card.type === filterBy));
+        if(filterBy === OETypesOfExpense.ALL) {
+            return res.status(200).json(user.expenseTypes);
         } else {
-            return res.status(200).json(user.cards);
+            return res.status(200).json(user.expenseTypes.filter((et) => et.type === filterBy));
         }
     } catch(error) { return next(error); }
 });
