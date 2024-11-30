@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TCardFilters, TCardTypes, OECardTypesFilters, UpdateCardPayload }   from "@common/types/cards";
-import { Card } from "@entities";
 
 export const isValidCardFilter = (value: number): value is TCardFilters => {
     return value === OECardTypesFilters.ALL
@@ -14,21 +13,6 @@ export const isValidCardType = (value: number): value is TCardTypes => {
         || value === OECardTypesFilters.CREDIT
         || value === OECardTypesFilters.SERVICES;
 };
-
-export function MapNewToExistingArray(newCard: Card) {
-    return {
-        cardNumber: newCard.getCardNumber(),
-        name:       newCard.getName(),
-        expires:    newCard.getExpirationDate(),
-        balance:    newCard.getBalance(),
-        type:       newCard.getCardType(),
-        archived:   newCard.getArchived(),
-        limit:      newCard.getCardType() === OECardTypesFilters.CREDIT ? newCard.getLimit() : null,
-        isVoucher:  newCard.getIsVoucher(),
-        userId:     newCard.userId,
-        bankId:     newCard.bankId,
-    } as Card;
-}
 
 /** Helper function to remove null|undefined attributes from given card update options. */
 export function filterNonNullableAttributes(options: UpdateCardPayload) {
