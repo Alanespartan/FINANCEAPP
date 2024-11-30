@@ -43,4 +43,15 @@ export class ExpenseType implements IExpenseType {
             this.archived = false;
         }
     }
+
+    public toInterfaceObject(): IExpenseType {
+        return {
+            id:       this.id,
+            name:     this.name,
+            type:     this.type,
+            archived: this.archived,
+            userId:   this.userId,
+            instrumentId: this.instrumentId
+        } as IExpenseType;
+    }
 }
