@@ -45,6 +45,7 @@ const JSDocsOptions = {
         "../common/types/users/*.ts",
 
         // EXPENSES
+        "./src/routes/v1/expenses/*.ts",
         "../common/types/expenses/*.ts",
 
         // OTHERS
