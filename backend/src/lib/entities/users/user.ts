@@ -4,14 +4,15 @@ import { Card, Loan, ExpenseType } from "@entities";
 import { CreateExpenseTypePayload, OETypesOfExpense } from "@common/types/expenses";
 import { IUser } from "@common/types/users";
 import { Expense } from "@common/types/payments";
-import { TCardFilters, TCardTypes } from "@common/types/cards";
+import { TCardFilters, TCardTypes, UpdateCardPayload } from "@common/types/cards";
 import {
     addCard,
     hasCard,
     getCard,
     getCards,
     getCardId,
-    getCardType
+    getCardType,
+    setOptionsIntoCard
 } from "./methods/cards";
 import {
     addExpenseType,
@@ -113,6 +114,7 @@ User.prototype.getCard = getCard;
 User.prototype.getCards = getCards;
 User.prototype.getCardId = getCardId;
 User.prototype.getCardType = getCardType;
+User.prototype.setOptionsIntoCard = setOptionsIntoCard;
 // EXPENSE TYPES METHODS
 User.prototype.addExpenseType = addExpenseType;
 User.prototype.getExpenseType = getExpenseType;
@@ -133,6 +135,7 @@ declare module "./User" {
         getCards(type: TCardFilters): Card[];
         getCardId(cardNumber: string): number;
         getCardType(cardNumber: string): TCardTypes;
+        setOptionsIntoCard(cardNumber: string, options: UpdateCardPayload): Card;
 
         addExpenseType(toAdd: ExpenseType): void;
         getExpenseType(name: string): ExpenseType | undefined;

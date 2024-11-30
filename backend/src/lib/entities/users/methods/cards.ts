@@ -1,5 +1,6 @@
 import { User, Card } from "@entities";
-import { TCardFilters, TCardTypes } from "@common/types/cards";
+import { TCardFilters, TCardTypes, UpdateCardPayload } from "@common/types/cards";
+import { filterNonNullableAttributes } from "@backend/routes/v1/cards/functions";
 
 /**
 * Create a new card in user information.
@@ -54,4 +55,23 @@ export function getCardId(this: User, cardNumber: string): number {
 */
 export function getCardType(this: User, cardNumber: string): TCardTypes {
     return (this.getCard(cardNumber) as Card).getCardType();
+}
+
+/**
+* Get a desired stored card and update its attributes using a given set of options.
+* @returns {Card} Updated card object.
+*/
+export function setOptionsIntoCard(this: User, cardNumber: string, options: UpdateCardPayload): Card {
+    const toUpdate = this.getCard(cardNumber) as Card;
+
+    // build payload from non null/undefined options
+    const payload = filterNonNullableAttributes(options);
+    // apply the new values from given options into desired card
+    Object.entries(payload).forEach(([ key, value ]) => {
+        if(key in toUpdate && key in Card.prototype) {
+            toUpdate[key] = value;
+        }
+    });
+
+    return toUpdate;
 }
