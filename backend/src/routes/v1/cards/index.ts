@@ -10,10 +10,9 @@ import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 import { User, Card, ExpenseType } from "@entities";
 import { getHeaders } from "@backend/utils/requests";
 import {
-    isValidCardFilter,
-    isValidCardType
+    isValidCardFilter, isValidCardType,
+    getUserCards, updateCard
 } from "./functions";
-import { getUserCards, updateCard } from "@entities/cards/functions";
 import DBContextSource from "@db";
 
 const router = Router();
