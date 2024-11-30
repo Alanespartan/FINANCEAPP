@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index, Unique } from "typeorm";
 import { CreateCardPayload, TCardTypes, OECardTypesFilters, ICard } from "@common/types/cards";
 import { User, Bank } from "@entities";
@@ -51,6 +52,9 @@ export class Card implements ICard {
     public bank!: Bank;
     @Column()
     public bankId!: number; // Explicitly define the foreign key column
+
+    // Index signature allows using a string key to access properties
+    [key: string]: any;  // You can replace `any` with a more specific type if needed
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
     public constructor(options?: CreateCardPayload, type?: TCardTypes, userId?: number) {
