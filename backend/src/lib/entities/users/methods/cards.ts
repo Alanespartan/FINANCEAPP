@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { User, Card } from "@entities";
 import { TCardFilters, TCardTypes } from "@common/types/cards";
 
@@ -44,7 +43,7 @@ export function getCards(this: User, type: TCardFilters): Card[] {
 * @param {string} cardNumber Card number to search for.
 */
 export function getCardId(this: User, cardNumber: string): number {
-    return this.getCard(cardNumber)!.getId();
+    return (this.getCard(cardNumber) as Card).getId();
 }
 
 /**
@@ -54,5 +53,5 @@ export function getCardId(this: User, cardNumber: string): number {
 * @param {string} cardNumber Card number to search for.
 */
 export function getCardType(this: User, cardNumber: string): TCardTypes {
-    return this.getCard(cardNumber)!.getCardType();
+    return (this.getCard(cardNumber) as Card).getCardType();
 }
