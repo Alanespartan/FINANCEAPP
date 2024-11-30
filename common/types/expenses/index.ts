@@ -28,7 +28,7 @@ export const ETypesOfExpense = {
     /** If you're adding money to a savings account */
     SAVINGS:     3
 } as const;
-/** Depending on the type we refer to a Real Expense (0), Card (1), Loan (2) or Saving Account (3) */
+/** A multi-option type representing all the available Expense Types a user can create. Real Expense (0), Card (1), Loan (2) or Saving Account (3) */
 export type TAvailableExpenseTypes = typeof ETypesOfExpense[keyof typeof ETypesOfExpense];
 
 /**
