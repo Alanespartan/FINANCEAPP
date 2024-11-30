@@ -9,10 +9,8 @@ import { BadRequestError, NotFoundError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 import { User, Card, ExpenseType } from "@entities";
 import { getHeaders } from "@backend/utils/requests";
-import {
-    isValidCardFilter, isValidCardType,
-    getUserCards, updateCard
-} from "./functions";
+import { isValidCardFilter, isValidCardType } from "./functions/util";
+import { getUserCards, updateCard } from "./functions/db";
 import DBContextSource from "@db";
 
 const router = Router();
