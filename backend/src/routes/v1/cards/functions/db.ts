@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { UpdateCardPayload } from "@common/types/cards";
 import { cardStore } from "@db";
+import { filterNonNullableAttributes } from "./util";
 
 export async function getByCardNumber(cardNumber: string) {
     return await cardStore.findOne({
@@ -30,19 +31,22 @@ export async function getUserCards(userId: number) {
     });
 }
 
-export async function updateCard(cardId: number, options: UpdateCardPayload) {
-    const filterNonNullableAttributes = (options: UpdateCardPayload) => {
-        // Create a new object with only defined keys
-        return Object.entries(options).reduce((acc, [ key, value ]) => {
-            if(value !== undefined && value !== null) {
-                acc[key as keyof UpdateCardPayload] = value;
-            }
-            return acc;
-        }, {} as any);
-    };
+/**
+* Saves a given entity in the database card store. If entity does exist in the database it's updated, otherwise it's inserted.
+* @param {Card} toSave Card object used to overwrite existing entry or create a new one.
+*/
+export async function saveCard(toSave: any) {
+    await cardStore.save(toSave);
+}
 
-    // build payload from non null/undefined options
+/**
+* Updates entity partially using a given set of attributes.
+* It uses "TypeORMEntity.update()" instead of "TypeORMEntity.save()".
+* It executes fast and efficient UPDATE query.
+* Does not check if entity exist in the database.
+*/
+export async function updateCard(cardId: number, options: UpdateCardPayload) {
+    // build payload to update card from non null/undefined options
     const payload = filterNonNullableAttributes(options);
-    // Save the updated object
     await cardStore.update(cardId, payload);
 }
