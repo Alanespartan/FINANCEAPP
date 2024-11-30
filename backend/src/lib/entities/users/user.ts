@@ -5,7 +5,7 @@ import { CreateLoanPayload } from "@common/types/loans";
 import { Card, Loan, ExpenseType }   from "@entities";
 import { IUser } from "@common/types/users";
 import { TCardFilters, TCardTypes } from "@common/types/cards";
-import { CreateExpenseTypePayload, ETypesOfExpense } from "@common/types/expenses";
+import { CreateExpenseTypePayload, OETypesOfExpense } from "@common/types/expenses";
 
 /* TypeScript and TypeORM Custom Attributes Explanation */
 // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
@@ -69,7 +69,7 @@ export class User implements IUser {
             // so we can register when motive of payment is "Other" or "Unknown"
             const ExpenseTypeOptions = {
                 name: "Other",
-                type: ETypesOfExpense.REALEXPENSE
+                type: OETypesOfExpense.REALEXPENSE
             } as CreateExpenseTypePayload;
             this.addExpenseType(new ExpenseType(ExpenseTypeOptions, this.id));
         }

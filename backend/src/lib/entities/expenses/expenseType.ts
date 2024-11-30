@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from "typeorm";
-import { IExpenseType, CreateExpenseTypePayload, TAvailableExpenseTypes } from "@common/types/expenses";
+import { IExpenseType, CreateExpenseTypePayload, TExpenseType } from "@common/types/expenses";
 import { User } from "@entities";
 
 /* TypeScript and TypeORM Custom Attributes Explanation */
@@ -16,7 +16,7 @@ export class ExpenseType implements IExpenseType {
     public archived!: boolean;
 
     @Column()
-    public type!: TAvailableExpenseTypes;
+    public type!: TExpenseType;
     @Column({ nullable: true })
     public instrumentId?: number;
 

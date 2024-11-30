@@ -4,7 +4,7 @@ import {
     OECardTypesFilters,
     UpdateCardPayload
 } from "@common/types/cards";
-import { CreateExpenseTypePayload, ETypesOfExpense } from "@common/types/expenses";
+import { CreateExpenseTypePayload, OETypesOfExpense } from "@common/types/expenses";
 import { BadRequestError, NotFoundError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 import { User, Card, ExpenseType } from "@entities";
@@ -115,7 +115,7 @@ router.post("/", async (req, res, next) => {
         // so we can register when paying "TO A CARD"
         const newCardExpenseType = new ExpenseType({
             name: newCard.getName(),
-            type: ETypesOfExpense.CARD,
+            type: OETypesOfExpense.CARD,
             instrumentId: cards.find((c) => c.getCardNumber() === newCard.getCardNumber())?.getId()
         } as CreateExpenseTypePayload, user.id);
         user.addExpenseType(newCardExpenseType);

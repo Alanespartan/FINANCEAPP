@@ -2,34 +2,53 @@
 * @swagger
 * components:
 *   schemas:
-*       TAvailableExpenseTypes:
+*       TExpenseType:
 *           type: integer
-*           description: A multi-option type representing all the available Expense Types a user can create.
-*           enum: [0, 1, 2, 3]
-*           x-enum-varnames: [ALL, DEBIT, CREDIT, SERVICES]
+*           description: A multi-option type representing all the available Expense Types a user can create. Card (1), Loan (2), Saving Account (3) or Real Expense (4)
+*           enum: [1, 2, 3, 4]
+*           x-enum-varnames: [CARD, LOAN, SAVINGS, REALEXPENSE]
 *           properties:
-*               0:
-*                   description: If what you are paying is a real expense (e.g. Gas - Dates - Trip)
 *               1:
 *                   description: If what you are paying is a card.
 *               2:
 *                   description: If what you are paying is a loan.
 *               3:
 *                   description: If you're adding money to a savings account.
+*               4:
+*                   description: If what you are paying is a real expense (e.g. Gas - Dates - Trip)
+*       TExpenseTypeFilter:
+*           type: integer
+*           description: A multi-option type representing all the available Expense Types a user can filter for.
+*           enum: [0, 1, 2, 3]
+*           x-enum-varnames: [ALL, CARD, LOAN, SAVINGS, REALEXPENSE]
+*           properties:
+*               0:
+*                   description: Represents all types of expense type.
+*               1:
+*                   description: If what you are paying is a card.
+*               2:
+*                   description: If what you are paying is a loan.
+*               3:
+*                   description: If you're adding money to a savings account.
+*               4:
+*                   description: If what you are paying is a real expense (e.g. Gas - Dates - Trip)
 */
-/** Object Enum representing all the possible expense types a user can have. */
-export const ETypesOfExpense = {
-    /** If what you are paying is a real expense (e.g: Gas - Dates - Trip) */
-    REALEXPENSE: 0,
+/** Object Enum representing all the possible expense types the application can manipulate. */
+export const OETypesOfExpense = {
+    ALL:         0,
     /** If what you are paying is a card */
     CARD:        1,
     /** If what you are paying is a loan */
     LOAN:        2,
     /** If you're adding money to a savings account */
-    SAVINGS:     3
+    SAVINGS:     3,
+    /** If what you are paying is a real expense (e.g. Gas - Dates - Trip) */
+    REALEXPENSE: 4
 } as const;
-/** A multi-option type representing all the available Expense Types a user can create. Real Expense (0), Card (1), Loan (2) or Saving Account (3) */
-export type TAvailableExpenseTypes = typeof ETypesOfExpense[keyof typeof ETypesOfExpense];
+/** A multi-option type representing all the available Expense Types a user can create. Card (1), Loan (2), Saving Account (3) or Real Expense (4) */
+export type TExpenseType = typeof OETypesOfExpense.CARD | typeof OETypesOfExpense.LOAN | typeof OETypesOfExpense.SAVINGS | typeof OETypesOfExpense.REALEXPENSE;
+/** A multi-option type representing all the available Expense Types a user can filter for. */
+export type TExpenseTypeFilter = typeof OETypesOfExpense.ALL | TExpenseType;
 
 /**
 * @swagger
@@ -47,7 +66,7 @@ export type TAvailableExpenseTypes = typeof ETypesOfExpense[keyof typeof ETypesO
 *                   type: string
 *                   example: Gaming
 *               type:
-*                   $ref: "#/components/schemas/TAvailableExpenseTypes"
+*                   $ref: "#/components/schemas/TExpenseType"
 *               archived:
 *                   type: boolean
 *                   example: false
@@ -81,8 +100,8 @@ export interface IExpenseType {
     id: number;
     /** e.g. Gas - Trips - Gifts - Delivery - Gaming */
     name: string;
-    /** Depending on the type we refer to a Real Expense (0), Card (1), Loan (2) or Saving Account (3) */
-    type: TAvailableExpenseTypes;
+    /** Depending on the type we refer to a Card (1), Loan (2), Saving Account (3) or Real Expense (4) */
+    type: TExpenseType;
     archived: boolean;
     /** DB Foreign Key - User ID */
     userId: number;
@@ -123,7 +142,7 @@ export interface IExpense {
 *                   type: string
 *                   example: Gaming
 *               type:
-*                   $ref: "#/components/schemas/TAvailableExpenseTypes"
+*                   $ref: "#/components/schemas/TExpenseType"
 *               instrumentId:
 *                   type: number
 *                   format: integer
@@ -137,8 +156,8 @@ export interface IExpense {
 export interface CreateExpenseTypePayload {
     /** e.g. Gas - Trips - Gifts - Delivery - Gaming */
     name: string;
-    /** Depending on the type we refer to a Real Expense (0), Card (1), Loan (2) or Saving Account (3) */
-    type: TAvailableExpenseTypes;
+    /** Depending on the type we refer to a Card (1), Loan (2), Saving Account (3) or Real Expense (4) */
+    type: TExpenseType;
 
     /** Can be DB cardId, loanId, savingId or undefined if type is Real Expense */
     instrumentId?: number;
