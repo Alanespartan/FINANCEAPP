@@ -165,11 +165,7 @@ router.get("/", async (req, res, next) => {
             throw new BadRequestError("Invalid type for filtering cards.");
         }
 
-        if(filterBy === OECardTypesFilters.ALL) {
-            return res.status(200).json(user.cards);
-        } else {
-            return res.status(200).json(user.cards.filter((card) => card.type === filterBy));
-        }
+        return res.status(200).json(user.getCards(filterBy));
     } catch(error) { return next(error); }
 });
 
@@ -212,7 +208,7 @@ router.put("/:cardNumber", async (req, res, next) => {
         const cardNumber = req.params.cardNumber.replace(/\s+/g, ""); // normalizing the given card number by removing white spaces
         const options    = req.body as UpdateCardPayload;
 
-        /* CARD TO UPDATE */
+        /* CARD IS VALID */
         // the given cardNumber to update contains only numbers
         if( !( /^[0-9]+$/.test(cardNumber) ) ) {
             throw new BadRequestError(`Invalid card number "${cardNumber}". A card number can not contain non numeric chars.`);
@@ -224,7 +220,7 @@ router.put("/:cardNumber", async (req, res, next) => {
         }
 
         let cardNumberToReturn = cardNumber;
-        /* NEW CARD NUMBER */
+        /* CARD NUMBER */
         if(options.cardNumber) {
             // normalizing the given card number by removing white spaces
             options.cardNumber = options.cardNumber.replace(/\s+/g, "");
@@ -302,7 +298,7 @@ router.put("/:cardNumber", async (req, res, next) => {
         user.cards = [];
         user.cards = cards;
 
-        return res.status(200).json(cards.find((card) => card.getCardNumber() === cardNumberToReturn));
+        return res.status(200).json(user.getCard(cardNumberToReturn));
     } catch(error) { return next(error); }
 });
 
