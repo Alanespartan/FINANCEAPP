@@ -12,16 +12,16 @@ import {
     getCards,
     getCardId,
     getCardType
-} from "./functions/cards";
+} from "./methods/cards";
 import {
     addExpenseType,
     getExpenseType,
     getExpenseTypes
-} from "./functions/expenseTypes";
+} from "./methods/expenseTypes";
 import {
     addLoan,
     getLoans
-} from "./functions/loans";
+} from "./methods/loans";
 
 /* TypeScript and TypeORM Custom Attributes Explanation */
 // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
