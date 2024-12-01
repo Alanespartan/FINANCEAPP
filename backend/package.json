@@ -10,7 +10,7 @@
     "build": "tsc --build --pretty && tsc-alias",
     "build:nolint": "tsc --build --pretty && tsc-alias -v",
     "start": "npm run build && node .",
-    "test": "ts-mocha -p tsconfig.json spec/**/**/*.spec.ts --exit",
+    "test": "ts-mocha spec/setup.ts -p tsconfig.json spec/**/**/*.spec.ts --exit",
     "test-file": "ts-mocha -p tsconfig.json --exit"
   },
   "author": "Arturo Cruz",
