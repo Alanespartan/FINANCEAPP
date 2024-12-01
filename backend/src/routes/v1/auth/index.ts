@@ -97,7 +97,6 @@ router.post("/login", async (req, res, next) => {
 */
 router.post("/logout", async (req, res, next) => {
     try {
-        ConnectionStore.deleteConnection(req.sessionID);
         await clearSession(req);
         return res.status(200).json({ status: "success" });
     } catch(error) { next(error); }
