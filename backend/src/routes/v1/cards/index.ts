@@ -10,7 +10,7 @@ import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 import { User, Card, ExpenseType } from "@entities";
 import { getHeaders } from "@backend/utils/requests";
 import { isValidCardFilter, isValidCardType } from "./functions/util";
-import { getUserCards, updateCard } from "./functions/db";
+import { saveCard } from "./functions/db";
 import DBContextSource from "@db";
 
 const router = Router();
@@ -38,13 +38,11 @@ const router = Router();
 *                       $ref: "#/components/schemas/CreateCardPayload"
 *       responses:
 *           200:
-*               description: An array of cards a user has registered including the recently added.
+*               description: A JSON representation of the created card.
 *               content:
 *                   application/json:
 *                       schema:
-*                           type: array
-*                           items:
-*                               $ref: "#/components/schemas/ICard"
+*                           $ref: "#/components/schemas/ICard"
 *           400:
 *               description: Bad Request Error
 */
@@ -102,24 +100,22 @@ router.post("/", async (req, res, next) => {
         }
 
         // save new card in db
-        await DBContextSource.manager.save(newCard);
-        // get updated data from db (otherwise we don't know the new card id)
-        const cards = await getUserCards(user.id);
+        const savedCard = await saveCard(newCard);
         // update cached data for future get operations
-        user.cards = [];
-        user.cards = cards;
+        user.addCard(savedCard);
 
+        // TODO EXPENSE TYPE add functions
         // create expense category using card alias
         // so we can register when paying "TO A CARD"
         const newCardExpenseType = new ExpenseType({
-            name: newCard.getName(),
+            name: savedCard.getName(),
             type: OETypesOfExpense.CARD,
-            instrumentId: cards.find((c) => c.getCardNumber() === newCard.getCardNumber())?.getId()
+            instrumentId: savedCard.getId()
         } as CreateExpenseTypePayload, user.id);
         user.addExpenseType(newCardExpenseType);
         await DBContextSource.manager.save(newCardExpenseType);
 
-        return res.status(200).json(cards);
+        return res.status(200).json(savedCard.toInterfaceObject());
     } catch(error) { return next(error); }
 });
 
@@ -217,7 +213,6 @@ router.put("/:cardNumber", async (req, res, next) => {
             throw new NotFoundError(`There is no "${cardNumber}" card to update.`);
         }
 
-        let cardNumberToReturn = cardNumber;
         /* CARD NUMBER */
         if(options.cardNumber) {
             // normalizing the given card number by removing white spaces
@@ -232,8 +227,6 @@ router.put("/:cardNumber", async (req, res, next) => {
             if(user.hasCard(options.cardNumber)) {
                 throw new BadRequestError(`A card with the "${options.cardNumber}" number already exists.`);
             }
-
-            cardNumberToReturn = options.cardNumber; // to know what card number to search for when returning json data
         }
 
         /* CARD EXPIRATION DATE */
@@ -287,16 +280,12 @@ router.put("/:cardNumber", async (req, res, next) => {
             }
         }
 
-        // update card data in db
-        await updateCard(user.getCardId(cardNumber), options);
+        // update cached card data
+        const toUpdate = user.setOptionsIntoCard(cardNumber, options);
+        // apply card changes in db using updated object
+        const savedCard = await saveCard(toUpdate);
 
-        // get updated data from db
-        const cards = await getUserCards(user.id);
-        // update cached data for future operations
-        user.cards = [];
-        user.cards = cards;
-
-        return res.status(200).json(user.getCard(cardNumberToReturn));
+        return res.status(200).json(savedCard.toInterfaceObject());
     } catch(error) { return next(error); }
 });
 
