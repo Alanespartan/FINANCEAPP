@@ -166,4 +166,20 @@ export class Card implements ICard {
     public getIsVoucher() {
         return this.isVoucher;
     }
+
+    public toInterfaceObject() {
+        return {
+            id:         this.id,
+            cardNumber: this.cardNumber,
+            name:       this.name,
+            expires:    this.expires,
+            balance:    this.balance,
+            type:       this.type,
+            archived:   this.archived,
+            userId:     this.userId,
+            bankId:     this.bankId,
+            limit:      this.limit,
+            isVoucher:  this.isVoucher,
+        } as ICard;
+    }
 }
