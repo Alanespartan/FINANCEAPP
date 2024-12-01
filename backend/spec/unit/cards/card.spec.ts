@@ -1,22 +1,21 @@
 import supertest from "supertest";
 import { expect } from "chai";
-import app from "../../../src/app";
 
 // Initialize a Supertest agent and other required variables
 // This creates an agent that persists cookies and headers across all requests made by the agent.
 // All tests use the same agent, maintaining the session between requests and eliminating the need
 // to re-authenticate for each request.
-const agent    = supertest.agent(app);
+const server   = "http://localhost:3000";
+const agent    = supertest.agent(server);
 const version  = "v1";
 const authPath = `/api/${version}`;
 const cardPath = `/api/${version}/cards`;
 
 // Log in before all tests and set the session
 before(async () => {
-    // TODO TESTING fix this so takes values from .env "process.env.TEST_USER" and "process.env.TEST_PASSWORD"
     const credentials = {
-        email:    "test@gmail.com",
-        password: "admin"
+        email:    process.env.TEST_USER as string,
+        password: process.env.TEST_PASSWORD as string
     };
 
     // login to store connection in server
@@ -40,9 +39,9 @@ describe("API Cards Tests", function() {
                     .expect(400)
                     .expect("Content-Type", /json/);
 
-                expect(res.body.status).to.have.property("status", "error");
-                expect(res.body.message).to.have.property("status", "The server did not understand the request or could not read the request body.");
-                expect(res.body.info).to.have.property("message", "Expected 'cardType' header was not provided.");
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("status", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("message", "Expected 'cardType' header was not provided.");
             });
         });
     });
