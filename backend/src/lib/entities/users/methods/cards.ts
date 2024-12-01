@@ -62,13 +62,14 @@ export function getCardType(this: User, cardNumber: string): TCardTypes {
 * @returns {Card} Updated card object.
 */
 export function setOptionsIntoCard(this: User, cardNumber: string, options: UpdateCardPayload): Card {
+    // javascript handles objects by reference, by updating the card object here we dont need to update it in the endpoint
     const toUpdate = this.getCard(cardNumber) as Card;
 
     // build payload from non null/undefined options
     const payload = filterNonNullableAttributes(options);
     // apply the new values from given options into desired card
     Object.entries(payload).forEach(([ key, value ]) => {
-        if(key in toUpdate && key in Card.prototype) {
+        if(key in toUpdate) {
             toUpdate[key] = value;
         }
     });
