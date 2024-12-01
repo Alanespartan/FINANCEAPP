@@ -40,8 +40,8 @@ describe("API Cards Tests", function() {
                     .expect("Content-Type", /json/);
 
                 expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("status", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("message", "Expected 'cardType' header was not provided.");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", "Expected 'cardType' header was not provided.");
             });
         });
     });
