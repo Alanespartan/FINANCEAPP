@@ -10,7 +10,7 @@
     "build": "tsc --build --pretty && tsc-alias",
     "build:nolint": "tsc --build --pretty && tsc-alias -v",
     "start": "npm run build && node .",
-    "start:test": "concurrently \"node .\" \"wait-on http://localhost:3000 && npm run test\"",
+    "start:test": "concurrently --kill-others-on-fail \"node .\" \"wait-on http://localhost:3000 && npm run test\"",
     "test": "ts-mocha spec/setup.ts -p tsconfig.json spec/**/**/*.spec.ts --exit",
     "test-file": "ts-mocha -p tsconfig.json --exit"
   },
