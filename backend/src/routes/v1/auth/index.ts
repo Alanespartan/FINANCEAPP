@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { ConnectionStore } from "@backend/session/connectionStore";
 import { BadRequestError, ForbiddenError, UnauthorizedError } from "@errors";
-import { clearSession, verifyLoginBody, verifySignUpBody } from "./functions";
-import userController from "@entities/users/userController";
+import { clearSession, verifyLoginBody, verifySignUpBody } from "./functions/util";
+import { getByEmail, createUser } from "./functions/db";
 
 const router = Router();
 
@@ -52,7 +52,7 @@ router.post("/login", async (req, res, next) => {
         const email    = req.body.email;
         const password = req.body.password;
 
-        const foundUser = await userController.getByEmail(email);
+        const foundUser = await getByEmail(email);
         if(!foundUser) {
             throw new UnauthorizedError("User does not exist. Please check credentials and try again.");
         }
@@ -129,7 +129,7 @@ router.post("/signup", async (req, res, next) => {
             throw new BadRequestError("Malformed sign up body sent.");
         }
 
-        userController.create(req.body.email, req.body.password, req.body.firstName, req.body.lastName);
+        await createUser(req.body.email, req.body.password, req.body.firstName, req.body.lastName);
 
         return res.sendStatus(200);
     } catch(error) { next(error); }
