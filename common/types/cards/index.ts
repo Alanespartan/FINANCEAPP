@@ -162,6 +162,10 @@ export interface SimpleCardOptions {
 *                   format: date
 *                   example: 2029-04-01
 *                   description: Expiration date in timestamp format
+*               type:
+*                   $ref: "#/components/schemas/TCardTypes"
+*                   example: 1
+*                   description: The type of card, it can be either debit (1), credit (2) or service (3) card.
 *               bankId:
 *                   type: number
 *                   format: integer
@@ -187,6 +191,7 @@ export interface SimpleCardOptions {
 *           required:
 *               - cardNumber
 *               - expires
+*               - type
 *               - bankId
 *               - balance
 */
@@ -196,6 +201,8 @@ export interface CreateCardPayload {
     cardNumber: string;
     /** Expiration date in timestamp format */
     expires: Date;
+    /** The type of card, it can be either debit (1), credit (2) or service (3) card. */
+    type: TCardTypes;
     /** DB Foreign Key - Bank ID */
     bankId: number;
     /** How many money the card has when created  */

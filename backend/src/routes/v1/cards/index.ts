@@ -8,7 +8,6 @@ import { CreateExpenseTypePayload, OETypesOfExpense } from "@common/types/expens
 import { BadRequestError, NotFoundError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 import { User, Card, ExpenseType } from "@entities";
-import { getHeaders } from "@backend/utils/requests";
 import { isValidCardFilter, isValidCardType } from "./functions/util";
 import { saveCard } from "./functions/db";
 import DBContextSource from "@db";
@@ -23,12 +22,6 @@ const router = Router();
 *       description: Given a configuration of card options, create and assign a new card (debit, credit, voucher, services) to the user information
 *       tags:
 *           - Cards
-*       parameters:
-*           - in: header
-*             name: cardType
-*             schema:
-*               type: string
-*             required: true
 *       requestBody:
 *           description: Payload that includes all the required new card data.
 *           required: true
@@ -48,15 +41,11 @@ const router = Router();
 */
 router.post("/", async (req, res, next) => {
     try {
-        const user    = req.userData;
-        const options = req.body as CreateCardPayload;
+        const user     = req.userData;
+        const options  = req.body as CreateCardPayload;
+        const cardType = options.type;
 
-        const { cardType } = getHeaders(req,
-            [ "cardType", "Expected 'cardType' header was not provided." ]
-        );
-
-        const parsedType = parseInt(cardType);
-        if(!isValidCardType(parsedType)) {
+        if(!isValidCardType(cardType)) {
             throw new BadRequestError("Invalid type for creating a new card.");
         }
 
@@ -71,9 +60,9 @@ router.post("/", async (req, res, next) => {
             throw new BadRequestError(`A card with the "${options.cardNumber}" number already exists.`);
         }
 
-        const newCard = new Card(options, parsedType, user.id);
+        const newCard = new Card(options, user.id);
 
-        switch (parsedType) {
+        switch (cardType) {
             case OECardTypesFilters.DEBIT:
                 if(options.limit) {
                     throw new BadRequestError("A debit card can't have a limit.");
