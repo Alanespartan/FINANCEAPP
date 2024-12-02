@@ -5,12 +5,15 @@ import { Logger } from "@common/types/logger";
 
 const logger = new Logger();
 
-const type     = "postgres";
-const username = process.env.DB_USER;
-const password = process.env.DB_PASSWORD;
-const host     = process.env.DB_HOST;
-const port     = parseInt(process.env.DB_PORT ?? "0");
-const database = process.env.DB_NAME;
+const type       = "postgres";
+const username   = process.env.DB_USER;
+const password   = process.env.DB_PASSWORD;
+const host       = process.env.DB_HOST;
+const port       = parseInt(process.env.DB_PORT ?? "0");
+const database   = process.env.DB_NAME;
+// customize typeorm flags according to .env values
+const dropSchema = process.env.NODE_ENV  === "production" ? false : true;
+const logging    = process.env.LOG_LEVEL === "trace" ? true : false;
 
 if(!username) throw new ServerError("Must provide a username environment variable");
 if(!password) throw new ServerError("Must provide a password environment variable");
@@ -35,7 +38,8 @@ const TypeORMConfig: DataSourceOptions = {
     password,
     database,
     synchronize: true,
-    logging: true,
+    logging,
+    dropSchema,
     entities: [ User, Card, Bank, Loan, ExpenseType ],
     subscribers: [],
     migrations: []
