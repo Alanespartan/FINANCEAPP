@@ -37,7 +37,7 @@ const router = Router();
 *                   schema:
 *                       $ref: "#/components/schemas/CreateCardPayload"
 *       responses:
-*           200:
+*           201:
 *               description: A JSON representation of the created card.
 *               content:
 *                   application/json:
@@ -115,7 +115,7 @@ router.post("/", async (req, res, next) => {
         user.addExpenseType(newCardExpenseType);
         await DBContextSource.manager.save(newCardExpenseType);
 
-        return res.status(200).json(savedCard.toInterfaceObject());
+        return res.status(201).json(savedCard.toInterfaceObject());
     } catch(error) { return next(error); }
 });
 
