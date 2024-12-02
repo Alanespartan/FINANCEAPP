@@ -118,8 +118,8 @@ router.post("/logout", async (req, res, next) => {
 *                   schema:
 *                       $ref: "#/components/schemas/SignUpPayload"
 *       responses:
-*           200:
-*               description: A successful login
+*           201:
+*               description: User account created
 *           400:
 *               description: Bad Request Error
 */
@@ -129,7 +129,7 @@ router.post("/signup", async (req, res, next) => {
             throw new BadRequestError("Malformed sign up body sent.");
         }
 
-        userController.create("test@gmail.com", "admin", "John", "Doe");
+        userController.create(req.body.email, req.body.password, req.body.firstName, req.body.lastName);
 
         return res.sendStatus(200);
     } catch(error) { next(error); }
