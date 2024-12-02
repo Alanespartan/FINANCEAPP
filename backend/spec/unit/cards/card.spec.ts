@@ -87,6 +87,63 @@ describe(`Testing API: ${cardPath}`, function() {
                 expect(returnedCard).to.have.property("bankId", debitCardNoName.bankId);
             });
         });
+        describe("Given valid payload for credit card", function() {
+            const creditCardSimple = {
+                cardNumber: "5815697378921530",
+                expires:    new Date(),
+                type:       2,
+                bankId:     1,
+                balance:    10000,
+
+                name:       "Credit Card Simple Test",
+                limit:      20000
+            } as CreateCardPayload;
+            const creditCardNoName = {
+                cardNumber: "5815697378921531",
+                expires:    new Date(),
+                type:       2,
+                bankId:     1,
+                balance:    30000,
+
+                limit:      50000
+            } as CreateCardPayload;
+            it("Must return a 201 Created and return ICard object if required payload parameters are sent", async function() {
+                const res = await agent
+                    .post(cardPath)
+                    .send(creditCardSimple)
+                    .expect(201)
+                    .expect("Content-Type", /json/);
+                const returnedCard = res.body as ICard;
+                expect(returnedCard).to.have.property("id");
+                expect(returnedCard).to.have.property("userId");
+                expect(returnedCard).to.have.property("expires");
+                expect(returnedCard).to.have.property("name",       creditCardSimple.name);
+                expect(returnedCard).to.have.property("cardNumber", creditCardSimple.cardNumber);
+                expect(returnedCard).to.have.property("bankId",     creditCardSimple.bankId);
+                expect(returnedCard).to.have.property("balance",    creditCardSimple.balance);
+                expect(returnedCard).to.have.property("type",       creditCardSimple.type);
+                expect(returnedCard).to.have.property("limit",      creditCardSimple.limit);
+                expect(returnedCard).to.have.property("archived",   false);
+            });
+            it("Must return a 201 Created and return ICard object if no name was provided in payload", async function() {
+                const res = await agent
+                    .post(cardPath)
+                    .send(creditCardNoName)
+                    .expect(201)
+                    .expect("Content-Type", /json/);
+                const returnedCard = res.body as ICard;
+                expect(returnedCard).to.have.property("id");
+                expect(returnedCard).to.have.property("userId");
+                expect(returnedCard).to.have.property("name");
+                expect(returnedCard).to.have.property("expires");
+                expect(returnedCard).to.have.property("cardNumber", creditCardNoName.cardNumber);
+                expect(returnedCard).to.have.property("bankId",     creditCardNoName.bankId);
+                expect(returnedCard).to.have.property("balance",    creditCardNoName.balance);
+                expect(returnedCard).to.have.property("type",       creditCardNoName.type);
+                expect(returnedCard).to.have.property("limit",      creditCardNoName.limit);
+                expect(returnedCard).to.have.property("archived",   false);
+            });
+        });
         describe("Given invalid payload", function() {
             const invalidCardType = {
                 cardNumber: "4915697378921530",
@@ -110,7 +167,7 @@ describe(`Testing API: ${cardPath}`, function() {
                 balance:    10000
             } as CreateCardPayload;
             const invalidBank = {
-                cardNumber: "4915697378921531",
+                cardNumber: "4915697378921530",
                 expires:    new Date(),
                 type:       1,
                 bankId:     -1,
@@ -137,7 +194,17 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "Invalid type for creating a new card.");
+                expect(res.body).to.have.property("info", `Invalid type (${invalidCardType.type}) for creating a new card.`);
+            });
+            it("Must throw a 400 Bad Request Error if a non existing bank id is used", async function() {
+                const res = await agent
+                    .post(cardPath)
+                    .send(invalidBank)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Invalid bank id (${invalidBank.bankId}) for creating a new card.`);
             });
             it("Must throw a 400 Bad Request Error if a card number contains non numeric chars", async function() {
                 const res = await agent
@@ -162,10 +229,9 @@ describe(`Testing API: ${cardPath}`, function() {
                 expect(res.body).to.have.property("info", `A card with the "${duplicatedCard.cardNumber}" number already exists.`);
             });
         });
-        /*
         describe("Given invalid payload for a debit card", function() {
             const debitCardHasLimit = {
-                cardNumber: "4915697378921532",
+                cardNumber: "4915697378921530",
                 expires:    new Date(),
                 type:       1,
                 bankId:     1,
@@ -173,7 +239,76 @@ describe(`Testing API: ${cardPath}`, function() {
 
                 limit:      20000
             } as CreateCardPayload;
-        });*/
+            it("Must throw a 400 Bad Request Error if a limit was attempted to be sent", async function() {
+                const res = await agent
+                    .post(cardPath)
+                    .send(debitCardHasLimit)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", "A debit card can't have a limit.");
+            });
+        });
+        describe("Given invalid payload for a credit card", function() {
+            const creditCardNoLimit = {
+                cardNumber: "5915697378921530",
+                expires:    new Date(),
+                type:       2,
+                bankId:     1,
+                balance:    10000,
+            } as CreateCardPayload;
+            const creditCardIncorrectLimit = {
+                cardNumber: "5915697378921530",
+                expires:    new Date(),
+                type:       2,
+                bankId:     1,
+                balance:    10000,
+
+                limit:      -1
+            } as CreateCardPayload;
+            const creditCardIsVoucher = {
+                cardNumber: "5915697378921530",
+                expires:    new Date(),
+                type:       2,
+                bankId:     1,
+                balance:    30000,
+
+                limit:      50000,
+                isVoucher:  true
+            } as CreateCardPayload;
+            it("Must throw a 400 Bad Request Error if no limit was included", async function() {
+                const res = await agent
+                    .post(cardPath)
+                    .send(creditCardNoLimit)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", "No limit value was given to create the new credit card.");
+            });
+            it("Must throw a 400 Bad Request Error if an incorrect limit was used", async function() {
+                const res = await agent
+                    .post(cardPath)
+                    .send(creditCardIncorrectLimit)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", "Can't set the limit of a credit card to have a value of less or equal to 0.");
+            });
+
+            it("Must throw a 400 Bad Request Error if isVoucher was used", async function() {
+                const res = await agent
+                    .post(cardPath)
+                    .send(creditCardIsVoucher)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", "A credit card can't be categorized as a voucher card.");
+            });
+        });
     });
     // #endregion Create Card Tests
 
