@@ -1,34 +1,8 @@
-import supertest from "supertest";
 import { expect } from "chai";
 import { ICard, CreateCardPayload } from "../../../../common/types/cards";
+import { agent, version } from "../../setup";
 
-// Initialize a Supertest agent and other required variables
-// This creates an agent that persists cookies and headers across all requests made by the agent.
-// All tests use the same agent, maintaining the session between requests and eliminating the need
-// to re-authenticate for each request.
-const server   = "http://localhost:3000";
-const agent    = supertest.agent(server);
-const version  = "v1";
-const authPath = `/api/${version}`;
 const cardPath = `/api/${version}/cards`;
-
-// Log in before all tests and set the session
-before(async () => {
-    const credentials = {
-        email:    process.env.TEST_USER as string,
-        password: process.env.TEST_PASSWORD as string
-    };
-
-    // login to store connection in server
-    const res = await agent.post(`${authPath}/login`).send(credentials);
-    if(res.status !== 200) { throw new Error(`Login failed: ${res.body.info}`); }
-});
-
-// Logout after all tests
-after(async () => {
-    const res = await agent.post(`${authPath}/logout`);
-    if(res.status !== 200) { throw new Error("Logout failed!"); }
-});
 
 describe(`Testing API: ${cardPath}`, function() {
     // #region Create Card Tests
@@ -135,6 +109,13 @@ describe(`Testing API: ${cardPath}`, function() {
                 bankId:     1,
                 balance:    10000
             } as CreateCardPayload;
+            const invalidBank = {
+                cardNumber: "4915697378921531",
+                expires:    new Date(),
+                type:       1,
+                bankId:     -1,
+                balance:    10000
+            } as CreateCardPayload;
             it("Must throw a 400 Bad Request Error if a malformed payload is used", async function() {
                 const res = await agent
                     .post(cardPath)
@@ -169,16 +150,20 @@ describe(`Testing API: ${cardPath}`, function() {
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
                 expect(res.body).to.have.property("info", `Invalid card number "${invalidCardNumber.cardNumber}". A card number can not contain non numeric chars.`);
             });
+            it("Must throw a 400 Bad Request Error if a card already exists with the given card number", async function() {
+                const res = await agent
+                    .set("cardType", "1")
+                    .post(cardPath)
+                    .send(duplicatedCard)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `A card with the "${duplicatedCard.cardNumber}" number already exists.`);
+            });
         });
         /*
         describe("Given invalid payload for a debit card", function() {
-            const debitCardInvalidBank = {
-                cardNumber: "4915697378921531",
-                expires:    new Date(),
-                type:       1,
-                bankId:     -1,
-                balance:    10000
-            } as CreateCardPayload;
             const debitCardHasLimit = {
                 cardNumber: "4915697378921532",
                 expires:    new Date(),

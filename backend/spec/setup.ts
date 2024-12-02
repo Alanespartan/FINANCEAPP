@@ -42,11 +42,11 @@ before(async () => {
 
     // create account in server
     const signUp = await agent.post(`${authPath}/signup`).send(testUser);
-    if(signUp.status !== 201) { throw new Error(`Sign up failed: ${signUp.body.info}`); }
+    if(signUp.status !== 201) { throw new Error(`Sign up failed: ${signUp}`); }
 
     // login to store connection in server
     const login = await agent.post(`${authPath}/login`).send(credentials);
-    if(login.status !== 200) { throw new Error(`Login failed: ${login.body.info}`); }
+    if(login.status !== 200) { throw new Error(`Login failed: ${login}`); }
 });
 
 // Logout after all tests
