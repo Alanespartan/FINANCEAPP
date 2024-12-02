@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BadRequestError } from "@errors";
-import { User } from "@entities";
-import { userStore } from "@db";
+import { User, Bank } from "@entities";
+import { userStore, bankStore } from "@db";
 
 export async function createUser(email: string, password: string, firstName: string, lastName: string) {
     const foundUser = await getByEmail(email);
     if(foundUser) {
         throw new BadRequestError(`An account with "${email}" email already exists.`);
     }
-    userStore.create(new User(email, password, firstName, lastName));
+    await userStore.save(new User(email, password, firstName, lastName));
+    // TODO BANK move these to another file and create its proper tests
+    await bankStore.save(new Bank("BBVA", "México"));
 }
 
 export async function getById(id: number) {
