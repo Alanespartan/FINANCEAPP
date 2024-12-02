@@ -66,7 +66,7 @@ export const NotFoundError     = makeErrorClass("The requested resource could no
 export const ResourceGoneError = makeErrorClass("The requested resource was previously in use but is no longer available and will not be available again.", 410);
 /* Server Errors */
 export const ServerError     = makeErrorClass("A server error occurred while trying to process your request.", 500);
-export const TypeScriptError = makeErrorClass("A typescript error occurred while trying to process your request.", 555);
+export const TypeScriptError = makeErrorClass("A typescript error occurred while trying to process your request.", 500);
 export const HTTPSError      = makeErrorClass("Dummy class TODO create real http error class.", 555);
 
 /**
