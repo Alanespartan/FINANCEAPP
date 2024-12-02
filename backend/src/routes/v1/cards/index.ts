@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-    CreateCardPayload,
     OECardTypesFilters,
     UpdateCardPayload
 } from "@common/types/cards";
@@ -8,7 +7,7 @@ import { CreateExpenseTypePayload, OETypesOfExpense } from "@common/types/expens
 import { BadRequestError, NotFoundError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 import { User, Card, ExpenseType } from "@entities";
-import { isValidCardFilter, isValidCardType } from "./functions/util";
+import { verifyCreateCardBody, isValidCardFilter, isValidCardType } from "./functions/util";
 import { saveCard } from "./functions/db";
 import DBContextSource from "@db";
 
@@ -42,8 +41,12 @@ const router = Router();
 router.post("/", async (req, res, next) => {
     try {
         const user     = req.userData;
-        const options  = req.body as CreateCardPayload;
+        const options  = req.body;
         const cardType = options.type;
+
+        if(!verifyCreateCardBody(options)) {
+            throw new BadRequestError("Malformed payload sent.");
+        }
 
         if(!isValidCardType(cardType)) {
             throw new BadRequestError("Invalid type for creating a new card.");
