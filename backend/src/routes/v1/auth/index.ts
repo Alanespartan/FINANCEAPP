@@ -131,7 +131,7 @@ router.post("/signup", async (req, res, next) => {
 
         await createUser(req.body.email, req.body.password, req.body.firstName, req.body.lastName);
 
-        return res.sendStatus(200);
+        return res.sendStatus(201);
     } catch(error) { next(error); }
 });
 
