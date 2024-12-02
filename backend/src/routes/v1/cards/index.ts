@@ -8,7 +8,7 @@ import { BadRequestError, NotFoundError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 import { User, Card, ExpenseType } from "@entities";
 import { verifyCreateCardBody, isValidCardFilter, isValidCardType } from "./functions/util";
-import { saveCard } from "./functions/db";
+import { saveCard, getBank } from "./functions/db";
 import DBContextSource from "@db";
 
 const router = Router();
@@ -49,7 +49,11 @@ router.post("/", async (req, res, next) => {
         }
 
         if(!isValidCardType(cardType)) {
-            throw new BadRequestError("Invalid type for creating a new card.");
+            throw new BadRequestError(`Invalid type (${cardType}) for creating a new card.`);
+        }
+
+        if( !(await getBank(options.bankId)) ) {
+            throw new BadRequestError(`Invalid bank id (${options.bankId}) for creating a new card.`);
         }
 
         // normalizing the card number by removing white spaces
