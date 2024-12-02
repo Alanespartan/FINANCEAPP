@@ -297,7 +297,6 @@ describe(`Testing API: ${cardPath}`, function() {
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
                 expect(res.body).to.have.property("info", "Can't set the limit of a credit card to have a value of less or equal to 0.");
             });
-
             it("Must throw a 400 Bad Request Error if isVoucher was used", async function() {
                 const res = await agent
                     .post(cardPath)
@@ -311,7 +310,73 @@ describe(`Testing API: ${cardPath}`, function() {
         });
     });
     // #endregion Create Card Tests
-
-    // #region Fetch Card Tests
-    // #endregion Fetch Card Tests
+    // #region Fetch Cards Tests
+    describe("When Fetching Cards", function() {
+        describe("Given no filter", function() {
+            it("Then return a 200 Success and array of all previously created cards", async function() {
+                const res = await agent
+                    .get(cardPath)
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.lengthOf(5);
+            });
+        });
+        describe("Given invalid card type filter", function() {
+            it("Then return a 400 Bad Request Error if card type is not in correct number format", async function() {
+                const res = await agent
+                    .get(cardPath)
+                    .query({ cardType: true })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", "Invalid type for filtering cards.");
+            });
+            it("Then return a 400 Bad Request Error if card type filter is -1", async function() {
+                const res = await agent
+                    .get(cardPath)
+                    .query({ cardType: -1 })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", "Invalid type for filtering cards.");
+            });
+        });
+        describe("Given valid card type filter", function() {
+            it("Then return a 200 Success and array of all previously created cards if cardType is 0", async function() {
+                const res = await agent
+                    .get(cardPath)
+                    .query({ cardType: 0 })
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.lengthOf(5);
+            });
+            it("Then return a 200 Success and array of all previously created debit cards if cardType is 1", async function() {
+                const res = await agent
+                    .get(cardPath)
+                    .query({ cardType: 1 })
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.lengthOf(3);
+            });
+            it("Then return a 200 Success and array of all previously created credit cards if cardType is 2", async function() {
+                const res = await agent
+                    .get(cardPath)
+                    .query({ cardType: 2 })
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.lengthOf(2);
+            });
+            it("Then return a 200 Success and empty array if cardType is 3", async function() {
+                const res = await agent
+                    .get(cardPath)
+                    .query({ cardType: 3 })
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.lengthOf(0);
+            });
+        });
+    });
+    // #endregion Fetch Cards Tests
 });
