@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { UpdateCardPayload } from "@common/types/cards";
-import { cardStore, bankStore } from "@db";
+import DBContextSource, { cardStore, bankStore } from "@db";
 import { filterNonNullableAttributes } from "./util";
 import { Card } from "@backend/lib/entities";
 
@@ -67,10 +67,16 @@ export async function updateCard(cardId: number, options: UpdateCardPayload) {
 }
 
 export async function updateField(cardId: number, field: keyof Card, value: any) {
-    await cardStore
+    const queryRunner = DBContextSource.createQueryRunner();
+    await queryRunner.startTransaction();
+
+    await queryRunner.manager
         .createQueryBuilder()
         .update(Card)
         .set({ [field]: value })
         .where("id = :cardId", { cardId })
         .execute();
+
+    // Commit the transaction
+    await queryRunner.commitTransaction();
 }
