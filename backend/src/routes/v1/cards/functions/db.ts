@@ -65,3 +65,12 @@ export async function updateCard(cardId: number, options: UpdateCardPayload) {
     const payload = filterNonNullableAttributes(options);
     await cardStore.update(cardId, payload);
 }
+
+export async function updateField(cardId: number, field: keyof Card, value: any) {
+    await cardStore
+        .createQueryBuilder()
+        .update(Card)
+        .set({ [field]: value })
+        .where("id = :cardId", { cardId })
+        .execute();
+}
