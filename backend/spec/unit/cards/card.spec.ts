@@ -159,14 +159,14 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 const returnedCard = res.body as ICard;
                 expect(returnedCard).to.have.property("id");
-                expect(returnedCard).to.have.property("cardNumber", ValidCreation_DebitCardSimple.cardNumber);
-                expect(returnedCard).to.have.property("name", ValidCreation_DebitCardSimple.name);
-                expect(returnedCard).to.have.property("expires");
-                expect(returnedCard).to.have.property("balance", ValidCreation_DebitCardSimple.balance);
-                expect(returnedCard).to.have.property("type", ValidCreation_DebitCardSimple.type);
-                expect(returnedCard).to.have.property("archived", false);
                 expect(returnedCard).to.have.property("userId");
-                expect(returnedCard).to.have.property("bankId", ValidCreation_DebitCardSimple.bankId);
+                expect(returnedCard).to.have.property("expires");
+                expect(returnedCard).to.have.property("cardNumber", ValidCreation_DebitCardSimple.cardNumber);
+                expect(returnedCard).to.have.property("name",       ValidCreation_DebitCardSimple.name);
+                expect(returnedCard).to.have.property("balance",    ValidCreation_DebitCardSimple.balance);
+                expect(returnedCard).to.have.property("type",       ValidCreation_DebitCardSimple.type);
+                expect(returnedCard).to.have.property("bankId",     ValidCreation_DebitCardSimple.bankId);
+                expect(returnedCard).to.have.property("archived",   false);
             });
             it("Then return '201 Created' and ICard object if debit card is a voucher card", async function() {
                 const res = await agent
@@ -176,15 +176,15 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 const returnedCard = res.body as ICard;
                 expect(returnedCard).to.have.property("id");
-                expect(returnedCard).to.have.property("cardNumber", ValidCreation_DebitCardIsVoucher.cardNumber);
-                expect(returnedCard).to.have.property("name", ValidCreation_DebitCardIsVoucher.name);
-                expect(returnedCard).to.have.property("expires");
-                expect(returnedCard).to.have.property("balance", ValidCreation_DebitCardIsVoucher.balance);
-                expect(returnedCard).to.have.property("type", ValidCreation_DebitCardIsVoucher.type);
-                expect(returnedCard).to.have.property("archived", false);
                 expect(returnedCard).to.have.property("userId");
-                expect(returnedCard).to.have.property("bankId", ValidCreation_DebitCardIsVoucher.bankId);
-                expect(returnedCard).to.have.property("isVoucher", true);
+                expect(returnedCard).to.have.property("expires");
+                expect(returnedCard).to.have.property("cardNumber", ValidCreation_DebitCardIsVoucher.cardNumber);
+                expect(returnedCard).to.have.property("name",       ValidCreation_DebitCardIsVoucher.name);
+                expect(returnedCard).to.have.property("balance",    ValidCreation_DebitCardIsVoucher.balance);
+                expect(returnedCard).to.have.property("type",       ValidCreation_DebitCardIsVoucher.type);
+                expect(returnedCard).to.have.property("bankId",     ValidCreation_DebitCardIsVoucher.bankId);
+                expect(returnedCard).to.have.property("isVoucher",  true);
+                expect(returnedCard).to.have.property("archived",   false);
             });
             it("Then return '201 Created' and ICard object if no name was provided in payload", async function() {
                 const res = await agent
@@ -194,14 +194,14 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 const returnedCard = res.body as ICard;
                 expect(returnedCard).to.have.property("id");
-                expect(returnedCard).to.have.property("cardNumber", ValidCreation_DebitCardNoName.cardNumber);
                 expect(returnedCard).to.have.property("name");
                 expect(returnedCard).to.have.property("expires");
-                expect(returnedCard).to.have.property("balance", ValidCreation_DebitCardNoName.balance);
-                expect(returnedCard).to.have.property("type", ValidCreation_DebitCardNoName.type);
-                expect(returnedCard).to.have.property("archived", false);
                 expect(returnedCard).to.have.property("userId");
-                expect(returnedCard).to.have.property("bankId", ValidCreation_DebitCardNoName.bankId);
+                expect(returnedCard).to.have.property("cardNumber", ValidCreation_DebitCardNoName.cardNumber);
+                expect(returnedCard).to.have.property("balance",    ValidCreation_DebitCardNoName.balance);
+                expect(returnedCard).to.have.property("type",       ValidCreation_DebitCardNoName.type);
+                expect(returnedCard).to.have.property("bankId",     ValidCreation_DebitCardNoName.bankId);
+                expect(returnedCard).to.have.property("archived",   false);
             });
         });
         describe("Given a valid payload for credit card", function() {
