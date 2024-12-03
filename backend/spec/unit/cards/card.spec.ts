@@ -480,6 +480,8 @@ describe(`Testing API: ${cardPath}`, function() {
                 expect(returnedCard).to.have.property("limit",      ValidUpdate_DebitCardIsNowCredit.limit);
                 expect(returnedCard).to.have.property("userId");
             });
+        });
+        describe("Given a valid payload for credit card", function() {
             it("Then return '200 Success' and ICard object if credit card was updated to be a debit card", async function() {
                 const res = await agent
                     .put(`${cardPath}/${ValidCreation_CreditCardSimple.cardNumber}`)
@@ -488,6 +490,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 const returnedCard = res.body as ICard;
                 expect(returnedCard).to.have.property("id");
+                expect(returnedCard).to.have.property("userId");
                 expect(returnedCard).to.have.property("cardNumber", ValidCreation_CreditCardSimple.cardNumber);
                 expect(returnedCard).to.have.property("balance",    ValidCreation_CreditCardSimple.balance);
                 expect(returnedCard).to.have.property("bankId",     ValidCreation_CreditCardSimple.bankId);
@@ -495,8 +498,8 @@ describe(`Testing API: ${cardPath}`, function() {
                 expect(returnedCard).to.have.property("name",       ValidUpdate_CreditCardIsNowDebit.name);
                 expect(returnedCard).to.have.property("type",       ValidUpdate_CreditCardIsNowDebit.type);
                 expect(returnedCard).to.have.property("archived",   ValidUpdate_CreditCardIsNowDebit.archived);
-                expect(returnedCard).to.not.have.property("limit");
-                expect(returnedCard).to.have.property("userId");
+                expect(returnedCard).to.have.property("limit",      0);
+                expect(returnedCard).to.have.property("isVoucher",  false);
             });
         });
         describe("Given an invalid payload", function() {
