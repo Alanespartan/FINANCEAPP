@@ -1,39 +1,156 @@
 import { expect } from "chai";
-import { ICard, CreateCardPayload } from "../../../../common/types/cards";
+import { ICard, CreateCardPayload, UpdateCardPayload } from "../../../../common/types/cards";
 import { agent, version } from "../../setup";
 
 const cardPath = `/api/${version}/cards`;
+
+// #region Payloads
+// VALID
+// // CREATE DEBIT
+const debitCardSimple = {
+    cardNumber: "4815697378921530",
+    expires:    new Date(),
+    type:       1,
+    bankId:     1,
+    balance:    10000,
+
+    name:       "Debit Card Simple Test",
+} as CreateCardPayload;
+const debitCardVoucher = {
+    cardNumber: "4815697378921531",
+    expires:    new Date(),
+    type:       1,
+    bankId:     1,
+    balance:    20000,
+
+    name:       "Debit Card Voucher Test",
+    isVoucher:  true
+} as CreateCardPayload;
+const debitCardNoName = {
+    cardNumber: "4815697378921532",
+    expires:    new Date(),
+    type:       1,
+    bankId:     1,
+    balance:    30000
+} as CreateCardPayload;
+// // CREATE CREDIT
+const creditCardSimple = {
+    cardNumber: "5815697378921530",
+    expires:    new Date(),
+    type:       2,
+    bankId:     1,
+    balance:    10000,
+
+    name:       "Credit Card Simple Test",
+    limit:      20000
+} as CreateCardPayload;
+const creditCardNoName = {
+    cardNumber: "5815697378921531",
+    expires:    new Date(),
+    type:       2,
+    bankId:     1,
+    balance:    30000,
+
+    limit:      50000
+} as CreateCardPayload;
+// // UPDATE DEBIT
+const debitCardToUpdate = "4815697378921532"; // Card number taken from debit card no name
+const updatedDebitCardSimple = {
+    cardNumber: "4815923786975123",
+    archived:   true,
+    expires:    new Date().getTime() + 100000000,
+    type:       1,
+    name:       "Debit Card Simple Update Test"
+} as UpdateCardPayload;
+const updatedDebitCardToBeCredit = {
+    type:       2,
+    limit:      40000,
+    name:       "Debit Card Is Now Credit Card Test"
+} as UpdateCardPayload;
+
+// INVALID
+// // CREATE GENERAL
+const invalidCardType = {
+    cardNumber: "4915697378921530",
+    expires:    new Date(),
+    type:       -1,
+    bankId:     1,
+    balance:    10000
+};
+const invalidCardNumber = {
+    cardNumber: "4915a6973b7892c1530d",
+    expires:    new Date(),
+    type:       1,
+    bankId:     1,
+    balance:    10000
+} as CreateCardPayload;
+const duplicatedCard = {
+    cardNumber: "4815697378921530",
+    expires:    new Date(),
+    type:       1,
+    bankId:     1,
+    balance:    10000
+} as CreateCardPayload;
+const invalidBank = {
+    cardNumber: "4915697378921530",
+    expires:    new Date(),
+    type:       1,
+    bankId:     -1,
+    balance:    10000
+} as CreateCardPayload;
+// // CREATE DEBIT
+const debitCardHasLimit = {
+    cardNumber: "4915697378921530",
+    expires:    new Date(),
+    type:       1,
+    bankId:     1,
+    balance:    10000,
+
+    limit:      20000
+} as CreateCardPayload;
+// // CREATE CREDIT
+const creditCardNoLimit = {
+    cardNumber: "5915697378921530",
+    expires:    new Date(),
+    type:       2,
+    bankId:     1,
+    balance:    10000,
+} as CreateCardPayload;
+const creditCardIncorrectLimit = {
+    cardNumber: "5915697378921530",
+    expires:    new Date(),
+    type:       2,
+    bankId:     1,
+    balance:    10000,
+
+    limit:      -1
+} as CreateCardPayload;
+const creditCardIsVoucher = {
+    cardNumber: "5915697378921530",
+    expires:    new Date(),
+    type:       2,
+    bankId:     1,
+    balance:    30000,
+
+    limit:      50000,
+    isVoucher:  true
+} as CreateCardPayload;
+// // UPDATE GENERAL
+const InvalidUpdate_CardNumberIsIncorrect = "4815a6973b7892c1532d";
+const InvalidUpdate_CardDoesNotExist = "9815692153273789";
+const InvalidUpdate_NewCardDuplicated = {
+    cardNumber: creditCardSimple.cardNumber
+} as UpdateCardPayload;
+const InvalidUpdate_NewCardIsIncorrect = {
+    cardNumber: InvalidUpdate_CardNumberIsIncorrect
+} as UpdateCardPayload;
+
+// #endregion Payloads
 
 describe(`Testing API: ${cardPath}`, function() {
     // #region Create Card Tests
     describe("When Creating a Card", function() {
         describe("Given valid payload for debit card", function() {
-            const debitCardSimple = {
-                cardNumber: "4815697378921530",
-                expires:    new Date(),
-                type:       1,
-                bankId:     1,
-                balance:    10000,
-
-                name:       "Debit Card Simple Test",
-            } as CreateCardPayload;
-            const debitCardVoucher = {
-                cardNumber: "4815697378921531",
-                expires:    new Date(),
-                type:       1,
-                bankId:     1,
-                balance:    20000,
-
-                name:       "Debit Card Voucher Test",
-                isVoucher:  true
-            } as CreateCardPayload;
-            const debitCardNoName = {
-                cardNumber: "4815697378921532",
-                expires:    new Date(),
-                type:       1,
-                bankId:     1,
-                balance:    30000
-            } as CreateCardPayload;
             it("Must return a 201 Created and return ICard object if required payload parameters are sent", async function() {
                 const res = await agent
                     .post(cardPath)
@@ -88,25 +205,6 @@ describe(`Testing API: ${cardPath}`, function() {
             });
         });
         describe("Given valid payload for credit card", function() {
-            const creditCardSimple = {
-                cardNumber: "5815697378921530",
-                expires:    new Date(),
-                type:       2,
-                bankId:     1,
-                balance:    10000,
-
-                name:       "Credit Card Simple Test",
-                limit:      20000
-            } as CreateCardPayload;
-            const creditCardNoName = {
-                cardNumber: "5815697378921531",
-                expires:    new Date(),
-                type:       2,
-                bankId:     1,
-                balance:    30000,
-
-                limit:      50000
-            } as CreateCardPayload;
             it("Must return a 201 Created and return ICard object if required payload parameters are sent", async function() {
                 const res = await agent
                     .post(cardPath)
@@ -145,34 +243,6 @@ describe(`Testing API: ${cardPath}`, function() {
             });
         });
         describe("Given invalid payload", function() {
-            const invalidCardType = {
-                cardNumber: "4915697378921530",
-                expires:    new Date(),
-                type:       -1,
-                bankId:     1,
-                balance:    10000
-            };
-            const invalidCardNumber = {
-                cardNumber: "4915a6973b7892c1530d",
-                expires:    new Date(),
-                type:       1,
-                bankId:     1,
-                balance:    10000
-            } as CreateCardPayload;
-            const duplicatedCard = {
-                cardNumber: "4815697378921530",
-                expires:    new Date(),
-                type:       1,
-                bankId:     1,
-                balance:    10000
-            } as CreateCardPayload;
-            const invalidBank = {
-                cardNumber: "4915697378921530",
-                expires:    new Date(),
-                type:       1,
-                bankId:     -1,
-                balance:    10000
-            } as CreateCardPayload;
             it("Must throw a 400 Bad Request Error if a malformed payload is used", async function() {
                 const res = await agent
                     .post(cardPath)
@@ -230,15 +300,6 @@ describe(`Testing API: ${cardPath}`, function() {
             });
         });
         describe("Given invalid payload for a debit card", function() {
-            const debitCardHasLimit = {
-                cardNumber: "4915697378921530",
-                expires:    new Date(),
-                type:       1,
-                bankId:     1,
-                balance:    10000,
-
-                limit:      20000
-            } as CreateCardPayload;
             it("Must throw a 400 Bad Request Error if a limit was attempted to be sent", async function() {
                 const res = await agent
                     .post(cardPath)
@@ -251,32 +312,6 @@ describe(`Testing API: ${cardPath}`, function() {
             });
         });
         describe("Given invalid payload for a credit card", function() {
-            const creditCardNoLimit = {
-                cardNumber: "5915697378921530",
-                expires:    new Date(),
-                type:       2,
-                bankId:     1,
-                balance:    10000,
-            } as CreateCardPayload;
-            const creditCardIncorrectLimit = {
-                cardNumber: "5915697378921530",
-                expires:    new Date(),
-                type:       2,
-                bankId:     1,
-                balance:    10000,
-
-                limit:      -1
-            } as CreateCardPayload;
-            const creditCardIsVoucher = {
-                cardNumber: "5915697378921530",
-                expires:    new Date(),
-                type:       2,
-                bankId:     1,
-                balance:    30000,
-
-                limit:      50000,
-                isVoucher:  true
-            } as CreateCardPayload;
             it("Must throw a 400 Bad Request Error if no limit was included", async function() {
                 const res = await agent
                     .post(cardPath)
@@ -379,4 +414,87 @@ describe(`Testing API: ${cardPath}`, function() {
         });
     });
     // #endregion Fetch Cards Tests
+    // #region Update Cards Tests
+    describe("When Updating Cards", function() {
+        describe("Given valid payload for debit card", function() {
+            it("Then return '200 Success' and ICard object if required payload parameters are sent", async function() {
+                const res = await agent
+                    .put(`${cardPath}/${debitCardToUpdate}`)
+                    .send(updatedDebitCardSimple)
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                const returnedCard = res.body as ICard;
+                expect(returnedCard).to.have.property("id");
+                expect(returnedCard).to.have.property("balance",    debitCardNoName.balance);
+                expect(returnedCard).to.have.property("bankId",     debitCardNoName.bankId);
+                expect(returnedCard).to.have.property("cardNumber", updatedDebitCardSimple.cardNumber);
+                expect(returnedCard).to.have.property("name",       updatedDebitCardSimple.name);
+                expect(returnedCard).to.have.property("type",       updatedDebitCardSimple.type);
+                expect(returnedCard).to.have.property("archived",   updatedDebitCardSimple.archived);
+                expect(returnedCard).to.have.property("expires",    updatedDebitCardSimple.expires);
+                expect(returnedCard).to.have.property("userId");
+            });
+            it("Then return '200 Success' and ICard object if debit card was updated to be a credit card", async function() {
+                const res = await agent
+                    .put(`${cardPath}/${updatedDebitCardSimple.cardNumber}`)
+                    .send(updatedDebitCardToBeCredit)
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                const returnedCard = res.body as ICard;
+                expect(returnedCard).to.have.property("id");
+                expect(returnedCard).to.have.property("balance",    debitCardNoName.balance);
+                expect(returnedCard).to.have.property("bankId",     debitCardNoName.bankId);
+                expect(returnedCard).to.have.property("cardNumber", updatedDebitCardSimple.cardNumber);
+                expect(returnedCard).to.have.property("archived",   updatedDebitCardSimple.archived);
+                expect(returnedCard).to.have.property("expires",    updatedDebitCardSimple.expires);
+                expect(returnedCard).to.have.property("name",       updatedDebitCardToBeCredit.name);
+                expect(returnedCard).to.have.property("type",       updatedDebitCardToBeCredit.type);
+                expect(returnedCard).to.have.property("limit",      updatedDebitCardToBeCredit.limit);
+                expect(returnedCard).to.have.property("userId");
+            });
+        });
+        describe("Given invalid payload", function() {
+            it("Then return '400 Bad Request Error' if card number contains non numeric chars", async function() {
+                const res = await agent
+                    .put(`${cardPath}/${InvalidUpdate_CardNumberIsIncorrect}`)
+                    .send(updatedDebitCardSimple)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Invalid card number "${InvalidUpdate_CardNumberIsIncorrect}". A card number can not contain non numeric chars.`);
+            });
+            it("Then return '404 Not Found Error' if card number does no exist in user cards", async function() {
+                const res = await agent
+                    .put(`${cardPath}/${InvalidUpdate_CardDoesNotExist}`)
+                    .send(updatedDebitCardSimple)
+                    .expect(404)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The requested resource could not be found.");
+                expect(res.body).to.have.property("info", `There is no "${InvalidUpdate_CardDoesNotExist}" card to update.`);
+            });
+            it("Then return '400 Bad Request Error' if new card number contains non numeric chars", async function() {
+                const res = await agent
+                    .put(`${cardPath}/${debitCardSimple.cardNumber}`)
+                    .send(InvalidUpdate_NewCardIsIncorrect)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Invalid new card number "${InvalidUpdate_NewCardIsIncorrect.cardNumber}". A card number can not contain non numeric chars.`);
+            });
+            it("Then return '400 Bad Request Error' if new card number already exists in user information", async function() {
+                const res = await agent
+                    .put(`${cardPath}/${debitCardSimple.cardNumber}`)
+                    .send(InvalidUpdate_NewCardDuplicated)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `A card with the "${InvalidUpdate_NewCardDuplicated.cardNumber}" number already exists.`);
+            });
+        });
+    });
+    // #endregion Update Cards Tests
 });
