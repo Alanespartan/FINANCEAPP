@@ -103,6 +103,8 @@ export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
 *               - balance
 *               - type
 *               - archived
+*               - limit
+*               - isVoucher
 *               - userId
 *               - bankId
 */
@@ -120,17 +122,17 @@ export interface ICard {
     balance: number;
     /** Card Type (Debit = 1 | Credit = 2 | Services = 3) */
     type: TCardTypes;
-    archived: boolean;
     /** DB Foreign Key - User ID */
     userId: number;
     /** DB Foreign Key - Bank ID */
     bankId: number;
 
-
+    /** If card is active or not */
+    archived: boolean;
     /** If card is credit, it must have a limit */
-    limit?: number;
+    limit: number;
     /** Is card a voucher card given by employer? */
-    isVoucher?: boolean;
+    isVoucher: boolean;
 }
 
 /*************************************/
@@ -246,6 +248,9 @@ export interface CreateCardPayload {
 *                   type: string
 *                   description: The name of the card.
 *                   example: Visa (Crédito|Débito) BBVA Digital
+*               isVoucher:
+*                   type: boolean
+*                   description: Indicates whether the card is a debit voucher card.
 */
 /** Representes the expected and possible parameters during a PUT request to update a user card. */
 export interface UpdateCardPayload {
@@ -253,6 +258,7 @@ export interface UpdateCardPayload {
     cardNumber?: string;
     /** If user decides to delete a card, archived instead for data safety and governance. */
     archived?: boolean;
+    /** New expiration date in timestamp format */
     expires?: number;
     /** The type of card, it can be either debit (1), credit (2) or service (3) card. */
     type?: TCardTypes;
@@ -260,4 +266,6 @@ export interface UpdateCardPayload {
     limit?: number;
     /** If user set a new name to the card. */
     name?: string;
+    /** Is card a voucher card given by employer? */
+    isVoucher?: boolean;
 }

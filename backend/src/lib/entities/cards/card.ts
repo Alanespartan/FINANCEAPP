@@ -27,10 +27,10 @@ export class Card implements ICard {
     public type!: TCardTypes;
     @Column()
     public archived!: boolean;
-    @Column({ nullable: true })
-    public limit?: number;
-    @Column({ nullable: true })
-    public isVoucher?: boolean;
+    @Column({ default: 0 })
+    public limit!: number;
+    @Column({ default: false })
+    public isVoucher!: boolean;
 
     // Many-to-One relationship: A card belongs to one user, but a user can have many cards
     @ManyToOne(() => User, (user) => user.cards, {
