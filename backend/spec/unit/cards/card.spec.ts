@@ -7,7 +7,7 @@ const cardPath = `/api/${version}/cards`;
 // #region Payloads
 // VALID
 // // CREATE DEBIT
-const debitCardSimple = {
+const ValidCreation_DebitCardSimple = {
     cardNumber: "4815697378921530",
     expires:    new Date(),
     type:       1,
@@ -16,7 +16,7 @@ const debitCardSimple = {
 
     name:       "Debit Card Simple Test",
 } as CreateCardPayload;
-const debitCardVoucher = {
+const ValidCreation_DebitCardIsVoucher = {
     cardNumber: "4815697378921531",
     expires:    new Date(),
     type:       1,
@@ -26,7 +26,7 @@ const debitCardVoucher = {
     name:       "Debit Card Voucher Test",
     isVoucher:  true
 } as CreateCardPayload;
-const debitCardNoName = {
+const ValidCreation_DebitCardNoName = {
     cardNumber: "4815697378921532",
     expires:    new Date(),
     type:       1,
@@ -34,7 +34,7 @@ const debitCardNoName = {
     balance:    30000
 } as CreateCardPayload;
 // // CREATE CREDIT
-const creditCardSimple = {
+const ValidCreation_CreditCardSimple = {
     cardNumber: "5815697378921530",
     expires:    new Date(),
     type:       2,
@@ -44,7 +44,7 @@ const creditCardSimple = {
     name:       "Credit Card Simple Test",
     limit:      20000
 } as CreateCardPayload;
-const creditCardNoName = {
+const ValidCreation_CreditCardNoName = {
     cardNumber: "5815697378921531",
     expires:    new Date(),
     type:       2,
@@ -54,15 +54,15 @@ const creditCardNoName = {
     limit:      50000
 } as CreateCardPayload;
 // // UPDATE DEBIT
-const debitCardToUpdate = "4815697378921532"; // Card number taken from debit card no name
-const updatedDebitCardSimple = {
+const ValidUpdate_DebitCardToUpdate = "4815697378921532"; // Card number taken from debit card no name
+const ValidUpdate_DebitCardSimple = {
     cardNumber: "4815923786975123",
     archived:   true,
     expires:    new Date().getTime() + 100000000,
     type:       1,
     name:       "Debit Card Simple Update Test"
 } as UpdateCardPayload;
-const updatedDebitCardToBeCredit = {
+const ValidUpdate_DebitCardIsNowCredit = {
     type:       2,
     limit:      40000,
     name:       "Debit Card Is Now Credit Card Test"
@@ -70,28 +70,28 @@ const updatedDebitCardToBeCredit = {
 
 // INVALID
 // // CREATE GENERAL
-const invalidCardType = {
+const InvalidCreation_CardTypeIsIncorrect = {
     cardNumber: "4915697378921530",
     expires:    new Date(),
     type:       -1,
     bankId:     1,
     balance:    10000
 };
-const invalidCardNumber = {
+const InvalidCreation_CardNumberIsIncorrect = {
     cardNumber: "4915a6973b7892c1530d",
     expires:    new Date(),
     type:       1,
     bankId:     1,
     balance:    10000
 } as CreateCardPayload;
-const duplicatedCard = {
+const InvalidCreation_DuplicatedCard = {
     cardNumber: "4815697378921530",
     expires:    new Date(),
     type:       1,
     bankId:     1,
     balance:    10000
 } as CreateCardPayload;
-const invalidBank = {
+const InvalidCreation_BankDoesNotExist = {
     cardNumber: "4915697378921530",
     expires:    new Date(),
     type:       1,
@@ -99,7 +99,7 @@ const invalidBank = {
     balance:    10000
 } as CreateCardPayload;
 // // CREATE DEBIT
-const debitCardHasLimit = {
+const InvalidCreation_DebitCardHasLimit = {
     cardNumber: "4915697378921530",
     expires:    new Date(),
     type:       1,
@@ -109,14 +109,14 @@ const debitCardHasLimit = {
     limit:      20000
 } as CreateCardPayload;
 // // CREATE CREDIT
-const creditCardNoLimit = {
+const InvalidCreation_CreditCardNoLimit = {
     cardNumber: "5915697378921530",
     expires:    new Date(),
     type:       2,
     bankId:     1,
     balance:    10000,
 } as CreateCardPayload;
-const creditCardIncorrectLimit = {
+const InvalidCreation_CreditCardLimitIsIncorrect = {
     cardNumber: "5915697378921530",
     expires:    new Date(),
     type:       2,
@@ -125,7 +125,7 @@ const creditCardIncorrectLimit = {
 
     limit:      -1
 } as CreateCardPayload;
-const creditCardIsVoucher = {
+const InvalidCreation_CreditCardIsVoucher = {
     cardNumber: "5915697378921530",
     expires:    new Date(),
     type:       2,
@@ -138,8 +138,8 @@ const creditCardIsVoucher = {
 // // UPDATE GENERAL
 const InvalidUpdate_CardNumberIsIncorrect = "4815a6973b7892c1532d";
 const InvalidUpdate_CardDoesNotExist = "9815692153273789";
-const InvalidUpdate_NewCardDuplicated = {
-    cardNumber: creditCardSimple.cardNumber
+const InvalidUpdate_DuplicatedCard = {
+    cardNumber: ValidCreation_CreditCardSimple.cardNumber
 } as UpdateCardPayload;
 const InvalidUpdate_NewCardIsIncorrect = {
     cardNumber: InvalidUpdate_CardNumberIsIncorrect
@@ -154,79 +154,79 @@ describe(`Testing API: ${cardPath}`, function() {
             it("Then return '201 Created' and ICard object if required payload parameters are sent", async function() {
                 const res = await agent
                     .post(cardPath)
-                    .send(debitCardSimple)
+                    .send(ValidCreation_DebitCardSimple)
                     .expect(201)
                     .expect("Content-Type", /json/);
                 const returnedCard = res.body as ICard;
                 expect(returnedCard).to.have.property("id");
-                expect(returnedCard).to.have.property("cardNumber", debitCardSimple.cardNumber);
-                expect(returnedCard).to.have.property("name", debitCardSimple.name);
+                expect(returnedCard).to.have.property("cardNumber", ValidCreation_DebitCardSimple.cardNumber);
+                expect(returnedCard).to.have.property("name", ValidCreation_DebitCardSimple.name);
                 expect(returnedCard).to.have.property("expires");
-                expect(returnedCard).to.have.property("balance", debitCardSimple.balance);
-                expect(returnedCard).to.have.property("type", debitCardSimple.type);
+                expect(returnedCard).to.have.property("balance", ValidCreation_DebitCardSimple.balance);
+                expect(returnedCard).to.have.property("type", ValidCreation_DebitCardSimple.type);
                 expect(returnedCard).to.have.property("archived", false);
                 expect(returnedCard).to.have.property("userId");
-                expect(returnedCard).to.have.property("bankId", debitCardSimple.bankId);
+                expect(returnedCard).to.have.property("bankId", ValidCreation_DebitCardSimple.bankId);
             });
             it("Then return '201 Created' and ICard object if debit card is a voucher card", async function() {
                 const res = await agent
                     .post(cardPath)
-                    .send(debitCardVoucher)
+                    .send(ValidCreation_DebitCardIsVoucher)
                     .expect(201)
                     .expect("Content-Type", /json/);
                 const returnedCard = res.body as ICard;
                 expect(returnedCard).to.have.property("id");
-                expect(returnedCard).to.have.property("cardNumber", debitCardVoucher.cardNumber);
-                expect(returnedCard).to.have.property("name", debitCardVoucher.name);
+                expect(returnedCard).to.have.property("cardNumber", ValidCreation_DebitCardIsVoucher.cardNumber);
+                expect(returnedCard).to.have.property("name", ValidCreation_DebitCardIsVoucher.name);
                 expect(returnedCard).to.have.property("expires");
-                expect(returnedCard).to.have.property("balance", debitCardVoucher.balance);
-                expect(returnedCard).to.have.property("type", debitCardVoucher.type);
+                expect(returnedCard).to.have.property("balance", ValidCreation_DebitCardIsVoucher.balance);
+                expect(returnedCard).to.have.property("type", ValidCreation_DebitCardIsVoucher.type);
                 expect(returnedCard).to.have.property("archived", false);
                 expect(returnedCard).to.have.property("userId");
-                expect(returnedCard).to.have.property("bankId", debitCardVoucher.bankId);
+                expect(returnedCard).to.have.property("bankId", ValidCreation_DebitCardIsVoucher.bankId);
                 expect(returnedCard).to.have.property("isVoucher", true);
             });
             it("Then return '201 Created' and ICard object if no name was provided in payload", async function() {
                 const res = await agent
                     .post(cardPath)
-                    .send(debitCardNoName)
+                    .send(ValidCreation_DebitCardNoName)
                     .expect(201)
                     .expect("Content-Type", /json/);
                 const returnedCard = res.body as ICard;
                 expect(returnedCard).to.have.property("id");
-                expect(returnedCard).to.have.property("cardNumber", debitCardNoName.cardNumber);
+                expect(returnedCard).to.have.property("cardNumber", ValidCreation_DebitCardNoName.cardNumber);
                 expect(returnedCard).to.have.property("name");
                 expect(returnedCard).to.have.property("expires");
-                expect(returnedCard).to.have.property("balance", debitCardNoName.balance);
-                expect(returnedCard).to.have.property("type", debitCardNoName.type);
+                expect(returnedCard).to.have.property("balance", ValidCreation_DebitCardNoName.balance);
+                expect(returnedCard).to.have.property("type", ValidCreation_DebitCardNoName.type);
                 expect(returnedCard).to.have.property("archived", false);
                 expect(returnedCard).to.have.property("userId");
-                expect(returnedCard).to.have.property("bankId", debitCardNoName.bankId);
+                expect(returnedCard).to.have.property("bankId", ValidCreation_DebitCardNoName.bankId);
             });
         });
         describe("Given a valid payload for credit card", function() {
             it("Then return '201 Created' and ICard object if required payload parameters are sent", async function() {
                 const res = await agent
                     .post(cardPath)
-                    .send(creditCardSimple)
+                    .send(ValidCreation_CreditCardSimple)
                     .expect(201)
                     .expect("Content-Type", /json/);
                 const returnedCard = res.body as ICard;
                 expect(returnedCard).to.have.property("id");
                 expect(returnedCard).to.have.property("userId");
                 expect(returnedCard).to.have.property("expires");
-                expect(returnedCard).to.have.property("name",       creditCardSimple.name);
-                expect(returnedCard).to.have.property("cardNumber", creditCardSimple.cardNumber);
-                expect(returnedCard).to.have.property("bankId",     creditCardSimple.bankId);
-                expect(returnedCard).to.have.property("balance",    creditCardSimple.balance);
-                expect(returnedCard).to.have.property("type",       creditCardSimple.type);
-                expect(returnedCard).to.have.property("limit",      creditCardSimple.limit);
+                expect(returnedCard).to.have.property("name",       ValidCreation_CreditCardSimple.name);
+                expect(returnedCard).to.have.property("cardNumber", ValidCreation_CreditCardSimple.cardNumber);
+                expect(returnedCard).to.have.property("bankId",     ValidCreation_CreditCardSimple.bankId);
+                expect(returnedCard).to.have.property("balance",    ValidCreation_CreditCardSimple.balance);
+                expect(returnedCard).to.have.property("type",       ValidCreation_CreditCardSimple.type);
+                expect(returnedCard).to.have.property("limit",      ValidCreation_CreditCardSimple.limit);
                 expect(returnedCard).to.have.property("archived",   false);
             });
             it("Then return '201 Created' and ICard object if no name was provided in payload", async function() {
                 const res = await agent
                     .post(cardPath)
-                    .send(creditCardNoName)
+                    .send(ValidCreation_CreditCardNoName)
                     .expect(201)
                     .expect("Content-Type", /json/);
                 const returnedCard = res.body as ICard;
@@ -234,11 +234,11 @@ describe(`Testing API: ${cardPath}`, function() {
                 expect(returnedCard).to.have.property("userId");
                 expect(returnedCard).to.have.property("name");
                 expect(returnedCard).to.have.property("expires");
-                expect(returnedCard).to.have.property("cardNumber", creditCardNoName.cardNumber);
-                expect(returnedCard).to.have.property("bankId",     creditCardNoName.bankId);
-                expect(returnedCard).to.have.property("balance",    creditCardNoName.balance);
-                expect(returnedCard).to.have.property("type",       creditCardNoName.type);
-                expect(returnedCard).to.have.property("limit",      creditCardNoName.limit);
+                expect(returnedCard).to.have.property("cardNumber", ValidCreation_CreditCardNoName.cardNumber);
+                expect(returnedCard).to.have.property("bankId",     ValidCreation_CreditCardNoName.bankId);
+                expect(returnedCard).to.have.property("balance",    ValidCreation_CreditCardNoName.balance);
+                expect(returnedCard).to.have.property("type",       ValidCreation_CreditCardNoName.type);
+                expect(returnedCard).to.have.property("limit",      ValidCreation_CreditCardNoName.limit);
                 expect(returnedCard).to.have.property("archived",   false);
             });
         });
@@ -259,51 +259,51 @@ describe(`Testing API: ${cardPath}`, function() {
             it("Then return '400 Bad Request Error' if an invalid type is used", async function() {
                 const res = await agent
                     .post(cardPath)
-                    .send(invalidCardType)
+                    .send(InvalidCreation_CardTypeIsIncorrect)
                     .expect(400)
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Invalid type (${invalidCardType.type}) for creating a new card.`);
+                expect(res.body).to.have.property("info", `Invalid type (${InvalidCreation_CardTypeIsIncorrect.type}) for creating a new card.`);
             });
             it("Then return '400 Bad Request Error' if a non existing bank id is used", async function() {
                 const res = await agent
                     .post(cardPath)
-                    .send(invalidBank)
+                    .send(InvalidCreation_BankDoesNotExist)
                     .expect(400)
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Invalid bank id (${invalidBank.bankId}) for creating a new card.`);
+                expect(res.body).to.have.property("info", `Invalid bank id (${InvalidCreation_BankDoesNotExist.bankId}) for creating a new card.`);
             });
             it("Then return '400 Bad Request Error' if a card number contains non numeric chars", async function() {
                 const res = await agent
                     .set("cardType", "1")
                     .post(cardPath)
-                    .send(invalidCardNumber)
+                    .send(InvalidCreation_CardNumberIsIncorrect)
                     .expect(400)
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Invalid card number "${invalidCardNumber.cardNumber}". A card number can not contain non numeric chars.`);
+                expect(res.body).to.have.property("info", `Invalid card number "${InvalidCreation_CardNumberIsIncorrect.cardNumber}". A card number can not contain non numeric chars.`);
             });
             it("Then return '400 Bad Request Error' if a card already exists with the given card number", async function() {
                 const res = await agent
                     .set("cardType", "1")
                     .post(cardPath)
-                    .send(duplicatedCard)
+                    .send(InvalidCreation_DuplicatedCard)
                     .expect(400)
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `A card with the "${duplicatedCard.cardNumber}" number already exists.`);
+                expect(res.body).to.have.property("info", `A card with the "${InvalidCreation_DuplicatedCard.cardNumber}" number already exists.`);
             });
         });
         describe("Given an invalid payload for debit card", function() {
             it("Then return '400 Bad Request Error' if a limit was attempted to be sent", async function() {
                 const res = await agent
                     .post(cardPath)
-                    .send(debitCardHasLimit)
+                    .send(InvalidCreation_DebitCardHasLimit)
                     .expect(400)
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
@@ -315,7 +315,7 @@ describe(`Testing API: ${cardPath}`, function() {
             it("Then return '400 Bad Request Error' if no limit was included", async function() {
                 const res = await agent
                     .post(cardPath)
-                    .send(creditCardNoLimit)
+                    .send(InvalidCreation_CreditCardNoLimit)
                     .expect(400)
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
@@ -325,7 +325,7 @@ describe(`Testing API: ${cardPath}`, function() {
             it("Then return '400 Bad Request Error' if an incorrect limit was used", async function() {
                 const res = await agent
                     .post(cardPath)
-                    .send(creditCardIncorrectLimit)
+                    .send(InvalidCreation_CreditCardLimitIsIncorrect)
                     .expect(400)
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
@@ -335,7 +335,7 @@ describe(`Testing API: ${cardPath}`, function() {
             it("Then return '400 Bad Request Error' if isVoucher was used", async function() {
                 const res = await agent
                     .post(cardPath)
-                    .send(creditCardIsVoucher)
+                    .send(InvalidCreation_CreditCardIsVoucher)
                     .expect(400)
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
@@ -419,37 +419,37 @@ describe(`Testing API: ${cardPath}`, function() {
         describe("Given a valid payload for debit card", function() {
             it("Then return '200 Success' and ICard object if required payload parameters are sent", async function() {
                 const res = await agent
-                    .put(`${cardPath}/${debitCardToUpdate}`)
-                    .send(updatedDebitCardSimple)
+                    .put(`${cardPath}/${ValidUpdate_DebitCardToUpdate}`)
+                    .send(ValidUpdate_DebitCardSimple)
                     .expect(200)
                     .expect("Content-Type", /json/);
                 const returnedCard = res.body as ICard;
                 expect(returnedCard).to.have.property("id");
-                expect(returnedCard).to.have.property("balance",    debitCardNoName.balance);
-                expect(returnedCard).to.have.property("bankId",     debitCardNoName.bankId);
-                expect(returnedCard).to.have.property("cardNumber", updatedDebitCardSimple.cardNumber);
-                expect(returnedCard).to.have.property("name",       updatedDebitCardSimple.name);
-                expect(returnedCard).to.have.property("type",       updatedDebitCardSimple.type);
-                expect(returnedCard).to.have.property("archived",   updatedDebitCardSimple.archived);
-                expect(returnedCard).to.have.property("expires",    updatedDebitCardSimple.expires);
+                expect(returnedCard).to.have.property("balance",    ValidCreation_DebitCardNoName.balance);
+                expect(returnedCard).to.have.property("bankId",     ValidCreation_DebitCardNoName.bankId);
+                expect(returnedCard).to.have.property("cardNumber", ValidUpdate_DebitCardSimple.cardNumber);
+                expect(returnedCard).to.have.property("name",       ValidUpdate_DebitCardSimple.name);
+                expect(returnedCard).to.have.property("type",       ValidUpdate_DebitCardSimple.type);
+                expect(returnedCard).to.have.property("archived",   ValidUpdate_DebitCardSimple.archived);
+                expect(returnedCard).to.have.property("expires",    ValidUpdate_DebitCardSimple.expires);
                 expect(returnedCard).to.have.property("userId");
             });
             it("Then return '200 Success' and ICard object if debit card was updated to be a credit card", async function() {
                 const res = await agent
-                    .put(`${cardPath}/${updatedDebitCardSimple.cardNumber}`)
-                    .send(updatedDebitCardToBeCredit)
+                    .put(`${cardPath}/${ValidUpdate_DebitCardSimple.cardNumber}`)
+                    .send(ValidUpdate_DebitCardIsNowCredit)
                     .expect(200)
                     .expect("Content-Type", /json/);
                 const returnedCard = res.body as ICard;
                 expect(returnedCard).to.have.property("id");
-                expect(returnedCard).to.have.property("balance",    debitCardNoName.balance);
-                expect(returnedCard).to.have.property("bankId",     debitCardNoName.bankId);
-                expect(returnedCard).to.have.property("cardNumber", updatedDebitCardSimple.cardNumber);
-                expect(returnedCard).to.have.property("archived",   updatedDebitCardSimple.archived);
-                expect(returnedCard).to.have.property("expires",    updatedDebitCardSimple.expires);
-                expect(returnedCard).to.have.property("name",       updatedDebitCardToBeCredit.name);
-                expect(returnedCard).to.have.property("type",       updatedDebitCardToBeCredit.type);
-                expect(returnedCard).to.have.property("limit",      updatedDebitCardToBeCredit.limit);
+                expect(returnedCard).to.have.property("balance",    ValidCreation_DebitCardNoName.balance);
+                expect(returnedCard).to.have.property("bankId",     ValidCreation_DebitCardNoName.bankId);
+                expect(returnedCard).to.have.property("cardNumber", ValidUpdate_DebitCardSimple.cardNumber);
+                expect(returnedCard).to.have.property("archived",   ValidUpdate_DebitCardSimple.archived);
+                expect(returnedCard).to.have.property("expires",    ValidUpdate_DebitCardSimple.expires);
+                expect(returnedCard).to.have.property("name",       ValidUpdate_DebitCardIsNowCredit.name);
+                expect(returnedCard).to.have.property("type",       ValidUpdate_DebitCardIsNowCredit.type);
+                expect(returnedCard).to.have.property("limit",      ValidUpdate_DebitCardIsNowCredit.limit);
                 expect(returnedCard).to.have.property("userId");
             });
         });
@@ -457,7 +457,7 @@ describe(`Testing API: ${cardPath}`, function() {
             it("Then return '400 Bad Request Error' if card number contains non numeric chars", async function() {
                 const res = await agent
                     .put(`${cardPath}/${InvalidUpdate_CardNumberIsIncorrect}`)
-                    .send(updatedDebitCardSimple)
+                    .send(ValidUpdate_DebitCardSimple)
                     .expect(400)
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
@@ -467,7 +467,7 @@ describe(`Testing API: ${cardPath}`, function() {
             it("Then return '404 Not Found Error' if card number does no exist in user cards", async function() {
                 const res = await agent
                     .put(`${cardPath}/${InvalidUpdate_CardDoesNotExist}`)
-                    .send(updatedDebitCardSimple)
+                    .send(ValidUpdate_DebitCardSimple)
                     .expect(404)
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
@@ -476,7 +476,7 @@ describe(`Testing API: ${cardPath}`, function() {
             });
             it("Then return '400 Bad Request Error' if new card number contains non numeric chars", async function() {
                 const res = await agent
-                    .put(`${cardPath}/${debitCardSimple.cardNumber}`)
+                    .put(`${cardPath}/${ValidCreation_DebitCardSimple.cardNumber}`)
                     .send(InvalidUpdate_NewCardIsIncorrect)
                     .expect(400)
                     .expect("Content-Type", /json/);
@@ -486,13 +486,13 @@ describe(`Testing API: ${cardPath}`, function() {
             });
             it("Then return '400 Bad Request Error' if new card number already exists in user information", async function() {
                 const res = await agent
-                    .put(`${cardPath}/${debitCardSimple.cardNumber}`)
-                    .send(InvalidUpdate_NewCardDuplicated)
+                    .put(`${cardPath}/${ValidCreation_DebitCardSimple.cardNumber}`)
+                    .send(InvalidUpdate_DuplicatedCard)
                     .expect(400)
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `A card with the "${InvalidUpdate_NewCardDuplicated.cardNumber}" number already exists.`);
+                expect(res.body).to.have.property("info", `A card with the "${InvalidUpdate_DuplicatedCard.cardNumber}" number already exists.`);
             });
         });
     });
