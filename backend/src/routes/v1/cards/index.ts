@@ -266,6 +266,10 @@ router.put("/:cardNumber", async (req, res, next) => {
                 if(options.isVoucher) {
                     throw new BadRequestError("Can't update a credit card to be a voucher card.");
                 }
+
+                // avoid users modying voucher state of new credit card (previous debit card)
+                // and restart voucher value to default false to avoid errors
+                options.isVoucher = false;
             }
 
             // TODO CARD if new type is service card add constraints (e.g. AMEX PLATINUM no limit)
