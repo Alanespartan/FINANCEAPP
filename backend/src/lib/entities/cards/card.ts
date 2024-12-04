@@ -27,10 +27,10 @@ export class Card implements ICard {
     public type!: TCardTypes;
     @Column()
     public archived!: boolean;
-    @Column({ nullable: true })
-    public limit?: number;
-    @Column({ nullable: true })
-    public isVoucher?: boolean;
+    @Column({ default: 0 })
+    public limit!: number;
+    @Column({ default: false })
+    public isVoucher!: boolean;
 
     // Many-to-One relationship: A card belongs to one user, but a user can have many cards
     @ManyToOne(() => User, (user) => user.cards, {
@@ -57,14 +57,14 @@ export class Card implements ICard {
     [key: string]: any;  // You can replace `any` with a more specific type if needed
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
-    public constructor(options?: CreateCardPayload, type?: TCardTypes, userId?: number) {
-        if(options && type && userId) {
+    public constructor(options?: CreateCardPayload, userId?: number) {
+        if(options && userId) {
             // FROM PAYLOAD
             this.name       = options.name ?? `Tarjeta ${options.cardNumber}`;
             this.cardNumber = options.cardNumber;
             this.balance    = options.balance;
+            this.type       = options.type;
             this.expires    = ConvertToUTCTimestamp(options.expires);
-            this.type       = type;
 
             // RELATIONSHIP ATTRIBUTES
             this.userId = userId;

@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-    CreateCardPayload,
     OECardTypesFilters,
     UpdateCardPayload
 } from "@common/types/cards";
@@ -8,9 +7,8 @@ import { CreateExpenseTypePayload, OETypesOfExpense } from "@common/types/expens
 import { BadRequestError, NotFoundError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 import { User, Card, ExpenseType } from "@entities";
-import { getHeaders } from "@backend/utils/requests";
-import { isValidCardFilter, isValidCardType } from "./functions/util";
-import { saveCard } from "./functions/db";
+import { verifyCreateCardBody, isValidCardFilter, isValidCardType } from "./functions/util";
+import { saveCard, getBank } from "./functions/db";
 import DBContextSource from "@db";
 
 const router = Router();
@@ -23,12 +21,6 @@ const router = Router();
 *       description: Given a configuration of card options, create and assign a new card (debit, credit, voucher, services) to the user information
 *       tags:
 *           - Cards
-*       parameters:
-*           - in: header
-*             name: cardType
-*             schema:
-*               type: string
-*             required: true
 *       requestBody:
 *           description: Payload that includes all the required new card data.
 *           required: true
@@ -37,7 +29,7 @@ const router = Router();
 *                   schema:
 *                       $ref: "#/components/schemas/CreateCardPayload"
 *       responses:
-*           200:
+*           201:
 *               description: A JSON representation of the created card.
 *               content:
 *                   application/json:
@@ -48,16 +40,20 @@ const router = Router();
 */
 router.post("/", async (req, res, next) => {
     try {
-        const user    = req.userData;
-        const options = req.body as CreateCardPayload;
+        const user     = req.userData;
+        const options  = req.body;
+        const cardType = options.type;
 
-        const { cardType } = getHeaders(req,
-            [ "cardType", "Expected 'cardType' header was not provided." ]
-        );
+        if(!verifyCreateCardBody(options)) {
+            throw new BadRequestError("Malformed payload sent.");
+        }
 
-        const parsedType = parseInt(cardType);
-        if(!isValidCardType(parsedType)) {
-            throw new BadRequestError("Invalid type for creating a new card.");
+        if(!isValidCardType(cardType)) {
+            throw new BadRequestError(`Invalid type (${cardType}) for creating a new card.`);
+        }
+
+        if( !(await getBank(options.bankId)) ) {
+            throw new BadRequestError(`Invalid bank id (${options.bankId}) for creating a new card.`);
         }
 
         // normalizing the card number by removing white spaces
@@ -71,9 +67,9 @@ router.post("/", async (req, res, next) => {
             throw new BadRequestError(`A card with the "${options.cardNumber}" number already exists.`);
         }
 
-        const newCard = new Card(options, parsedType, user.id);
+        const newCard = new Card(options, user.id);
 
-        switch (parsedType) {
+        switch (cardType) {
             case OECardTypesFilters.DEBIT:
                 if(options.limit) {
                     throw new BadRequestError("A debit card can't have a limit.");
@@ -115,7 +111,7 @@ router.post("/", async (req, res, next) => {
         user.addExpenseType(newCardExpenseType);
         await DBContextSource.manager.save(newCardExpenseType);
 
-        return res.status(200).json(savedCard.toInterfaceObject());
+        return res.status(201).json(savedCard.toInterfaceObject());
     } catch(error) { return next(error); }
 });
 
@@ -251,6 +247,9 @@ router.put("/:cardNumber", async (req, res, next) => {
                 if(options.limit) {
                     throw new BadRequestError(`Can't update the limit of "${cardNumber}" card if it's going to be a Debit Card.`);
                 }
+                // avoid users modying limit of new debit card (previous credit card)
+                // and restart limit value to default 0 to avoid errors
+                options.limit = 0;
             }
 
             // if new type is credit card
@@ -263,6 +262,14 @@ router.put("/:cardNumber", async (req, res, next) => {
                 if(options.limit <= 0) {
                     throw new BadRequestError("Can't set the limit of a credit card to have a value of less or equal to 0.");
                 }
+
+                if(options.isVoucher) {
+                    throw new BadRequestError("Can't update a credit card to be a voucher card.");
+                }
+
+                // avoid users modying voucher state of new credit card (previous debit card)
+                // and restart voucher value to default false to avoid errors
+                options.isVoucher = false;
             }
 
             // TODO CARD if new type is service card add constraints (e.g. AMEX PLATINUM no limit)
@@ -277,6 +284,14 @@ router.put("/:cardNumber", async (req, res, next) => {
             // if the new limit of a credit card is less or equal to 0
             if(options.limit <= 0) {
                 throw new BadRequestError("Can't modify the limit of a credit card to have a value of less or equal to 0.");
+            }
+        }
+
+        /* IS VOUCHER */
+        if(options.isVoucher && !typeModified) {
+            // if user wants to set a limit to the given card to update but its not a credit card
+            if(user.getCardType(cardNumber) !== OECardTypesFilters.DEBIT) {
+                throw new BadRequestError("Can't modify the voucher state of a non debit card.");
             }
         }
 

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { UpdateCardPayload } from "@common/types/cards";
-import { cardStore } from "@db";
+import DBContextSource, { cardStore, bankStore } from "@db";
 import { filterNonNullableAttributes } from "./util";
 import { Card } from "@backend/lib/entities";
 
@@ -18,6 +18,19 @@ export async function getByBank(bankId: number) {
             bank: {
                 id: bankId
             }
+        }
+    });
+}
+
+/** Get a bank entity from db using the given id
+ * TODO BANK move this to dedicated file
+ * @param bankId
+ * @returns The desired bank information
+ */
+export async function getBank(bankId: number) {
+    return await bankStore.findOne({
+        where: {
+            id: bankId
         }
     });
 }
@@ -51,4 +64,19 @@ export async function updateCard(cardId: number, options: UpdateCardPayload) {
     // build payload to update card from non null/undefined options
     const payload = filterNonNullableAttributes(options);
     await cardStore.update(cardId, payload);
+}
+
+export async function updateField(cardId: number, field: keyof Card, value: any) {
+    const queryRunner = DBContextSource.createQueryRunner();
+    await queryRunner.startTransaction();
+
+    await queryRunner.manager
+        .createQueryBuilder()
+        .update(Card)
+        .set({ [field]: value })
+        .where("id = :cardId", { cardId })
+        .execute();
+
+    // Commit the transaction
+    await queryRunner.commitTransaction();
 }
