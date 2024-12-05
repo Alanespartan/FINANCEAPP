@@ -1,37 +1,37 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { MixinsConstructor, ExpenseType } from "@entities";
+import { MixinsConstructor, ExpenseType, User } from "@entities";
 
 export const ExpenseTypesMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
     return class extends Base {
-        /** All expense types the user has registered */
-        public expenseTypes: ExpenseType[] | undefined;
-
         /**
         * Save a new expense type category in user array.
-        * @param toAdd New Expense Type Object to save in user array
+        * @param {ExpenseType} toAdd New Expense Type object to save in user array
         */
-        public addExpenseType(toAdd: ExpenseType): void {
-            this.expenseTypes!.push(toAdd);
+        public addExpenseType(this: User, toAdd: ExpenseType): void {
+            this.expenseTypes.push(toAdd);
         }
         /**
-        * Checks if a expense type already exists in user data.
-        * @param toSearch Expense type name to search for.
+        * Checks if a expense type exists in user data.
+        * @param {string} toSearch Expense type name to search for
+        * @returns {boolean} True or false whether the object exists or not
         */
-        public hasExpenseType(toSearch: string): boolean {
-            return this.expenseTypes!.find((et) => et.name === toSearch) ? true : false;
+        public hasExpenseType(this: User, toSearch: string): boolean {
+            return this.expenseTypes.find((et) => et.name === toSearch) ? true : false;
         }
         /**
-        * Helper function that obtains the desired expense type.
-        * @param name Expense type name to search for.
+        * Get a specific stored expense type using its name to search for it. Use hasExpenseType() first for safety check.
+        * @param {string} toSearch Expense type name to search for
+        * @returns {ExpenseType} The desired Expense Type object
         */
-        public getExpenseType(name: string): ExpenseType {
-            return this.expenseTypes!.find((ec) => ec.name === name) as ExpenseType;
+        public getExpenseType(this: User, toSearch: string): ExpenseType {
+            return this.expenseTypes.find((ec) => ec.name === toSearch) as ExpenseType;
         }
         /**
         * Get all stored user expense types.
+        * @returns {ExpenseType[]} User expense types array
         */
-        public getExpenseTypes(): ExpenseType[] {
-            return this.expenseTypes as ExpenseType[];
+        public getExpenseTypes(this: User): ExpenseType[] {
+            return this.expenseTypes;
         }
     };
 };
