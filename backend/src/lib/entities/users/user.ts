@@ -27,6 +27,7 @@ import {
 /* TypeScript and TypeORM Custom Attributes Explanation */
 // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
 // eager: true - When user is fetched, typeorm will automatically fetch all the attached objects
+// cascade: true - unless you specify the cascade option in the relationship decorator, TypeORM wont automatically save related entities when saving the parent user entity.
 
 @Entity()
 @Unique([ "email" ]) // This creates a unique constraint on the email column
@@ -58,7 +59,8 @@ export class User implements IUser {
 
     // One-to-Many relationship: A user can have many expense categories
     @OneToMany(() => ExpenseType, (expenseType) => expenseType.user, {
-        eager: true
+        eager: true,
+        cascade: true
     })
     public expenseTypes!: ExpenseType[];
 
@@ -88,7 +90,7 @@ export class User implements IUser {
                 name: "Other",
                 type: OETypesOfExpense.REALEXPENSE
             } as CreateExpenseTypePayload;
-            this.addExpenseType(new ExpenseType(ExpenseTypeOptions, this.id));
+            this.addExpenseType(new ExpenseType(ExpenseTypeOptions));
         }
     }
 

@@ -5,6 +5,7 @@ import { User } from "@entities";
 /* TypeScript and TypeORM Custom Attributes Explanation */
 // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
 // @Index is used when querying by certain "field" is frequent, and adding database indexes improves performance
+// onDelete: "CASCADE" - When parent entity is deleted, related objects will be deleted too
 
 @Entity()
 export class ExpenseType implements IExpenseType {
@@ -21,7 +22,9 @@ export class ExpenseType implements IExpenseType {
     public instrumentId?: number;
 
     // Many-to-One relationship: An expense category belongs to one user, but a user can have many categories
-    @ManyToOne(() => User, (user) => user.expenseTypes, { nullable: false })
+    @ManyToOne(() => User, (user) => user.expenseTypes, {
+        nullable: false,
+        onDelete: "CASCADE" })
     @JoinColumn({ name: "userId" }) // Explicitly map the foreign key column
     @Index()
     public user!: User;
@@ -30,17 +33,21 @@ export class ExpenseType implements IExpenseType {
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
     public constructor(options?: CreateExpenseTypePayload, userId?: number) {
-        if(options && userId) {
+        if(options) {
             // FROM PAYLOAD
             this.name = options.name;
             this.type = options.type;
 
             // RELATIONSHIP ATTRIBUTES
             this.instrumentId = options.instrumentId;
-            this.userId = userId;
 
             // DEFAULT ATTRIBUTES
             this.archived = false;
+        }
+        // we put this here so we can save expense types adding these directly into user array
+        // or by creating the object and setting the id manually.
+        if(userId) {
+            this.userId = userId;
         }
     }
 
