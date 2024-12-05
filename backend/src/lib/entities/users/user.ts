@@ -11,9 +11,8 @@ import {
     setOptionsIntoCard
 } from "./methods/cards";
 import {
-    addExpenseType,
-    getExpenseType,
-    getExpenseTypes
+    addExpenseType, hasExpenseType,
+    getExpenseType, getExpenseTypes
 } from "./methods/expenseTypes";
 import {
     addLoan,
@@ -28,6 +27,7 @@ import {
 @Entity()
 @Unique([ "email" ]) // This creates a unique constraint on the email column
 export class User implements IUser {
+    // #region Class Attributes
     @PrimaryGeneratedColumn()
     public readonly id!: number;
     @Column()
@@ -63,7 +63,9 @@ export class User implements IUser {
 
     public expenses: Expense[] = [];
     public incomes: any[] = []; // todo create interface
+    // #endregion Class Attributes
 
+    // #region Class Constructor
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
     constructor(email?: string, password?: string, firstName?: string, lastName?: string) {
         if(email && password && firstName && lastName) {
@@ -90,6 +92,7 @@ export class User implements IUser {
             this.addExpenseType(new ExpenseType(ExpenseTypeOptions));
         }
     }
+    // #endregion Class Constructor
 
     private toInterfaceObject() {
         return {
@@ -105,6 +108,7 @@ export class User implements IUser {
     }
 }
 
+// #region Prototype Attachment
 /* Attach methods from external files for modularity */
 // CARDS METHODS
 User.prototype.addCard = addCard;
@@ -114,6 +118,7 @@ User.prototype.getCards = getCards;
 User.prototype.setOptionsIntoCard = setOptionsIntoCard;
 // EXPENSE TYPES METHODS
 User.prototype.addExpenseType = addExpenseType;
+User.prototype.hasExpenseType = hasExpenseType;
 User.prototype.getExpenseType = getExpenseType;
 User.prototype.getExpenseTypes = getExpenseTypes;
 // LOANS METHODS
@@ -132,11 +137,29 @@ declare module "./User" {
         getCards(type: TCardFilters): Card[];
         setOptionsIntoCard(cardNumber: string, options: UpdateCardPayload): Card;
 
+
+        /**
+        * Save a new expense type category in user array.
+        * @param toAdd New Expense Type Object to save in user array
+        */
         addExpenseType(toAdd: ExpenseType): void;
+        /**
+        * Checks if a expense type already exists in user data.
+        * @param toSearch Expense type name to search for.
+        */
+        hasExpenseType(toSearch: string): boolean;
+        /**
+        * Helper function that obtains the desired expense type.
+        * @param name Expense type name to search for.
+        */
         getExpenseType(name: string): ExpenseType | undefined;
+        /**
+        * Get all stored user expense types.
+        */
         getExpenseTypes(): ExpenseType[];
 
         addLoan(toAdd: Loan): void;
         getLoans(): Loan[];
     }
 }
+// #endregion Prototype Attachment
