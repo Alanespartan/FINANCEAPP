@@ -1,4 +1,4 @@
-import { BadRequestError } from "@backend/lib/errors";
+import { BadRequestError } from "@errors";
 import { OECardTypesFilters } from "@common/types/cards";
 import { Card } from "@entities";
 
