@@ -1,5 +1,5 @@
-import { BadRequestError } from "@backend/lib/errors";
-import { isValidCardType } from "@backend/routes/v1/cards/functions/util";
+import { BadRequestError } from "@errors";
+import { isValidCardType } from "@entities/cards/functions/util";
 import { TCardTypes } from "@common/types/cards";
 import { Card, Bank } from "@entities";
 

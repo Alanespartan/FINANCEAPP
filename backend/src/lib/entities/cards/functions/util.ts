@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { TCardFilters, TCardTypes, OECardTypesFilters, UpdateCardPayload, CreateCardPayload }   from "@common/types/cards";
+import { TCardFilters, TCardTypes, OECardTypesFilters, UpdateCardPayload, CreateCardPayload } from "@common/types/cards";
 
 /**
  * Ensures create card body is in correct format and all required information is present.

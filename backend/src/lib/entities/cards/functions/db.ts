@@ -2,7 +2,7 @@
 import { UpdateCardPayload } from "@common/types/cards";
 import DBContextSource, { cardStore, bankStore } from "@db";
 import { filterNonNullableAttributes } from "./util";
-import { Card } from "@backend/lib/entities";
+import { Card } from "@entities";
 
 export async function getByCardNumber(cardNumber: string) {
     return await cardStore.findOne({

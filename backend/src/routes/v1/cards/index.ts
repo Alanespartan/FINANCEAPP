@@ -7,8 +7,8 @@ import { CreateExpenseTypePayload, OETypesOfExpense } from "@common/types/expens
 import { BadRequestError, NotFoundError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 import { User, Card, ExpenseType } from "@entities";
-import { verifyCreateCardBody, isValidCardFilter, isValidCardType } from "./functions/util";
-import { saveCard, getBank } from "./functions/db";
+import { verifyCreateCardBody, isValidCardFilter, isValidCardType } from "@entities/cards/functions/util";
+import { saveCard, getBank } from "@entities/cards/functions/db";
 import DBContextSource from "@db";
 
 const router = Router();
