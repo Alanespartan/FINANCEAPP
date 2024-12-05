@@ -47,7 +47,8 @@ export class User implements IUser {
 
     // One-to-Many relationship: A user can have many cards
     @OneToMany(() => Card, (card) => card.user, {
-        eager: true
+        eager: true,
+        cascade: true
     })
     public cards!: Card[];
 
