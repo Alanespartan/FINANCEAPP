@@ -4,14 +4,10 @@ import { Card, Loan, ExpenseType } from "@entities";
 import { CreateExpenseTypePayload, OETypesOfExpense } from "@common/types/expenses";
 import { IUser } from "@common/types/users";
 import { Expense } from "@common/types/payments";
-import { TCardFilters, TCardTypes, UpdateCardPayload } from "@common/types/cards";
+import { TCardFilters, UpdateCardPayload } from "@common/types/cards";
 import {
-    addCard,
-    hasCard,
-    getCard,
-    getCards,
-    getCardId,
-    getCardType,
+    addCard, hasCard,
+    getCard, getCards,
     setOptionsIntoCard
 } from "./methods/cards";
 import {
@@ -115,8 +111,6 @@ User.prototype.addCard = addCard;
 User.prototype.hasCard = hasCard;
 User.prototype.getCard = getCard;
 User.prototype.getCards = getCards;
-User.prototype.getCardId = getCardId;
-User.prototype.getCardType = getCardType;
 User.prototype.setOptionsIntoCard = setOptionsIntoCard;
 // EXPENSE TYPES METHODS
 User.prototype.addExpenseType = addExpenseType;
@@ -134,10 +128,8 @@ declare module "./User" {
     interface User {
         addCard(toAdd: Card): void;
         hasCard(cardNumber: string): boolean;
-        getCard(cardNumber: string): Card | undefined;
+        getCard(cardNumber: string): Card;
         getCards(type: TCardFilters): Card[];
-        getCardId(cardNumber: string): number;
-        getCardType(cardNumber: string): TCardTypes;
         setOptionsIntoCard(cardNumber: string, options: UpdateCardPayload): Card;
 
         addExpenseType(toAdd: ExpenseType): void;

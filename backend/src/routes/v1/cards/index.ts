@@ -278,7 +278,7 @@ router.put("/:cardNumber", async (req, res, next) => {
         /* LIMIT */
         if(options.limit && !typeModified) {
             // if user wants to set a limit to the given card to update but its not a credit card
-            if(user.getCardType(cardNumber) !== OECardTypesFilters.CREDIT) {
+            if(user.getCard(cardNumber).type !== OECardTypesFilters.CREDIT) {
                 throw new BadRequestError("Can't modify the limit attribute of a non credit card.");
             }
             // if the new limit of a credit card is less or equal to 0
@@ -290,7 +290,7 @@ router.put("/:cardNumber", async (req, res, next) => {
         /* IS VOUCHER */
         if(options.isVoucher && !typeModified) {
             // if user wants to set a limit to the given card to update but its not a credit card
-            if(user.getCardType(cardNumber) !== OECardTypesFilters.DEBIT) {
+            if(user.getCard(cardNumber).type !== OECardTypesFilters.DEBIT) {
                 throw new BadRequestError("Can't modify the voucher state of a non debit card.");
             }
         }
