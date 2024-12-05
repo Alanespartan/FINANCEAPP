@@ -23,7 +23,7 @@ export function hasCard(this: User, cardNumber: string): boolean {
 * @param {string} cardNumber Card number to search for.
 */
 export function getCard(this: User, cardNumber: string): Card | undefined {
-    return this.cards.find((c) => c.getCardNumber() === cardNumber);
+    return this.cards.find((c) => c.cardNumber === cardNumber);
 }
 
 /**
@@ -32,7 +32,7 @@ export function getCard(this: User, cardNumber: string): Card | undefined {
 */
 export function getCards(this: User, type: TCardFilters): Card[] {
     if(type !== 0) {
-        return this.cards.filter((c) => c.getCardType() === type);
+        return this.cards.filter((c) => c.type === type);
     }
     return this.cards;
 }
@@ -44,7 +44,7 @@ export function getCards(this: User, type: TCardFilters): Card[] {
 * @param {string} cardNumber Card number to search for.
 */
 export function getCardId(this: User, cardNumber: string): number {
-    return (this.getCard(cardNumber) as Card).getId();
+    return (this.getCard(cardNumber) as Card).id;
 }
 
 /**
@@ -54,7 +54,7 @@ export function getCardId(this: User, cardNumber: string): number {
 * @param {string} cardNumber Card number to search for.
 */
 export function getCardType(this: User, cardNumber: string): TCardTypes {
-    return (this.getCard(cardNumber) as Card).getCardType();
+    return (this.getCard(cardNumber) as Card).type;
 }
 
 /**

@@ -104,9 +104,9 @@ router.post("/", async (req, res, next) => {
         // create expense category using card alias
         // so we can register when paying "TO A CARD"
         const newCardExpenseType = new ExpenseType({
-            name: savedCard.getName(),
+            name: savedCard.name,
             type: OETypesOfExpense.CARD,
-            instrumentId: savedCard.getId()
+            instrumentId: savedCard.id
         } as CreateExpenseTypePayload, user.id);
         user.addExpenseType(newCardExpenseType);
         await DBContextSource.manager.save(newCardExpenseType);
