@@ -1,4 +1,4 @@
-import { MixinsConstructor, ExpenseSubCategory } from "@entities";
+import { MixinsConstructor, ExpenseSubCategory, ExpenseCategory } from "@entities";
 
 export const SubCategoriesMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
     return class extends Base {
@@ -7,6 +7,12 @@ export const SubCategoriesMixin = <TBase extends MixinsConstructor>(Base: TBase)
          */
         public setName(this: ExpenseSubCategory, name: string): void {
             this.name = name;
+        }
+        /** Add an expense category to array
+        * @param {ExpenseCategory} toAdd Expense category to add into array
+        */
+        public addCategory(this: ExpenseSubCategory, toAdd: ExpenseCategory): void {
+            this.categories.push(toAdd);
         }
     };
 };
