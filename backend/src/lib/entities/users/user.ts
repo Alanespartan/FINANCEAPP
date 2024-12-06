@@ -71,9 +71,11 @@ export class User extends ExpenseCategoriesMixin(ExpenseSubCategoriesMixin(Cards
             this.expenseSubCategories = [];
 
             // create default expense categories e.g. "Other", "Unknown", "Groseries"
-            DefaultCategories.forEach((name) => {
-                this.addExpenseCategory(new ExpenseCategory({ name, isDefault: true } as CreateExpenseCategoryPayload));
-            });
+            for(let i = 0; i < DefaultCategories.length; i++) {
+                const options = { name: DefaultCategories[i], isDefault: true } as CreateExpenseCategoryPayload;
+                const toAdd = new ExpenseCategory(options);
+                this.addExpenseCategory(toAdd);
+            }
         }
     }
 
