@@ -2,6 +2,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from "typeorm";
 import { IExpenseType, CreateExpenseTypePayload, TExpenseType } from "@common/types/expenses";
 import { User } from "@entities";
+import { AllExpenseTypesMixin } from "./mixins";
 
 /* TypeScript and TypeORM Custom Attributes Explanation */
 // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
@@ -9,7 +10,7 @@ import { User } from "@entities";
 // onDelete: "CASCADE" - When parent entity is deleted, related objects will be deleted too
 
 @Entity()
-export class ExpenseType implements IExpenseType {
+export class ExpenseType extends AllExpenseTypesMixin(class {}) implements IExpenseType {
     @PrimaryGeneratedColumn()
     public readonly id!: number;
     @Column()
@@ -37,6 +38,7 @@ export class ExpenseType implements IExpenseType {
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
     public constructor(options?: CreateExpenseTypePayload, userId?: number) {
+        super();
         if(options) {
             // FROM PAYLOAD
             this.name = options.name;
