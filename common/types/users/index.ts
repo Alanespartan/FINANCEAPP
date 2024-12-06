@@ -36,18 +36,24 @@ import { IExpenseCategory, IExpenseSubCategory } from "types/expenses";
 *                   type: array
 *                   items:
 *                       $ref: "#/components/schemas/ILoan"
-*               expenseTypes:
+*               expenseCategories:
 *                   type: array
 *                   items:
-*                       $ref: "#/components/schemas/IExpenseType"
+*                       $ref: "#/components/schemas/IExpenseCategory"
+*               expenseSubCategories:
+*                   type: array
+*                   items:
+*                       $ref: "#/components/schemas/IExpenseSubCategory"
 *           required:
 *               - id
 *               - email
 *               - firstName
 *               - lastName
+*               - cash
 *               - cards
 *               - loans
-*               - expenseTypes
+*               - expenseCategories
+*               - expenseSubCategories
 */
 /** Interface used to have a representation of all attributes within the User Class */
 export interface IUser {
