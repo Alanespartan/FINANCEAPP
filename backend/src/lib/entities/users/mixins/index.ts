@@ -1,3 +1,4 @@
 export * from "./cards";
-export * from "./expenseTypes";
+export * from "./expenses/categories";
+export * from "./expenses/subcategories";
 export * from "./loans";

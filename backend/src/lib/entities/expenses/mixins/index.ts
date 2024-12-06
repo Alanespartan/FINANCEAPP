@@ -1,1 +1,2 @@
-export * from "./all";
+export * from "./category";
+export * from "./subcategory";

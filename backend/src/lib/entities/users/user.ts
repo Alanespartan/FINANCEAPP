@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, Unique } from "typeorm";
-import { Card, ExpenseType, Loan } from "@entities";
+import { Card, ExpenseCategory, ExpenseSubCategory, Loan } from "@entities";
 import { IUser } from "@common/types/users";
-import { CreateExpenseTypePayload, OETypesOfExpense } from "@common/types/expenses";
-import {CardsMixin, LoansMixin, ExpenseTypesMixin } from "./mixins";
+import { CreateExpenseCategoryPayload } from "@common/types/expenses";
+import { CardsMixin, LoansMixin, ExpenseCategoriesMixin, ExpenseSubCategoriesMixin } from "./mixins";
 
 /* TypeScript and TypeORM Custom Attributes Explanation */
 // Use TypeORM decorators directly in the final class instead of mixins
@@ -12,7 +12,7 @@ import {CardsMixin, LoansMixin, ExpenseTypesMixin } from "./mixins";
 
 @Entity()
 @Unique([ "email" ]) // This creates a unique constraint on the email column
-export class User extends ExpenseTypesMixin(CardsMixin(LoansMixin(class {}))) implements IUser {
+export class User extends ExpenseCategoriesMixin(ExpenseSubCategoriesMixin(CardsMixin(LoansMixin(class {})))) implements IUser {
     @PrimaryGeneratedColumn()
     public readonly id!: number;
 
@@ -40,11 +40,18 @@ export class User extends ExpenseTypesMixin(CardsMixin(LoansMixin(class {}))) im
     public loans!: Loan[];
 
     // One-to-Many relationship: A user can have many expense categories
-    @OneToMany(() => ExpenseType, (expenseType) => expenseType.user, {
+    @OneToMany(() => ExpenseCategory, (category) => category.user, {
         eager: true,
-        cascade: true,
+        cascade: true
     })
-    public expenseTypes!: ExpenseType[];
+    public expenseCategories!: ExpenseCategory[];
+
+    // One-to-Many relationship: A user can have many expense sub categories
+    @OneToMany(() => ExpenseSubCategory, (subCategory) => subCategory.user, {
+        eager: true,
+        cascade: true
+    })
+    public expenseSubCategories!: ExpenseSubCategory[];
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
     constructor(email?: string, password?: string, firstName?: string, lastName?: string) {
@@ -60,10 +67,22 @@ export class User extends ExpenseTypesMixin(CardsMixin(LoansMixin(class {}))) im
             this.cash         = 0;
             this.cards        = [];
             this.loans        = [];
-            this.expenseTypes = [];
+            this.expenseCategories    = [];
+            this.expenseSubCategories = [];
 
             // create default expense categories e.g. "Other", "Unknown", "Groseries"
-            this.addExpenseType(new ExpenseType({ name: "Other", type: OETypesOfExpense.REALEXPENSE } as CreateExpenseTypePayload));
+            this.addExpenseCategory(new ExpenseCategory({ name: "Cards", isDefault: true } as CreateExpenseCategoryPayload));
+            this.addExpenseCategory(new ExpenseCategory({ name: "Loans", isDefault: true } as CreateExpenseCategoryPayload));
+            this.addExpenseCategory(new ExpenseCategory({ name: "Leisure", isDefault: true } as CreateExpenseCategoryPayload));
+            this.addExpenseCategory(new ExpenseCategory({ name: "Sports", isDefault: true } as CreateExpenseCategoryPayload));
+            this.addExpenseCategory(new ExpenseCategory({ name: "Food", isDefault: true } as CreateExpenseCategoryPayload));
+            this.addExpenseCategory(new ExpenseCategory({ name: "Health", isDefault: true } as CreateExpenseCategoryPayload));
+            this.addExpenseCategory(new ExpenseCategory({ name: "Beauty", isDefault: true } as CreateExpenseCategoryPayload));
+            this.addExpenseCategory(new ExpenseCategory({ name: "Transport", isDefault: true } as CreateExpenseCategoryPayload));
+            this.addExpenseCategory(new ExpenseCategory({ name: "Government", isDefault: true } as CreateExpenseCategoryPayload));
+            this.addExpenseCategory(new ExpenseCategory({ name: "Online Subscriptions", isDefault: true } as CreateExpenseCategoryPayload));
+            this.addExpenseCategory(new ExpenseCategory({ name: "Online Shopping", isDefault: true } as CreateExpenseCategoryPayload));
+            this.addExpenseCategory(new ExpenseCategory({ name: "Other", isDefault: true } as CreateExpenseCategoryPayload));
         }
     }
 
@@ -76,7 +95,8 @@ export class User extends ExpenseTypesMixin(CardsMixin(LoansMixin(class {}))) im
             cash:         this.cash,
             cards:        this.cards,
             loans:        this.loans,
-            expenseTypes: this.expenseTypes
+            expenseCategories:    this.expenseCategories,
+            expenseSubCategories: this.expenseSubCategories
         };
     }
 }
