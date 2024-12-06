@@ -25,13 +25,34 @@ export interface CreateExpenseCategoryPayload {
     isDefault: boolean;
 }
 
+/**
+* @swagger
+* components:
+*   schemas:
+*       CreateExpenseSubCategoryPayload:
+*           type: object
+*           properties:
+*               name:
+*                   type: string
+*                   example: Gaming
+*               type:
+*                   $ref: "#/components/schemas/TExpenseType"
+*               instrumentId:
+*                   type: number
+*                   format: integer
+*                   example: 1
+*                   description: Can be DB cardId, loanId or undefined if type is Real Expense (not a card, loan)
+*           required:
+*               - name
+*               - type
+*/
 /** Interface that defines all the attributes within the payload for creating a new user expense sub category. */
 export interface CreateExpenseSubCategoryPayload {
-    /** e.g. Cards - Loans - Insurances - Online Suscriptions - Transport - Gaming */
+    /** e.g. Netflix - Holidays - Board Games - Uber Eats - Health Insurance */
     name: string;
     /** Depending on the type we refer to a Real Expense (1), Card (2) or Loan (3) */
     type: TExpenseType;
-    /** Can be DB cardId, loanId, savingId or undefined if type is Real Expense */
+    /** Can be DB cardId, loanId or undefined if type is Real Expense */
     instrumentId?: number;
 }
 
@@ -46,13 +67,25 @@ export interface CreateExpenseSubCategoryPayload {
 *                   type: string
 *                   example: Cards - Loans - Insurances - Online Suscriptions - Transport - Gaming
 */
-/** Representes the expected and possible parameters during a PUT request to update a user expense type. */
+/** Representes the expected and possible parameters during a PUT request to update a user expense category. */
 export interface UpdateExpenseCategoryPayload {
-    /** If user set a new name to the card. */
+    /** If user set a new name to the expense category */
     name?: string;
 }
 
+/**
+* @swagger
+* components:
+*   schemas:
+*       UpdateExpenseSubCategoryPayload:
+*           type: object
+*           properties:
+*               name:
+*                   type: string
+*                   example: Netflix - Holidays - Board Games - Uber Eats - Health Insurance
+*/
+/** Representes the expected and possible parameters during a PUT request to update a user expense sub category. */
 export interface UpdateExpenseSubCategoryPayload {
-    /** If user set a new name to the card. */
+    /** If user set a new name to the expense sub category */
     name?: string;
 }
