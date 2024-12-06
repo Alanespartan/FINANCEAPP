@@ -8,6 +8,7 @@ import { CategoriesMixin } from "./mixins";
 // Use TypeORM decorators directly in the final class instead of mixins
 // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
 // eager: true - When object is fetched, typeorm will automatically fetch all the attached objects
+// cascade: true - unless you specify the cascade option in the relationship decorator, TypeORM wont automatically save related entities when saving the parent user entity.
 
 @Entity()
 @Unique([ "name" ]) // This creates a unique constraint on the name column
@@ -31,7 +32,7 @@ export class ExpenseCategory extends CategoriesMixin(class {}) implements IExpen
     public userId!: number; // Explicitly define the foreign key column
 
     // Many-to-Many relationship: A category can have many sub categories and a sub category can appear in many categories
-    @ManyToMany(() => ExpenseSubCategory, (sub) => sub.categories, { eager: true })
+    @ManyToMany(() => ExpenseSubCategory, (sub) => sub.categories, { eager: true, cascade: [ "insert" ] })
     @JoinTable()
     public subcategories!: ExpenseSubCategory[];
 
@@ -43,10 +44,11 @@ export class ExpenseCategory extends CategoriesMixin(class {}) implements IExpen
     constructor(options?: CreateExpenseCategoryPayload, userId?: number) {
         super();
         if(options) {
-            //
+            this.name      = options.name;
+            this.isDefault = options.isDefault;
         }
         if(userId) {
-            //
+            this.userId = userId;
         }
     }
 
