@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { TExpenseTypeFilter } from "@common/types/expenses";
 import { MixinsConstructor, ExpenseType, User } from "@entities";
 
 export const ExpenseTypesMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
@@ -30,7 +31,10 @@ export const ExpenseTypesMixin = <TBase extends MixinsConstructor>(Base: TBase) 
         * Get all stored user expense types.
         * @returns {ExpenseType[]} User expense types array
         */
-        public getExpenseTypes(this: User): ExpenseType[] {
+        public getExpenseTypes(this: User, type: TExpenseTypeFilter): ExpenseType[] {
+            if(type !== 0) {
+                return this.expenseTypes.filter((et) => et.type === type);
+            }
             return this.expenseTypes;
         }
     };
