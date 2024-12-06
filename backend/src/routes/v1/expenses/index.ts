@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Router } from "express";
 import { BadRequestError } from "@errors";
-import { createExpenseType, getUserExpenseTypes } from "@entities/expenses/functions/db";
+import { saveExpenseType } from "@entities/expenses/functions/db";
 import { isValidExpenseTypeFilter } from "@entities/expenses/functions/util";
 import { OETypesOfExpense, CreateExpenseTypePayload } from "@common/types/expenses";
 import { ExpenseType } from "@entities";
@@ -42,26 +41,18 @@ router.post("/", async (req, res, next) => {
             throw new BadRequestError(`Invalid type (${options.type})for creating a new expense type.`);
         }
 
-        // avoid creating a duplicate if a card with the given card number already exists
+        // avoid creating a duplicate if an expense type with the given name already exists
         if(user.expenseTypes.find((et) => et.name === options.name)) {
-            throw new BadRequestError(`An expense type given "${options.name}" name already exists.`);
+            throw new BadRequestError(`An expense type with the given "${options.name}" name already exists.`);
         }
 
-        // create new expense type
-        const newCardExpenseType = new ExpenseType(options, user.id);
-        // save new expense type in db
-        await createExpenseType(newCardExpenseType);
+        // save new card in db
+        const savedExpenseType = await saveExpenseType(new ExpenseType(options, user.id));
 
-        // get updated data from db (otherwise we don't know the new expense type id)
-        const data = await getUserExpenseTypes(user.id);
         // update cached data for future get operations
-        user.expenseTypes = [];
-        user.expenseTypes = data;
+        user.addExpenseType(savedExpenseType);
 
-        // build response TODO EXPENSE TYPE fix this to be non null
-        const toReturn = data.find((et) => et.name === options.name)!.toInterfaceObject(); // TODO EXPENSE TYPE create get method in user class for modularity
-
-        return res.status(200).json(toReturn);
+        return res.status(200).json(savedExpenseType.toInterfaceObject());
     } catch(error) { return next(error); }
 });
 
@@ -96,20 +87,17 @@ router.get("/types", async (req, res, next) => {
         const expenseType = req.query.expenseType; // by default is always "ALL" (if not modified by user in the front end)
 
         if(expenseType && typeof expenseType !== "string") {
-            throw new BadRequestError("Expense type filter was given in the incorrect format.");
+            throw new BadRequestError("No expense type filter was given in the correct format.");
         }
 
-        // Verify given expense type is valid
+        // If no expenseType given, default is to get all
         const filterBy = expenseType ? parseInt(expenseType) : OETypesOfExpense.ALL;
+        // Verify given expense type is valid
         if(!isValidExpenseTypeFilter(filterBy)) {
             throw new BadRequestError("Invalid type for filtering expense types.");
         }
 
-        if(filterBy === OETypesOfExpense.ALL) {
-            return res.status(200).json(user.expenseTypes);
-        } else {
-            return res.status(200).json(user.expenseTypes.filter((et) => et.type === filterBy));
-        }
+        return res.status(200).json(user.getExpenseTypes(filterBy));
     } catch(error) { return next(error); }
 });
 

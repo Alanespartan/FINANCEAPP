@@ -6,10 +6,10 @@ import {
 import { CreateExpenseTypePayload, OETypesOfExpense } from "@common/types/expenses";
 import { BadRequestError, NotFoundError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
-import { User, Card, ExpenseType } from "@entities";
+import { Card, ExpenseType } from "@entities";
 import { verifyCreateCardBody, isValidCardFilter, isValidCardType } from "@entities/cards/functions/util";
 import { saveCard, getBank } from "@entities/cards/functions/db";
-import DBContextSource from "@db";
+import { saveExpenseType } from "@entities/expenses/functions/db";
 
 const router = Router();
 
@@ -98,19 +98,21 @@ router.post("/", async (req, res, next) => {
 
         // save new card in db
         const savedCard = await saveCard(newCard);
+
+        // save new expense category using card info so we can register when paying "TO THIS CARD"
+        const savedCardExpenseType = await saveExpenseType(
+            new ExpenseType(
+                {
+                    name: savedCard.name,
+                    type: OETypesOfExpense.CARD,
+                    instrumentId: savedCard.id
+                } as CreateExpenseTypePayload, user.id
+            )
+        );
+
         // update cached data for future get operations
         user.addCard(savedCard);
-
-        // TODO EXPENSE TYPE add functions
-        // create expense category using card alias
-        // so we can register when paying "TO A CARD"
-        const newCardExpenseType = new ExpenseType({
-            name: savedCard.name,
-            type: OETypesOfExpense.CARD,
-            instrumentId: savedCard.id
-        } as CreateExpenseTypePayload, user.id);
-        user.addExpenseType(newCardExpenseType);
-        await DBContextSource.manager.save(newCardExpenseType);
+        user.addExpenseType(savedCardExpenseType);
 
         return res.status(201).json(savedCard.toInterfaceObject());
     } catch(error) { return next(error); }
@@ -143,7 +145,7 @@ router.post("/", async (req, res, next) => {
 */
 router.get("/", async (req, res, next) => {
     try {
-        const user: User = req.userData;
+        const user     = req.userData;
         const cardType = req.query.cardType; // by default is always "ALL" cards (if not modified by user in the front end)
 
         if(cardType && typeof cardType !== "string") {
