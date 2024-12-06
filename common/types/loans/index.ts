@@ -5,7 +5,7 @@ import { IBank, TPayFrequency } from "../util";
 * @swagger
 * components:
 *   schemas:
-*       ICard:
+*       ILoan:
 *           type: object
 *           properties:
 *               id:
