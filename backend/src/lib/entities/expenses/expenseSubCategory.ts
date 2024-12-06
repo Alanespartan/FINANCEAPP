@@ -15,8 +15,6 @@ export class ExpenseSubCategory extends SubCategoriesMixin(class {}) implements 
     public readonly id!: number;
     @Column()
     public name!: string;
-    @Column()
-    public type!: TExpenseType;
 
     // Many-to-One relationship: An expense sub category belongs to one user, but a user can have many sub categories
     @ManyToOne(() => User, (user) => user.expenseSubCategories, {
@@ -28,12 +26,15 @@ export class ExpenseSubCategory extends SubCategoriesMixin(class {}) implements 
     @Column()
     public userId!: number; // Explicitly define the foreign key column
 
-    // Many-to-Many relationship: A category can have many sub categories and a sub category can appear in many categories
-    @ManyToMany(() => ExpenseCategory, (cat) => cat.subcategories)
-    public categories!: ExpenseCategory[];
+    @Column()
+    public type!: TExpenseType;
 
     @Column({ nullable: true })
     public instrumentId?: number;
+
+    // Many-to-Many relationship: A category can have many sub categories and a sub category can appear in many categories
+    @ManyToMany(() => ExpenseCategory, (cat) => cat.subcategories)
+    public categories!: ExpenseCategory[];
 
     // Index signature allows using a string key to access properties
     // Note: This might cause erros with prototype if not handled correctly!!
