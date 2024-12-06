@@ -3,13 +3,13 @@ import {
     OECardTypesFilters,
     UpdateCardPayload
 } from "@common/types/cards";
-import { CreateExpenseTypePayload, OETypesOfExpense } from "@common/types/expenses";
+import { CreateExpenseSubCategoryPayload, OETypesOfExpense } from "@common/types/expenses";
 import { BadRequestError, NotFoundError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
-import { Card, ExpenseType } from "@entities";
+import { Card, ExpenseSubCategory } from "@entities";
 import { verifyCreateCardBody, isValidCardFilter, isValidCardType } from "@entities/cards/functions/util";
 import { saveCard, getBank } from "@entities/cards/functions/db";
-import { saveExpenseType } from "@entities/expenses/functions/db";
+import { saveExpenseCategory } from "@entities/expenses/functions/db";
 
 const router = Router();
 
@@ -99,20 +99,32 @@ router.post("/", async (req, res, next) => {
         // save new card in db
         const savedCard = await saveCard(newCard);
 
-        // save new expense category using card info so we can register when paying "TO THIS CARD"
-        const savedCardExpenseType = await saveExpenseType(
-            new ExpenseType(
-                {
-                    name: savedCard.name,
-                    type: OETypesOfExpense.CARD,
-                    instrumentId: savedCard.id
-                } as CreateExpenseTypePayload, user.id
-            )
+        /* Developer Note:
+            Updating both sides (e.g., adding the SubCategory to Category.subcategories and adding the Category to SubCategory.categories) is redundant.
+            TypeORM will synchronize the relationship correctly based on the owning side (Category in this case).
+        */
+        // get default cards expense category
+        let cardsExpenseCategory = user.getExpenseCategoryByName("Cards");
+
+        // create new expense sub category using card info so we can register when paying "TO THIS CARD"
+        const toSaveSubCategory = new ExpenseSubCategory(
+            {
+                name: savedCard.name,
+                type: OETypesOfExpense.CARD,
+                instrumentId: savedCard.id
+            } as CreateExpenseSubCategoryPayload, user.id
         );
+
+        // add sub category into "Cards" category (no need to have id since category has cascade when updated)
+        cardsExpenseCategory.addSubCategory(toSaveSubCategory);
+
+        // save updated cards category which is the owner of the relationship (it has JoinColumn decorator and cascade) and has the new sub category
+        const savedCardsCategory = await saveExpenseCategory(cardsExpenseCategory);
 
         // update cached data for future get operations
         user.addCard(savedCard);
-        user.addExpenseType(savedCardExpenseType);
+        cardsExpenseCategory = savedCardsCategory; // replace existing ref in memory value with returned object from query
+        user.addExpenseSubCategory(savedCardsCategory.getExpenseSubCategoryByName(toSaveSubCategory.name)); // from returned object get the card sub category and add it to user array
 
         return res.status(201).json(savedCard.toInterfaceObject());
     } catch(error) { return next(error); }
