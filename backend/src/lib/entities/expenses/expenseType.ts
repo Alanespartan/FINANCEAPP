@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from "typeorm";
 import { IExpenseType, CreateExpenseTypePayload, TExpenseType } from "@common/types/expenses";
 import { User } from "@entities";
@@ -30,6 +31,9 @@ export class ExpenseType implements IExpenseType {
     public user!: User;
     @Column()
     public userId!: number; // Explicitly define the foreign key column
+
+    // Index signature allows using a string key to access properties
+    [key: string]: any;  // You can replace `any` with a more specific type if needed
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
     public constructor(options?: CreateExpenseTypePayload, userId?: number) {
