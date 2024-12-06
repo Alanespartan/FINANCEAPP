@@ -48,6 +48,10 @@ const JSDocsOptions = {
         "./src/routes/v1/expenses/*.ts",
         "../common/types/expenses/*.ts",
 
+        // LOANS
+        "./src/routes/v1/loans/*.ts",
+        "../common/types/loans/*.ts",
+
         // OTHERS
         "../common/types/*.ts"
     ]
