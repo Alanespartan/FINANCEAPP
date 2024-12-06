@@ -70,7 +70,7 @@ router.post("/", async (req, res, next) => {
 *           400:
 *               description: Bad Request Error
 */
-router.get("/types", async (req, res, next) => {
+router.get("/", async (req, res, next) => {
     try {
         const user = req.userData;
 
@@ -125,6 +125,11 @@ router.put("/:id", async (req, res, next) => {
         const toUpdate = user.setOptionsIntoExpenseCategory(parsedId, options);
         // apply expense type changes in db using updated object
         const savedExpenseCategory = await saveExpenseCategory(toUpdate);
+
+        // TODO CATEGORY validate this works
+        let inMemoryCategory = user.getExpenseCategoryById(parsedId);
+        inMemoryCategory = savedExpenseCategory;
+        console.log(inMemoryCategory);
 
         return res.status(200).json(savedExpenseCategory.toInterfaceObject());
     } catch(error) { return next(error); }
