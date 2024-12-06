@@ -10,36 +10,64 @@ enum SessionDebugLevel {
 const router = Router();
 
 /**
- * @api {get} /api/v1/status Get the status of the API.
- * @apiName GetAPIStatus
- * @apiGroup Status
- *
- * @apiSuccess (Success) {Object[]} status
- * @apiSuccess (Success) {String} servers.status Status of the API.
- * @apiSuccess (Success) {String[]} servers.messages Information important to the user (new versions, downtime, etc.)
- */
+* @swagger
+* /api/v1/status:
+*   get:
+*       summary: Get APIS tatus
+*       description: Get the status of the API.
+*       tags:
+*           - Status
+*       responses:
+*           200:
+*               description: A JSON representation of the User object.
+*               content:
+*                   application/json:
+*                       schema:
+*                           type: object
+*                           properties:
+*                               status:
+*                                   type: string
+*                                   example: ok
+*                               messages:
+*                                   type: array
+*                                   items:
+*                                       type: string
+*           400:
+*               description: Bad Request Error
+*/
 router.get("/", (_, res) => {
     const health = {
         status: "ok",
         messages: [],
     };
     res.setHeader("content-type", "application/json");
-    return res.send(health);
+    return res.status(200).json(health);
 });
 
 /**
- * @api {get} /api/v1/status/whoami Get information about the logged in user.
- * @apiName GetWhoAmI
- * @apiGroup Status
- *
- * @apiError (User Errors) {Object} Unauthorized User is not logged in.
- */
+* @swagger
+* /api/v1/status/whoami:
+*   get:
+*       summary: Logged user info
+*       description: Get information about the logged in user.
+*       tags:
+*           - Status
+*       responses:
+*           200:
+*               description: A JSON representation of the User object.
+*               content:
+*                   application/json:
+*                       schema:
+*                           $ref: "#/components/schemas/IUser"
+*           400:
+*               description: Bad Request Error
+*/
 router.get("/whoami", async (req, res) => {
     const obj: Record<string, any> = {};
     if(req.userData) {
         obj.userData = req.userData;
     }
-    return res.json(obj);
+    return res.status(200).json(obj);
 });
 
 router.post("/logs-level", async (req, res) => {
