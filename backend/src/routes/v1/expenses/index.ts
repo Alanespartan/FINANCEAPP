@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Router } from "express";
 import { BadRequestError } from "@errors";
-import { createExpenseType, getUserExpenseTypes } from "./functions/db";
-import { isValidExpenseTypeFilter } from "./functions/util";
+import { createExpenseType, getUserExpenseTypes } from "@entities/expenses/functions/db";
+import { isValidExpenseTypeFilter } from "@entities/expenses/functions/util";
 import { OETypesOfExpense, CreateExpenseTypePayload } from "@common/types/expenses";
 import { ExpenseType } from "@entities";
 
