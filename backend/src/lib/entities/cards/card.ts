@@ -3,12 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index, U
 import { CreateCardPayload, TCardTypes, ICard } from "@common/types/cards";
 import { User, Bank } from "@entities";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
-import {
-    setName, setCardNumber, setExpirationDate, setArchived,
-    setType, doPayment, addBalance, getIssuer
-} from "./methods/all";
-import { setLimit, getLimit, getUsedCredit } from "./methods/credit";
-import { setIsVoucher, getIsVoucher } from "./methods/voucher";
+import { AllCardsMixin, CreditCardMixin, VoucherCardMixin } from "./mixins";
 
 /* TypeScript and TypeORM Custom Attributes Explanation */
 // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
@@ -17,7 +12,7 @@ import { setIsVoucher, getIsVoucher } from "./methods/voucher";
 
 @Entity()
 @Unique([ "cardNumber" ]) // This creates a unique constraint on the cardNumber column
-export class Card implements ICard {
+export class Card extends AllCardsMixin(CreditCardMixin(VoucherCardMixin(class {}))) implements ICard {
     @PrimaryGeneratedColumn()
     public readonly id!: number;
     @Column()
@@ -63,6 +58,7 @@ export class Card implements ICard {
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
     public constructor(options?: CreateCardPayload, userId?: number) {
+        super();
         if(options) {
             // FROM PAYLOAD
             this.name       = options.name ?? `Tarjeta ${options.cardNumber}`;
@@ -84,7 +80,7 @@ export class Card implements ICard {
         }
     }
 
-    public toInterfaceObject() {
+    public toInterfaceObject(): ICard {
         return {
             id:         this.id,
             cardNumber: this.cardNumber,
@@ -97,61 +93,6 @@ export class Card implements ICard {
             bankId:     this.bankId,
             limit:      this.limit,
             isVoucher:  this.isVoucher,
-        } as ICard;
-    }
-}
-
-/* Attach methods from external files for modularity */
-// GENERAL CARD METHODS
-Card.prototype.setName = setName;
-Card.prototype.setCardNumber = setCardNumber;
-Card.prototype.setExpirationDate = setExpirationDate;
-Card.prototype.setArchived = setArchived;
-Card.prototype.setType = setType;
-Card.prototype.doPayment = doPayment;
-Card.prototype.addBalance = addBalance;
-Card.prototype.getIssuer = getIssuer;
-// CREDIT CARD METHODS
-Card.prototype.setLimit = setLimit;
-Card.prototype.getLimit = getLimit;
-Card.prototype.getUsedCredit = getUsedCredit;
-// VOUCHER CARD METHODS
-Card.prototype.setIsVoucher = setIsVoucher;
-Card.prototype.getIsVoucher = getIsVoucher;
-
-// TypeScript doesn’t know about dynamically added methods (prototype), even though they exist at runtime.
-// Declare additional methods to satisfy TypeScript's type system satefy check.
-// When extending the class in a declare module, we only need to declare the method's normal parameters and return type
-// TypeScript knows the method will be called in the context of a Card instance, so it infers that this refers to Card.
-declare module "./Card" {
-    interface Card {
-        /** Update card custom name */
-        setName(this: Card, name: string): void;
-        /** Update card number */
-        setCardNumber(this: Card, cardNumber: string): void;
-        /** Update card expiration date using a timestamp date */
-        setExpirationDate(this: Card, expires: number): void;
-        /** Update archived card attribute */
-        setArchived(this: Card, archived: boolean): void;
-        /** Update card type */
-        setType(this: Card, type: TCardTypes): void;
-        /** Reduce balance from card if there is enough to do a payment, otherwise throws an error */
-        doPayment(this: Card, amountToPay: number): void;
-        /** Add money to card balance */
-        addBalance(this: Card, amount: number): void;
-        /** Get issuer bank information */
-        getIssuer(this: Card): Bank;
-
-        /** Update credit card limit value */
-        setLimit(this: Card, limit: number): void;
-        /** Get credit card limit value */
-        getLimit(this: Card): number;
-        /** Get used balance from credit card according to its given limit */
-        getUsedCredit(this: Card): number;
-
-        /** Update isVoucher card attribute */
-        setIsVoucher(this: Card, isVoucher: boolean): void;
-        /** Get isVoucher value if card id debit, otherwise throws an error */
-        getIsVoucher(this: Card): boolean;
+        };
     }
 }
