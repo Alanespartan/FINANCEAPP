@@ -1,6 +1,6 @@
 import { ILoan } from "types/loans";
 import { ICard } from "../cards";
-import { IExpenseType } from "types/expenses";
+import { IExpenseCategory, IExpenseSubCategory } from "types/expenses";
 
 /**
 * @swagger
@@ -65,8 +65,10 @@ export interface IUser {
     cards: ICard[];
     /** All loans the user has registered */
     loans: ILoan[];
-    /** All expense types the user has registered */
-    expenseTypes: IExpenseType[];
+    /** All expense categories the user has registered */
+    expenseCategories: IExpenseCategory[];
+    /** All expense sub categories the user has registered */
+    expenseSubCategories: IExpenseSubCategory[];
 }
 
 /**
