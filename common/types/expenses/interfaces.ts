@@ -1,5 +1,21 @@
 import { TExpenseType } from "./types";
 
+/** Main categories that are created when the user constructor is called. */
+export const DefaultCategories = [
+    "Cards",
+    "Loans",
+    "Leisure",
+    "Sports",
+    "Food",
+    "Health",
+    "Beauty",
+    "Transport",
+    "Government",
+    "Online Subscriptions",
+    "Online Shopping",
+    "Other"
+];
+
 /**
 * @swagger
 * components:

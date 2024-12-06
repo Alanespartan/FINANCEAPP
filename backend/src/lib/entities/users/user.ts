@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, Unique } from "typeorm";
 import { Card, ExpenseCategory, ExpenseSubCategory, Loan } from "@entities";
 import { IUser } from "@common/types/users";
-import { CreateExpenseCategoryPayload } from "@common/types/expenses";
+import { DefaultCategories, CreateExpenseCategoryPayload } from "@common/types/expenses";
 import { CardsMixin, LoansMixin, ExpenseCategoriesMixin, ExpenseSubCategoriesMixin } from "./mixins";
 
 /* TypeScript and TypeORM Custom Attributes Explanation */
@@ -71,18 +71,9 @@ export class User extends ExpenseCategoriesMixin(ExpenseSubCategoriesMixin(Cards
             this.expenseSubCategories = [];
 
             // create default expense categories e.g. "Other", "Unknown", "Groseries"
-            this.addExpenseCategory(new ExpenseCategory({ name: "Cards", isDefault: true } as CreateExpenseCategoryPayload));
-            this.addExpenseCategory(new ExpenseCategory({ name: "Loans", isDefault: true } as CreateExpenseCategoryPayload));
-            this.addExpenseCategory(new ExpenseCategory({ name: "Leisure", isDefault: true } as CreateExpenseCategoryPayload));
-            this.addExpenseCategory(new ExpenseCategory({ name: "Sports", isDefault: true } as CreateExpenseCategoryPayload));
-            this.addExpenseCategory(new ExpenseCategory({ name: "Food", isDefault: true } as CreateExpenseCategoryPayload));
-            this.addExpenseCategory(new ExpenseCategory({ name: "Health", isDefault: true } as CreateExpenseCategoryPayload));
-            this.addExpenseCategory(new ExpenseCategory({ name: "Beauty", isDefault: true } as CreateExpenseCategoryPayload));
-            this.addExpenseCategory(new ExpenseCategory({ name: "Transport", isDefault: true } as CreateExpenseCategoryPayload));
-            this.addExpenseCategory(new ExpenseCategory({ name: "Government", isDefault: true } as CreateExpenseCategoryPayload));
-            this.addExpenseCategory(new ExpenseCategory({ name: "Online Subscriptions", isDefault: true } as CreateExpenseCategoryPayload));
-            this.addExpenseCategory(new ExpenseCategory({ name: "Online Shopping", isDefault: true } as CreateExpenseCategoryPayload));
-            this.addExpenseCategory(new ExpenseCategory({ name: "Other", isDefault: true } as CreateExpenseCategoryPayload));
+            DefaultCategories.forEach((name) => {
+                this.addExpenseCategory(new ExpenseCategory({ name, isDefault: true } as CreateExpenseCategoryPayload));
+            });
         }
     }
 
