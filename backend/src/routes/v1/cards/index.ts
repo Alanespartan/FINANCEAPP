@@ -88,6 +88,7 @@ router.post("/", async (req, res, next) => {
                 if(options.isVoucher) {
                     throw new BadRequestError("A credit card can't be categorized as a voucher card.");
                 }
+                // TODO CARD validate this scenario is working correclty: if new card is added with used balance or full balance
                 newCard.setLimit(options.limit);
                 break;
             case OECardTypesFilters.SERVICES:
