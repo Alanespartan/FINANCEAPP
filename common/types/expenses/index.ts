@@ -162,3 +162,26 @@ export interface CreateExpenseTypePayload {
     /** Can be DB cardId, loanId, savingId or undefined if type is Real Expense */
     instrumentId?: number;
 }
+
+/**
+* @swagger
+* components:
+*   schemas:
+*       UpdateExpenseTypePayload:
+*           type: object
+*           properties:
+*               archived:
+*                   type: boolean
+*                   example: false
+*               name:
+*                   type: string
+*                   description: The name of the card.
+*                   example: Visa (Crédito|Débito) BBVA Digital
+*/
+/** Representes the expected and possible parameters during a PUT request to update a user expense type. */
+export interface UpdateExpenseTypePayload {
+    /** If user decides to delete a card, archived instead for data safety and governance. */
+    archived?: boolean;
+    /** If user set a new name to the card. */
+    name?: string;
+}
