@@ -35,7 +35,7 @@ export const ExpenseSubCategoriesMixin = <TBase extends MixinsConstructor>(Base:
         }
         /**
         * Get a specific stored expense sub category using its name. Use hasExpenseSubCategory() first for safety check.
-        * @param {string | number} toSearch expense sub category name to search for
+        * @param {string} toSearch expense sub category name to search for
         * @returns {ExpenseSubCategory} The desired expense sub category object
         */
         public getExpenseSubCategoryByName(this: User, toSearch: string): ExpenseSubCategory {
