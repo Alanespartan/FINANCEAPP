@@ -1,6 +1,7 @@
 import { ExpenseSubCategory } from "@entities";
 import { BadRequestError } from "@errors";
 import { saveExpenseCategory } from "@entities/expenses/functions/db";
+import { isValidRealExpense, isValidExpenseSubCategoryFilter } from "@entities/expenses/functions/util";
 import { CreateExpenseSubCategoryPayload, OETypesOfExpense } from "@common/types/expenses";
 import { Router } from "express";
 
@@ -35,6 +36,11 @@ router.post("/", async (req, res, next) => {
         const user    = req.userData;
         const options = req.body as CreateExpenseSubCategoryPayload;
 
+        // avoid creating sub categories with incorrect type (cards and loans sub categories must be created on their respective endpoints)
+        if(!isValidRealExpense(options.type)) {
+            throw new BadRequestError(`Can't create "${options.name}" sub category since an incorrect type "${options.type}" was used in creation payload.`);
+        }
+
         // check if parent category does really exist in user info
         if(!user.hasExpenseCategory(options.categoryId, "id")) {
             throw new BadRequestError(`There is no expense category with the given "${options.name}" id.`);
@@ -49,13 +55,7 @@ router.post("/", async (req, res, next) => {
         let parentCategory = user.getExpenseCategoryById(options.categoryId);
 
         // create new expense sub category using payload info
-        const toSaveSubCategory = new ExpenseSubCategory(
-            {
-                name: options.name,
-                type: OETypesOfExpense.REALEXPENSE,
-                instrumentId: undefined
-            } as CreateExpenseSubCategoryPayload, user.id
-        );
+        const toSaveSubCategory = new ExpenseSubCategory(options, user.id);
 
         // add new sub category object into "Parent" category (no need to have new object id since category entity has cascade insert option enabled)
         parentCategory.addSubCategory(toSaveSubCategory);
@@ -81,6 +81,11 @@ router.post("/", async (req, res, next) => {
 *       description: Get all expense sub categories a user has registered.
 *       tags:
 *           - Expenses
+*       parameters:
+*           - in: query
+*             name: type
+*             schema:
+*               type: integer
 *       responses:
 *           200:
 *               description: An array of expense sub categories a user has registered.
@@ -96,6 +101,17 @@ router.post("/", async (req, res, next) => {
 router.get("/", async (req, res, next) => {
     try {
         const user = req.userData;
+        const type = req.query.type; // by default is always "ALL" expense sub categories (if not modified by user in the front end)
+
+        if(type && typeof type !== "string") {
+            throw new BadRequestError("No expense subcategory type filter was given in the correct format.");
+        }
+
+        // If no type given, default is to get all
+        const filterBy = type ? parseInt(type) : OETypesOfExpense.ALL;
+        if(!isValidExpenseSubCategoryFilter(filterBy)) {
+            throw new BadRequestError("Invalid type for filtering cards.");
+        }
 
         return res.status(200).json(user.getExpenseSubCategories());
     } catch(error) { return next(error); }
