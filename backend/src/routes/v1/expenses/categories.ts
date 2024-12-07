@@ -21,7 +21,7 @@ const router = Router();
 *                   schema:
 *                       $ref: "#/components/schemas/CreateExpenseCategoryPayload"
 *       responses:
-*           200:
+*           201:
 *               description: A JSON representation of the recently created expense category.
 *               content:
 *                   application/json:
@@ -46,7 +46,7 @@ router.post("/", async (req, res, next) => {
         // update cached data for future get operations
         user.addExpenseCategory(savedExpenseCategory);
 
-        return res.status(200).json(savedExpenseCategory.toInterfaceObject());
+        return res.status(201).json(savedExpenseCategory.toInterfaceObject());
     } catch(error) { return next(error); }
 });
 

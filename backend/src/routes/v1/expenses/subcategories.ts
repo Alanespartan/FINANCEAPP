@@ -22,7 +22,7 @@ const router = Router();
 *                   schema:
 *                       $ref: "#/components/schemas/CreateExpenseSubCategoryPayload"
 *       responses:
-*           200:
+*           201:
 *               description: A JSON representation of the recently created expense sub category.
 *               content:
 *                   application/json:
@@ -69,7 +69,7 @@ router.post("/", async (req, res, next) => {
         const createdSubCategory = parentCategory.getExpenseSubCategoryByName(toSaveSubCategory.name);
         user.addExpenseSubCategory(createdSubCategory);
 
-        return res.status(200).json(createdSubCategory.toInterfaceObject());
+        return res.status(201).json(createdSubCategory.toInterfaceObject());
     } catch(error) { return next(error); }
 });
 
