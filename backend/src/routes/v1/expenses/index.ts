@@ -1,6 +1,6 @@
 import { Router } from "express";
 import categoriesRouter from "./categories";
-import subcategoriesRouter from "./categories";
+import subcategoriesRouter from "./subcategories";
 
 const router = Router();
 
