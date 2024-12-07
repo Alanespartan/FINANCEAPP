@@ -45,7 +45,7 @@ export const ExpenseSubCategoriesMixin = <TBase extends MixinsConstructor>(Base:
         * Get all stored user expense categories.
         * @returns {ExpenseSubCategory[]} User expense categories array
         */
-        public getexpenseSubCategories(this: User): ExpenseSubCategory[] {
+        public getExpenseSubCategories(this: User): ExpenseSubCategory[] {
             return this.expenseSubCategories;
         }
         /**
