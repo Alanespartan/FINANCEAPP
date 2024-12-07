@@ -64,7 +64,6 @@ export class ExpenseSubCategory extends SubCategoriesMixin(class {}) implements 
             name:         this.name,
             type:         this.type,
             userId:       this.userId,
-            categories:   this.categories,
             instrumentId: this.instrumentId
         };
     }

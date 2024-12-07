@@ -91,10 +91,6 @@ export interface IExpenseCategory {
 *                   format: integer
 *                   example: 1
 *                   description: DB Foreign Key - User ID
-*               categories:
-*                   type: array
-*                   items:
-*                       $ref: "#/components/schemas/IExpenseCategory"
 *               instrumentId:
 *                   type: number
 *                   format: integer
@@ -105,7 +101,6 @@ export interface IExpenseCategory {
 *               - name
 *               - type
 *               - userId
-*               - categories
 */
 /** This interface is similar to a "Tag", since it helps for grouping expenses by sub category. A sub category can appear in multiple categories.
 *
@@ -122,10 +117,15 @@ export interface IExpenseSubCategory {
     type: TExpenseType;
     /** DB Foreign Key - User ID */
     userId: number;
-    /** Categories where the sub category appears */
-    categories: IExpenseCategory[];
     /** Can be DB cardId, loanId or undefined if type is Real Expense (not a card, loan) */
     instrumentId?: number;
+    /** Categories where the sub category appears
+    categories: IExpenseCategory[];
+
+    Note: After TypeORM creates entities, to avoid circular reference, it only shows the child objects in Category.SubCategories array
+    and SubCategory.categories is never created during runtime, although the array attribute needs to be defined in the classs along with
+    the ManyToMany decorator. Just removing it from interface to avoid showing non populated attributes in swagger.
+    */
 }
 
 /** Interface used to have a representation of all attributes within the Expense Class */
