@@ -58,6 +58,11 @@ router.post("/", async (req, res, next) => {
 *       description: Get all expense categories a user has registered.
 *       tags:
 *           - Expenses
+*       parameters:
+*           - in: query
+*             name: onlyDefault
+*             schema:
+*               type: string
 *       responses:
 *           200:
 *               description: An array of expense categories a user has registered.
@@ -73,6 +78,20 @@ router.post("/", async (req, res, next) => {
 router.get("/", async (req, res, next) => {
     try {
         const user = req.userData;
+        const onlyDefault = req.query.filterBy; // by default is always "FALSE" so ALL categories are fetched (if not modified by user in the front end)
+
+        if(onlyDefault && typeof onlyDefault !== "string") {
+            throw new BadRequestError("Categories cannot be obtained because the onlyDefault filter provided was in an incorrect format.");
+        }
+
+        if(onlyDefault) {
+            if(!(onlyDefault === "true" || onlyDefault === "false")) {
+                throw new BadRequestError(`Categories cannot be obtained because an incorrect onlyDefault filter was used in the request: ${onlyDefault}.`);
+            }
+            if((/true/).test(onlyDefault)) {
+                return res.status(200).json(user.getExpenseCategories().filter((ec) => ec.isDefault));
+            }
+        }
 
         return res.status(200).json(user.getExpenseCategories());
     } catch(error) { return next(error); }
