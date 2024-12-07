@@ -22,7 +22,7 @@ const router = Router();
 *                       $ref: "#/components/schemas/CreateExpenseCategoryPayload"
 *       responses:
 *           201:
-*               description: A JSON representation of the recently created expense category.
+*               description: A JSON representation of the created expense category.
 *               content:
 *                   application/json:
 *                       schema:
@@ -93,7 +93,6 @@ router.get("/", async (req, res, next) => {
 *               type: string
 *               description: The id of the desired expense category to update.
 *       requestBody:
-*           description: Payload that includes all the desired updates.
 *           required: true
 *           content:
 *               application/json:
@@ -118,7 +117,7 @@ router.put("/:id", async (req, res, next) => {
         // validate a expense type with the given id exists to be updated
         const parsedId = parseInt(id);
         if(!user.hasExpenseCategory(parsedId, "id")) {
-            throw new NotFoundError(`There is no expense category to update with id: ${parsedId}.`);
+            throw new NotFoundError(`Category cannot be updated because there is none with the given id: ${parsedId}.`);
         }
 
         // update cached expense type data

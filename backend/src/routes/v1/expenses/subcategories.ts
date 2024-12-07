@@ -23,7 +23,7 @@ const router = Router();
 *                       $ref: "#/components/schemas/CreateExpenseSubCategoryPayload"
 *       responses:
 *           201:
-*               description: A JSON representation of the recently created expense sub category.
+*               description: A JSON representation of the created expense sub category.
 *               content:
 *                   application/json:
 *                       schema:
@@ -38,17 +38,17 @@ router.post("/", async (req, res, next) => {
 
         // avoid creating sub categories with incorrect type (cards and loans sub categories must be created on their respective endpoints)
         if(!isValidRealExpense(options.type)) {
-            throw new BadRequestError(`Can't create "${options.name}" sub category since an incorrect type "${options.type}" was used in creation payload.`);
+            throw new BadRequestError(`Subcategory "${options.name}" cannot be created because an incorrect type filter was used in the request: ${options.type}.`);
         }
 
         // check if parent category does really exist in user info
         if(!user.hasExpenseCategory(options.categoryId, "id")) {
-            throw new BadRequestError(`There is no expense category with the given "${options.name}" id.`);
+            throw new BadRequestError(`Parent category cannot be obtained because an incorrect id was used in the request: ${options.categoryId}.`);
         }
 
         // avoid creating a duplicate if an expense sub category with the given name already exists
         if(user.hasExpenseSubCategory(options.name, "name")) {
-            throw new BadRequestError(`An expense sub category with the given "${options.name}" name already exists.`);
+            throw new BadRequestError(`Subcategory "${options.name}" cannot be created because one with that name already exists.`);
         }
 
         // get parent expense category
@@ -94,7 +94,7 @@ router.post("/", async (req, res, next) => {
 *                       schema:
 *                           type: array
 *                           items:
-*                               $ref: "#/components/schemas/IExpenseCategory"
+*                               $ref: "#/components/schemas/IExpenseSubCategory"
 *           400:
 *               description: Bad Request Error
 */
@@ -104,16 +104,16 @@ router.get("/", async (req, res, next) => {
         const type = req.query.type; // by default is always "ALL" expense sub categories (if not modified by user in the front end)
 
         if(type && typeof type !== "string") {
-            throw new BadRequestError("No expense subcategory type filter was given in the correct format.");
+            throw new BadRequestError("Subcategories cannot be obtained because the type filter provided was in an incorrect format.");
         }
 
         // If no type given, default is to get all
         const filterBy = type ? parseInt(type) : OETypesOfExpense.ALL;
         if(!isValidExpenseSubCategoryFilter(filterBy)) {
-            throw new BadRequestError("Invalid type for filtering cards.");
+            throw new BadRequestError(`Subcategories cannot be obtained because an incorrect type filter was used in the request: ${filterBy}.`);
         }
 
-        return res.status(200).json(user.getExpenseSubCategories());
+        return res.status(200).json(user.getExpenseSubCategories(filterBy));
     } catch(error) { return next(error); }
 });
 

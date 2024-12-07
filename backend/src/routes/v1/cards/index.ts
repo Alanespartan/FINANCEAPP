@@ -17,12 +17,11 @@ const router = Router();
 * @swagger
 * /api/v1/cards:
 *   post:
-*       summary: Create a new user card
-*       description: Given a configuration of card options, create and assign a new card (debit, credit, voucher, services) to the user information
+*       summary: New card
+*       description: Create and assign a new card (debit, credit, voucher, services).
 *       tags:
 *           - Cards
 *       requestBody:
-*           description: Payload that includes all the required new card data.
 *           required: true
 *           content:
 *               application/json:
@@ -45,26 +44,27 @@ router.post("/", async (req, res, next) => {
         const cardType = options.type;
 
         if(!verifyCreateCardBody(options)) {
-            throw new BadRequestError("Malformed payload sent.");
-        }
-
-        if(!isValidCardType(cardType)) {
-            throw new BadRequestError(`Invalid type (${cardType}) for creating a new card.`);
-        }
-
-        if( !(await getBank(options.bankId)) ) {
-            throw new BadRequestError(`Invalid bank id (${options.bankId}) for creating a new card.`);
+            throw new BadRequestError("New card cannot be created because a malformed payload sent.");
         }
 
         // normalizing the card number by removing white spaces
         options.cardNumber = options.cardNumber.replace(/\s+/g, "");
         // remove any whitespace and then validate the cardNumber contains only numbers
         if( !( /^[0-9]+$/.test(options.cardNumber) ) ) {
-            throw new BadRequestError(`Invalid card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
+            throw new BadRequestError(`Card "${options.cardNumber}" cannot be created because a card number can not contain non numeric chars.`);
         }
+
+        if(!isValidCardType(cardType)) {
+            throw new BadRequestError(`Card "${options.cardNumber}" cannot be created because an incorrect type was used in the request: ${cardType}.`);
+        }
+
+        if( !(await getBank(options.bankId)) ) {
+            throw new BadRequestError(`Card "${options.cardNumber}" cannot be created because an incorrect bank id was used in the request: ${options.bankId}.`);
+        }
+
         // avoid creating a duplicate if a card with the given card number already exists
         if(user.cards.find((c) => c.cardNumber === options.cardNumber)) {
-            throw new BadRequestError(`A card with the "${options.cardNumber}" number already exists.`);
+            throw new BadRequestError(`Card "${options.cardNumber}" cannot be created because one with that name already exists.`);
         }
 
         const newCard = new Card(options, user.id);
@@ -72,7 +72,7 @@ router.post("/", async (req, res, next) => {
         switch (cardType) {
             case OECardTypesFilters.DEBIT:
                 if(options.limit) {
-                    throw new BadRequestError("A debit card can't have a limit.");
+                    throw new BadRequestError(`Debit card "${options.cardNumber}" cannot be created because an incorrect card limit was used in the request: ${options.type}.`);
                 }
                 if(options.isVoucher) {
                     newCard.setIsVoucher(true);
@@ -80,13 +80,13 @@ router.post("/", async (req, res, next) => {
                 break;
             case OECardTypesFilters.CREDIT:
                 if(!options.limit) {
-                    throw new BadRequestError("No limit value was given to create the new credit card.");
+                    throw new BadRequestError(`Credit card "${options.cardNumber}" cannot be created because no limit value was given to create the card.`);
                 }
                 if(options.limit <= 0) {
-                    throw new BadRequestError("Can't set the limit of a credit card to have a value of less or equal to 0.");
+                    throw new BadRequestError(`Credit card "${options.cardNumber}" cannot be created because an incorrect card limit was used in the request: ${options.limit}.`);
                 }
                 if(options.isVoucher) {
-                    throw new BadRequestError("A credit card can't be categorized as a voucher card.");
+                    throw new BadRequestError(`Credit card "${options.cardNumber}" cannot be created because it can not be categorized as voucher card.`);
                 }
                 // TODO CARD validate this scenario is working correclty: if new card is added with used balance or full balance
                 newCard.setLimit(options.limit);
@@ -161,13 +161,13 @@ router.get("/", async (req, res, next) => {
         const cardType = req.query.cardType; // by default is always "ALL" cards (if not modified by user in the front end)
 
         if(cardType && typeof cardType !== "string") {
-            throw new BadRequestError("No card type filter was given in the correct format.");
+            throw new BadRequestError("Cards cannot be obtained because the card type filter provided was in an incorrect format.");
         }
 
         // If no cardType given, default is to get all
         const filterBy = cardType ? parseInt(cardType) : OECardTypesFilters.ALL;
         if(!isValidCardFilter(filterBy)) {
-            throw new BadRequestError("Invalid type for filtering cards.");
+            throw new BadRequestError(`Cards cannot be obtained because an incorrect card type filter was used in the request: ${filterBy}.`);
         }
 
         return res.status(200).json(user.getCards(filterBy));
@@ -187,9 +187,8 @@ router.get("/", async (req, res, next) => {
 *             name: cardNumber
 *             schema:
 *               type: string
-*               description: The current card number assigned to the desired card to update.
+*               description: The card number of the desired card to update.
 *       requestBody:
-*           description: Payload that includes all the desired updates for the given card.
 *           required: true
 *           content:
 *               application/json:
@@ -216,12 +215,12 @@ router.put("/:cardNumber", async (req, res, next) => {
         /* CARD IS VALID */
         // the given cardNumber to update contains only numbers
         if( !( /^[0-9]+$/.test(cardNumber) ) ) {
-            throw new BadRequestError(`Invalid card number "${cardNumber}". A card number can not contain non numeric chars.`);
+            throw new BadRequestError(`Card "${cardNumber}" cannot be retrieved to update because a card number can not contain non numeric chars.`);
         }
 
         // a card with the given card number exists to be updated
         if(!user.hasCard(cardNumber)) {
-            throw new NotFoundError(`There is no "${cardNumber}" card to update.`);
+            throw new NotFoundError(`Card cannot be updated because there is none with the given card number: ${cardNumber}.`);
         }
 
         /* CARD NUMBER */
@@ -231,12 +230,12 @@ router.put("/:cardNumber", async (req, res, next) => {
 
             // the new cardNumber contains only numbers
             if(!( /^[0-9]+$/.test(options.cardNumber) )) {
-                throw new BadRequestError(`Invalid new card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
+                throw new BadRequestError(`Card "${cardNumber}" cannot be updated because the new card number "${options.cardNumber}" can not contain non numeric chars.`);
             }
 
             // avoid creating a duplicate if a card with the new card number already exists
             if(user.hasCard(options.cardNumber)) {
-                throw new BadRequestError(`A card with the "${options.cardNumber}" number already exists.`);
+                throw new BadRequestError(`Card "${cardNumber}" cannot be updated because one with the new card number "${options.cardNumber}" already exists.`);
             }
         }
 
@@ -244,7 +243,7 @@ router.put("/:cardNumber", async (req, res, next) => {
         if(options.expires) {
             // using UTC function for correct timestamp comparision
             if(ConvertToUTCTimestamp(options.expires) < ConvertToUTCTimestamp(new Date())) {
-                throw new BadRequestError(`New expiration date "${options.expires}" can't be less than today's date.`);
+                throw new BadRequestError(`Card "${cardNumber}" cannot be updated because new expiration date "${options.expires}" can't be less than today's date.`);
             }
         }
 
@@ -253,14 +252,14 @@ router.put("/:cardNumber", async (req, res, next) => {
         if(options.type) {
             typeModified = true;
             if(!isValidCardType(options.type)) {
-                throw new BadRequestError(`Invalid card type: "${options.type}" given for updating "${cardNumber}" card.`);
+                throw new BadRequestError(`Card "${cardNumber}" cannot be updated because an incorrect new card type was used in the request: ${options.type}.`);
             }
 
             // if new type is debit card
             if(options.type === OECardTypesFilters.DEBIT) {
                 // ensure no limit was sent in the payload
                 if(options.limit) {
-                    throw new BadRequestError(`Can't update the limit of "${cardNumber}" card if it's going to be a Debit Card.`);
+                    throw new BadRequestError(`Card "${cardNumber}" cannot be updated to debit card because an incorrect card limit was used in the request: ${options.limit}.`);
                 }
                 // avoid users modying limit of new debit card (previous credit card)
                 // and restart limit value to default 0 to avoid errors
@@ -271,15 +270,15 @@ router.put("/:cardNumber", async (req, res, next) => {
             if(options.type === OECardTypesFilters.CREDIT) {
                 // ensure a limit was sent in the payload
                 if(!options.limit) {
-                    throw new BadRequestError(`No limit value was provided for updating "${cardNumber}" card to be a Credit Card.`);
+                    throw new BadRequestError(`Card "${cardNumber}" cannot be updated to credit card because no limit value was given in the request.`);
                 }
 
                 if(options.limit <= 0) {
-                    throw new BadRequestError("Can't set the limit of a credit card to have a value of less or equal to 0.");
+                    throw new BadRequestError(`Card "${cardNumber}" cannot be updated to credit card because an incorrect card limit was used in the request: ${options.limit}.`);
                 }
 
                 if(options.isVoucher) {
-                    throw new BadRequestError("Can't update a credit card to be a voucher card.");
+                    throw new BadRequestError(`Card "${cardNumber}" cannot be updated to credit card because it can not be categorized as voucher card.`);
                 }
 
                 // avoid users modying voucher state of new credit card (previous debit card)
@@ -294,11 +293,11 @@ router.put("/:cardNumber", async (req, res, next) => {
         if(options.limit && !typeModified) {
             // if user wants to set a limit to the given card to update but its not a credit card
             if(user.getCard(cardNumber).type !== OECardTypesFilters.CREDIT) {
-                throw new BadRequestError("Can't modify the limit attribute of a non credit card.");
+                throw new BadRequestError(`Card "${cardNumber}" cannot be updated because a card limit (${options.limit}) was used in the request to update a non credit card.`);
             }
             // if the new limit of a credit card is less or equal to 0
             if(options.limit <= 0) {
-                throw new BadRequestError("Can't modify the limit of a credit card to have a value of less or equal to 0.");
+                throw new BadRequestError(`Credit card "${cardNumber}" cannot be updated because an incorrect card limit was used in the request: ${options.limit}.`);
             }
         }
 
@@ -306,7 +305,7 @@ router.put("/:cardNumber", async (req, res, next) => {
         if(options.isVoucher && !typeModified) {
             // if user wants to set a limit to the given card to update but its not a credit card
             if(user.getCard(cardNumber).type !== OECardTypesFilters.DEBIT) {
-                throw new BadRequestError("Can't modify the voucher state of a non debit card.");
+                throw new BadRequestError(`Card "${cardNumber}" cannot be updated because it can not be categorized as voucher card.`);
             }
         }
 

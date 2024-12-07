@@ -171,6 +171,11 @@ const InvalidUpdate_DebitIsNowCreditAndLimitIsIncorrect = {
     type: 2,
     limit: -1
 } as UpdateCardPayload;
+const InvalidUpdate_DebitIsNowCreditAndIsVoucher = {
+    type: 2,
+    limit: 60000,
+    isVoucher: true
+} as UpdateCardPayload;
 // UPDATE CREDIT
 const InvalidUpdate_CreditCardLimitIsIncorrect = {
     limit: -1
@@ -299,27 +304,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "Malformed payload sent.");
-            });
-            it("Then return '400 Bad Request Error' if an invalid type is used", async function() {
-                const res = await agent
-                    .post(cardPath)
-                    .send(InvalidCreation_CardTypeIsIncorrect)
-                    .expect(400)
-                    .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Invalid type (${InvalidCreation_CardTypeIsIncorrect.type}) for creating a new card.`);
-            });
-            it("Then return '400 Bad Request Error' if a non existing bank id is used", async function() {
-                const res = await agent
-                    .post(cardPath)
-                    .send(InvalidCreation_BankDoesNotExist)
-                    .expect(400)
-                    .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Invalid bank id (${InvalidCreation_BankDoesNotExist.bankId}) for creating a new card.`);
+                expect(res.body).to.have.property("info", "New card cannot be created because a malformed payload sent.");
             });
             it("Then return '400 Bad Request Error' if a card number contains non numeric chars", async function() {
                 const res = await agent
@@ -330,7 +315,27 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Invalid card number "${InvalidCreation_CardNumberIsIncorrect.cardNumber}". A card number can not contain non numeric chars.`);
+                expect(res.body).to.have.property("info", `Card "${InvalidCreation_CardNumberIsIncorrect.cardNumber}" cannot be created because a card number can not contain non numeric chars.`);
+            });
+            it("Then return '400 Bad Request Error' if an invalid type is used", async function() {
+                const res = await agent
+                    .post(cardPath)
+                    .send(InvalidCreation_CardTypeIsIncorrect)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Card "${InvalidCreation_CardTypeIsIncorrect.cardNumber}" cannot be created because an incorrect type was used in the request: ${InvalidCreation_CardTypeIsIncorrect.type}.`);
+            });
+            it("Then return '400 Bad Request Error' if a non existing bank id is used", async function() {
+                const res = await agent
+                    .post(cardPath)
+                    .send(InvalidCreation_BankDoesNotExist)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Card "${InvalidCreation_BankDoesNotExist.cardNumber}" cannot be created because an incorrect bank id was used in the request: ${InvalidCreation_BankDoesNotExist.bankId}.`);
             });
             it("Then return '400 Bad Request Error' if a card already exists with the given card number", async function() {
                 const res = await agent
@@ -341,7 +346,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `A card with the "${InvalidCreation_DuplicatedCard.cardNumber}" number already exists.`);
+                expect(res.body).to.have.property("info", `Card "${InvalidCreation_DuplicatedCard.cardNumber}" cannot be created because one with that name already exists.`);
             });
         });
         describe("Given an invalid payload for debit card", function() {
@@ -353,7 +358,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "A debit card can't have a limit.");
+                expect(res.body).to.have.property("info", `Debit card "${InvalidCreation_DebitCardHasLimit.cardNumber}" cannot be created because an incorrect card limit was used in the request: ${InvalidCreation_DebitCardHasLimit.type}.`);
             });
         });
         describe("Given an invalid payload for credit card", function() {
@@ -365,7 +370,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "No limit value was given to create the new credit card.");
+                expect(res.body).to.have.property("info", `Credit card "${InvalidCreation_CreditCardNoLimit.cardNumber}" cannot be created because no limit value was given to create the card.`);
             });
             it("Then return '400 Bad Request Error' if an incorrect limit was used", async function() {
                 const res = await agent
@@ -375,7 +380,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "Can't set the limit of a credit card to have a value of less or equal to 0.");
+                expect(res.body).to.have.property("info", `Credit card "${InvalidCreation_CreditCardLimitIsIncorrect.cardNumber}" cannot be created because an incorrect card limit was used in the request: ${InvalidCreation_CreditCardLimitIsIncorrect.limit}.`);
             });
             it("Then return '400 Bad Request Error' if isVoucher was used", async function() {
                 const res = await agent
@@ -385,7 +390,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "A credit card can't be categorized as a voucher card.");
+                expect(res.body).to.have.property("info", `Credit card "${InvalidCreation_CreditCardIsVoucher.cardNumber}" cannot be created because it can not be categorized as voucher card.`);
             });
         });
     });
@@ -405,12 +410,12 @@ describe(`Testing API: ${cardPath}`, function() {
             it("Then return '400 Bad Request Error' if card type is not in correct number format", async function() {
                 const res = await agent
                     .get(cardPath)
-                    .query({ cardType: true })
+                    .query({ cardType: [ true, false ] })
                     .expect(400)
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "Invalid type for filtering cards.");
+                expect(res.body).to.have.property("info", "Cards cannot be obtained because the card type filter provided was in an incorrect format.");
             });
             it("Then return '400 Bad Request Error' if card type filter is -1", async function() {
                 const res = await agent
@@ -420,7 +425,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "Invalid type for filtering cards.");
+                expect(res.body).to.have.property("info", `Cards cannot be obtained because an incorrect card type filter was used in the request: ${-1}.`);
             });
         });
         describe("Given a valid card type filter", function() {
@@ -549,7 +554,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Invalid card number "${InvalidUpdate_CardNumberIsIncorrect}". A card number can not contain non numeric chars.`);
+                expect(res.body).to.have.property("info", `Card "${InvalidUpdate_CardNumberIsIncorrect}" cannot be retrieved to update because a card number can not contain non numeric chars.`);
             });
             it("Then return '404 Not Found Error' if card number does no exist in user cards", async function() {
                 const res = await agent
@@ -559,7 +564,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The requested resource could not be found.");
-                expect(res.body).to.have.property("info", `There is no "${InvalidUpdate_CardDoesNotExist}" card to update.`);
+                expect(res.body).to.have.property("info", `Card cannot be updated because there is none with the given card number: ${InvalidUpdate_CardDoesNotExist}.`);
             });
             it("Then return '400 Bad Request Error' if new card number contains non numeric chars", async function() {
                 const res = await agent
@@ -569,7 +574,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Invalid new card number "${InvalidUpdate_NewCardIsIncorrect.cardNumber}". A card number can not contain non numeric chars.`);
+                expect(res.body).to.have.property("info", `Card "${ValidCreation_DebitCardSimple.cardNumber}" cannot be updated because the new card number "${InvalidUpdate_NewCardIsIncorrect.cardNumber}" can not contain non numeric chars.`);
             });
             it("Then return '400 Bad Request Error' if new card number already exists in user information", async function() {
                 const res = await agent
@@ -579,7 +584,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `A card with the "${InvalidUpdate_DuplicatedCard.cardNumber}" number already exists.`);
+                expect(res.body).to.have.property("info", `Card "${ValidCreation_DebitCardSimple.cardNumber}" cannot be updated because one with the new card number "${InvalidUpdate_DuplicatedCard.cardNumber}" already exists.`);
             });
             it("Then return '400 Bad Request Error' if expiration date is incorrect", async function() {
                 const res = await agent
@@ -589,7 +594,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `New expiration date "${InvalidUpdate_ExpirationDateIsIncorrect.expires}" can't be less than today's date.`);
+                expect(res.body).to.have.property("info", `Card "${ValidCreation_DebitCardSimple.cardNumber}" cannot be updated because new expiration date "${InvalidUpdate_ExpirationDateIsIncorrect.expires}" can't be less than today's date.`);
             });
             it("Then return '400 Bad Request Error' if new card type is incorrect", async function() {
                 const res = await agent
@@ -599,18 +604,10 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Invalid card type: "${InvalidUpdate_CardTypeIsIncorrect.type}" given for updating "${ValidCreation_CreditCardNoName.cardNumber}" card.`);
+                expect(res.body).to.have.property("info", `Card "${ValidCreation_CreditCardNoName.cardNumber}" cannot be updated because an incorrect new card type was used in the request: ${InvalidUpdate_CardTypeIsIncorrect.type}.`);
             });
-            it("Then return '400 Bad Request Error' if credit card is now debit card and has a limit", async function() {
-                const res = await agent
-                    .put(`${cardPath}/${ValidCreation_CreditCardNoName.cardNumber}`)
-                    .send(InvalidUpdate_CreditIsNowDebitAndHasLimit)
-                    .expect(400)
-                    .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Can't update the limit of "${ValidCreation_CreditCardNoName.cardNumber}" card if it's going to be a Debit Card.`);
-            });
+        });
+        describe("Given an invalid payload for debit card", function() {
             it("Then return '400 Bad Request Error' if debit card is now credit card and has no limit", async function() {
                 const res = await agent
                     .put(`${cardPath}/${ValidCreation_DebitCardSimple.cardNumber}`)
@@ -619,7 +616,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `No limit value was provided for updating "${ValidCreation_DebitCardSimple.cardNumber}" card to be a Credit Card.`);
+                expect(res.body).to.have.property("info", `Card "${ValidCreation_DebitCardSimple.cardNumber}" cannot be updated to credit card because no limit value was given in the request.`);
             });
             it("Then return '400 Bad Request Error' if debit card is now credit card and limit is incorrect", async function() {
                 const res = await agent
@@ -629,7 +626,17 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "Can't set the limit of a credit card to have a value of less or equal to 0.");
+                expect(res.body).to.have.property("info", `Card "${ValidCreation_DebitCardSimple.cardNumber}" cannot be updated to credit card because an incorrect card limit was used in the request: ${InvalidUpdate_DebitIsNowCreditAndLimitIsIncorrect.limit}.`);
+            });
+            it("Then return '400 Bad Request Error' if debit card is now credit card and voucher state was sent", async function() {
+                const res = await agent
+                    .put(`${cardPath}/${ValidCreation_DebitCardSimple.cardNumber}`)
+                    .send(InvalidUpdate_DebitIsNowCreditAndIsVoucher)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Card "${ValidCreation_DebitCardSimple.cardNumber}" cannot be updated to credit card because it can not be categorized as voucher card.`);
             });
             it("Then return '400 Bad Request Error' if a limit was attempted to be set in a debit card", async function() {
                 const res = await agent
@@ -639,7 +646,19 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "Can't modify the limit attribute of a non credit card.");
+                expect(res.body).to.have.property("info", `Card "${ValidCreation_DebitCardSimple.cardNumber}" cannot be updated because a card limit (${InvalidUpdate_DebitCardHasLimit.limit}) was used in the request to update a non credit card.`);
+            });
+        });
+        describe("Given an invalid payload for credit card", function() {
+            it("Then return '400 Bad Request Error' if credit card is now debit card and has a limit", async function() {
+                const res = await agent
+                    .put(`${cardPath}/${ValidCreation_CreditCardNoName.cardNumber}`)
+                    .send(InvalidUpdate_CreditIsNowDebitAndHasLimit)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Card "${ValidCreation_CreditCardNoName.cardNumber}" cannot be updated to debit card because an incorrect card limit was used in the request: ${InvalidUpdate_CreditIsNowDebitAndHasLimit.limit}.`);
             });
             it("Then return '400 Bad Request Error' if an incorrect limit was used in a credit card", async function() {
                 const res = await agent
@@ -649,7 +668,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "Can't modify the limit of a credit card to have a value of less or equal to 0.");
+                expect(res.body).to.have.property("info", `Credit card "${ValidCreation_CreditCardNoName.cardNumber}" cannot be updated because an incorrect card limit was used in the request: ${InvalidUpdate_CreditCardLimitIsIncorrect.limit}.`);
             });
             it("Then return '400 Bad Request Error' if voucher state was used to update a credit card", async function() {
                 const res = await agent
@@ -659,7 +678,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "Can't modify the voucher state of a non debit card.");
+                expect(res.body).to.have.property("info", `Card "${ValidCreation_CreditCardNoName.cardNumber}" cannot be updated because it can not be categorized as voucher card.`);
             });
         });
     });
