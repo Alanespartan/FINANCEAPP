@@ -32,6 +32,10 @@ export interface CreateExpenseCategoryPayload {
 *       CreateExpenseSubCategoryPayload:
 *           type: object
 *           properties:
+*               categoryId:
+*                   type: number
+*                   example: 1
+*                   description: DB Expense Category Primary Key
 *               name:
 *                   type: string
 *                   example: Gaming
@@ -43,11 +47,14 @@ export interface CreateExpenseCategoryPayload {
 *                   example: 1
 *                   description: Can be DB cardId, loanId or undefined if type is Real Expense (not a card, loan)
 *           required:
+*               - categoryId
 *               - name
 *               - type
 */
 /** Interface that defines all the attributes within the payload for creating a new user expense sub category. */
 export interface CreateExpenseSubCategoryPayload {
+    /** DB Expense Category Primary Key */
+    categoryId: number;
     /** e.g. Netflix - Holidays - Board Games - Uber Eats - Health Insurance */
     name: string;
     /** Depending on the type we refer to a Real Expense (1), Card (2) or Loan (3) */
