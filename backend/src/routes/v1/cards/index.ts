@@ -104,7 +104,7 @@ router.post("/", async (req, res, next) => {
             TypeORM will synchronize the relationship correctly based on the owning side (Category in this case).
         */
         // get default cards expense category
-        let cardsExpenseCategory = user.getExpenseCategoryByName("Cards");
+        let cardsCategory = user.getExpenseCategoryByName("Cards");
 
         // create new expense sub category using card info so we can register when paying "TO THIS CARD"
         const toSaveSubCategory = new ExpenseSubCategory(
@@ -116,14 +116,14 @@ router.post("/", async (req, res, next) => {
         );
 
         // add sub category into "Cards" category (no need to have id since category has cascade when updated)
-        cardsExpenseCategory.addSubCategory(toSaveSubCategory);
+        cardsCategory.addSubCategory(toSaveSubCategory);
 
         // save updated cards category which is the owner of the relationship (it has JoinColumn decorator and cascade) and has the new sub category
-        const savedCardsCategory = await saveExpenseCategory(cardsExpenseCategory);
+        const savedCardsCategory = await saveExpenseCategory(cardsCategory);
 
         // update cached data for future get operations
         user.addCard(savedCard);
-        cardsExpenseCategory = savedCardsCategory; // replace existing ref in memory value with returned object from query
+        cardsCategory = savedCardsCategory; // replace existing ref in memory value with returned object from query
         user.addExpenseSubCategory(savedCardsCategory.getExpenseSubCategoryByName(toSaveSubCategory.name)); // from returned object get the card sub category and add it to user array
 
         return res.status(201).json(savedCard.toInterfaceObject());
