@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { UpdateExpenseSubCategoryPayload } from "@common/types/expenses";
+import { TExpenseTypeFilter, UpdateExpenseSubCategoryPayload } from "@common/types/expenses";
 import { MixinsConstructor, ExpenseSubCategory, User } from "@entities";
 import { filterNonNullableAttributes } from "@entities/expenses/functions/util";
 
@@ -43,9 +43,13 @@ export const ExpenseSubCategoriesMixin = <TBase extends MixinsConstructor>(Base:
         }
         /**
         * Get all stored user expense categories.
+        * @param {TExpenseTypeFilter} type Used to filter user cards if a type was given in the request. Otherwise, it returns all cards the user has
         * @returns {ExpenseSubCategory[]} User expense categories array
         */
-        public getExpenseSubCategories(this: User): ExpenseSubCategory[] {
+        public getExpenseSubCategories(this: User, type: TExpenseTypeFilter): ExpenseSubCategory[] {
+            if(type !== 0) {
+                return this.expenseSubCategories.filter((esc) => esc.type === type);
+            }
             return this.expenseSubCategories;
         }
         /**
