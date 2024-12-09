@@ -13,6 +13,7 @@ import { saveExpenseCategory, saveExpenseSubCategory } from "@entities/expenses/
 
 const router = Router();
 
+// #region POST Card
 /**
 * @swagger
 * /api/v1/cards:
@@ -63,7 +64,7 @@ router.post("/", async (req, res, next) => {
         }
 
         // avoid creating a duplicate if a card with the given card number already exists
-        if(user.cards.find((c) => c.cardNumber === options.cardNumber)) {
+        if(user.hasCard(options.cardNumber)) {
             throw new BadRequestError(`Card "${options.cardNumber}" cannot be created because one with that name already exists.`);
         }
 
@@ -103,7 +104,7 @@ router.post("/", async (req, res, next) => {
             Updating both sides (e.g., adding the SubCategory to Category.subcategories and adding the Category to SubCategory.categories) is redundant.
             TypeORM will synchronize the relationship correctly based on the owning side (Category in this case).
         */
-        // get default cards expense category
+        // get cards default parent expense category
         let cardsCategory = user.getExpenseCategoryByName("Cards");
 
         // create new expense sub category using card info so we can register when paying "TO THIS CARD"
@@ -129,7 +130,9 @@ router.post("/", async (req, res, next) => {
         return res.status(201).json(savedCard.toInterfaceObject());
     } catch(error) { return next(error); }
 });
+// #endregion POST Card
 
+// #region GET Cards
 /**
 * @swagger
 * /api/v1/cards:
@@ -173,7 +176,55 @@ router.get("/", async (req, res, next) => {
         return res.status(200).json(user.getCards(filterBy));
     } catch(error) { return next(error); }
 });
+// #endregion GET Cards
 
+// #region GET Card
+/**
+* @swagger
+* /api/v1/cards/{cardNumber}:
+*   get:
+*       summary: Fetch card
+*       description: Get desired card from user data using an id.
+*       tags:
+*           - Cards
+*       parameters:
+*           - in: path
+*             name: cardNumber
+*             schema:
+*               type: string
+*       responses:
+*           200:
+*               description: A JSON representation of the desired card.
+*               content:
+*                   application/json:
+*                       schema:
+*                           $ref: "#/components/schemas/ICard"
+*           400:
+*               description: Bad Request Error
+*           404:
+*               description: Not Found Error
+*/
+router.get("/:cardNumber", async (req, res, next) => {
+    try {
+        const user       = req.userData;
+        const cardNumber = req.params.cardNumber.replace(/\s+/g, ""); // normalizing the given card number by removing white spaces
+
+        /* CARD NUMBER IS VALID */
+        if( !( /^[0-9]+$/.test(cardNumber) ) ) {
+            throw new BadRequestError(`Card "${cardNumber}" cannot be obtained because a card number can not contain non numeric chars.`);
+        }
+
+        /* CARD DOES EXISTS */
+        if(!user.hasCard(cardNumber)) {
+            throw new NotFoundError(`Card "${cardNumber}" cannot be obtained because it does not exist in user data.`);
+        }
+
+        return res.status(200).json(user.getCard(cardNumber).toInterfaceObject());
+    } catch(error) { return next(error); }
+});
+// #endregion GET Card
+
+// #region PUT Card
 /**
 * @swagger
 * /api/v1/cards/{cardNumber}:
@@ -187,7 +238,6 @@ router.get("/", async (req, res, next) => {
 *             name: cardNumber
 *             schema:
 *               type: string
-*               description: The card number of the desired card to update.
 *       requestBody:
 *           required: true
 *           content:
@@ -216,7 +266,7 @@ router.put("/:cardNumber", async (req, res, next) => {
 
         /* CARD NUMBER IS VALID */
         if( !( /^[0-9]+$/.test(cardNumber) ) ) {
-            throw new BadRequestError(`Card "${cardNumber}" cannot be retrieved because a card number can not contain non numeric chars.`);
+            throw new BadRequestError(`Card "${cardNumber}" cannot be obtained because a card number can not contain non numeric chars.`);
         }
 
         /* CARD DOES EXISTS */
@@ -337,5 +387,6 @@ router.put("/:cardNumber", async (req, res, next) => {
         return res.status(200).json(savedCard.toInterfaceObject());
     } catch(error) { return next(error); }
 });
+// #endregion PUT Card
 
 export default router;

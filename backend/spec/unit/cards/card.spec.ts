@@ -369,7 +369,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Card "${payloads.InvalidUpdate_CardNumberIsIncorrect}" cannot be retrieved because a card number can not contain non numeric chars.`);
+                expect(res.body).to.have.property("info", `Card "${payloads.InvalidUpdate_CardNumberIsIncorrect}" cannot be obtained because a card number can not contain non numeric chars.`);
             });
             it("Then return '404 Not Found Error' if card number does no exist in user cards", async function() {
                 const res = await agent
