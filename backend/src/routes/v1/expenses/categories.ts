@@ -3,6 +3,7 @@ import { BadRequestError, NotFoundError } from "@errors";
 import { saveExpenseCategory } from "@entities/expenses/functions/db";
 import { CreateExpenseCategoryPayload, UpdateExpenseCategoryPayload } from "@common/types/expenses";
 import { ExpenseCategory } from "@entities";
+import { stringIsValidID } from "@backend/utils/functions";
 
 const router = Router();
 
@@ -43,7 +44,7 @@ router.post("/", async (req, res, next) => {
         // save new expense type in db
         const savedExpenseCategory = await saveExpenseCategory(new ExpenseCategory(options, user.id));
 
-        // update cached data for future get operations
+        // update the in-memory array for future operations
         user.addExpenseCategory(savedExpenseCategory);
 
         return res.status(201).json(savedExpenseCategory.toInterfaceObject());
@@ -78,13 +79,12 @@ router.post("/", async (req, res, next) => {
 router.get("/", async (req, res, next) => {
     try {
         const user = req.userData;
-        const onlyDefault = req.query.filterBy; // by default is always "FALSE" so ALL categories are fetched (if not modified by user in the front end)
-
-        if(onlyDefault && typeof onlyDefault !== "string") {
-            throw new BadRequestError("Categories cannot be obtained because the onlyDefault filter provided was in an incorrect format.");
-        }
+        const onlyDefault = req.query.onlyDefault; // by default is always "FALSE" so ALL categories are fetched (if not modified by user in the front end)
 
         if(onlyDefault) {
+            if(typeof onlyDefault !== "string") {
+                throw new BadRequestError("Categories cannot be obtained because the onlyDefault filter provided was in an incorrect format.");
+            }
             if(!(onlyDefault === "true" || onlyDefault === "false")) {
                 throw new BadRequestError(`Categories cannot be obtained because an incorrect onlyDefault filter was used in the request: ${onlyDefault}.`);
             }
@@ -94,6 +94,53 @@ router.get("/", async (req, res, next) => {
         }
 
         return res.status(200).json(user.getExpenseCategories());
+    } catch(error) { return next(error); }
+});
+
+/**
+* @swagger
+* /api/v1/expenses/categories/{id}:
+*   get:
+*       summary: Fetch expense category
+*       description: Get desired expense category from user data using an id.
+*       tags:
+*           - Expenses
+*       parameters:
+*           - in: path
+*             name: id
+*             schema:
+*               type: integer
+*       responses:
+*           200:
+*               description: A JSON representation of the desired expense category.
+*               content:
+*                   application/json:
+*                       schema:
+*                           type: array
+*                           items:
+*                               $ref: "#/components/schemas/IExpenseCategory"
+*           400:
+*               description: Bad Request Error
+*           404:
+*               description: Not Found Error
+*/
+router.get("/:id", async (req, res, next) => {
+    try {
+        const user = req.userData;
+        const id   = req.params.id;
+
+        // check if given id is in correct form
+        if(!stringIsValidID(id)) {
+            throw new BadRequestError(`Category cannot be obtained because the provided id "${id}" was in an incorrect format.`);
+        }
+
+        // validate a expense category with the given id exists
+        const parsedId = Number(id);
+        if(!user.hasExpenseCategory(parsedId, "id")) {
+            throw new NotFoundError(`Category "${parsedId}" cannot be obtained because it does not exist in user data.`);
+        }
+
+        return res.status(200).json(user.getExpenseCategoryById(parsedId));
     } catch(error) { return next(error); }
 });
 
@@ -133,21 +180,29 @@ router.put("/:id", async (req, res, next) => {
         const options = req.body as UpdateExpenseCategoryPayload;
         const id      = req.params.id;
 
-        // validate a expense type with the given id exists to be updated
-        const parsedId = parseInt(id);
+        // check if given id is in correct form
+        if(!stringIsValidID(id)) {
+            throw new BadRequestError(`Category cannot be updated because the provided id "${id}" was in an incorrect format.`);
+        }
+
+        // validate a expense category with the given id exists
+        const parsedId = Number(id);
         if(!user.hasExpenseCategory(parsedId, "id")) {
             throw new NotFoundError(`Category "${parsedId}" cannot be updated because it does not exist in user data.`);
+        }
+
+        // check if user is trying to update a default category
+        if(user.getExpenseCategoryById(parsedId).isDefault) {
+            throw new BadRequestError(`Category "${parsedId}" cannot be updated because it is an app default category.`);
         }
 
         // update cached expense type data
         const toUpdate = user.setOptionsIntoExpenseCategory(parsedId, options);
         // apply expense type changes in db using updated object
         const savedExpenseCategory = await saveExpenseCategory(toUpdate);
-
-        // TODO CATEGORY validate this works
-        let inMemoryCategory = user.getExpenseCategoryById(parsedId);
-        inMemoryCategory = savedExpenseCategory;
-        console.log(inMemoryCategory);
+        // update the in-memory object properties directly for future operations
+        const inMemoryCategory = user.getExpenseCategoryById(parsedId);
+        Object.assign(inMemoryCategory, savedExpenseCategory);
 
         return res.status(200).json(savedExpenseCategory.toInterfaceObject());
     } catch(error) { return next(error); }
