@@ -1,9 +1,10 @@
 import { ExpenseSubCategory } from "@entities";
-import { BadRequestError } from "@errors";
+import { BadRequestError, NotFoundError } from "@errors";
 import { saveExpenseCategory } from "@entities/expenses/functions/db";
 import { isValidRealExpense, isValidExpenseSubCategoryFilter } from "@entities/expenses/functions/util";
 import { CreateExpenseSubCategoryPayload, OETypesOfExpense } from "@common/types/expenses";
 import { Router } from "express";
+import { stringIsValidID } from "@backend/utils/functions";
 
 const router = Router();
 
@@ -114,6 +115,53 @@ router.get("/", async (req, res, next) => {
         }
 
         return res.status(200).json(user.getExpenseSubCategories(filterBy));
+    } catch(error) { return next(error); }
+});
+
+/**
+* @swagger
+* /api/v1/expenses/subcategories/{id}:
+*   get:
+*       summary: Fetch expense sub category
+*       description: Get desired expense sub category from user data using an id.
+*       tags:
+*           - Expenses
+*       parameters:
+*           - in: path
+*             name: id
+*             schema:
+*               type: integer
+*       responses:
+*           200:
+*               description: A JSON representation of the desired expense sub category.
+*               content:
+*                   application/json:
+*                       schema:
+*                           type: array
+*                           items:
+*                               $ref: "#/components/schemas/IExpenseSubCategory"
+*           400:
+*               description: Bad Request Error
+*           404:
+*               description: Not Found Error
+*/
+router.get("/:id", async (req, res, next) => {
+    try {
+        const user = req.userData;
+        const id   = req.params.id;
+
+        // check if given id is in correct form
+        if(!stringIsValidID(id)) {
+            throw new BadRequestError(`Subcategory cannot be obtained because the provided id "${id}" was in an incorrect format.`);
+        }
+
+        // validate a expense sub category with the given id exists
+        const parsedId = Number(id);
+        if(!user.hasExpenseSubCategory(parsedId, "id")) {
+            throw new NotFoundError(`Subcategory "${parsedId}" cannot be obtained because it does not exist in user data.`);
+        }
+
+        return res.status(200).json(user.getExpenseSubCategoryById(parsedId));
     } catch(error) { return next(error); }
 });
 
