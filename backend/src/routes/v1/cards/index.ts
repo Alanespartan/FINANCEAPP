@@ -4,12 +4,12 @@ import {
     UpdateCardPayload
 } from "@common/types/cards";
 import { CreateExpenseSubCategoryPayload, OETypesOfExpense } from "@common/types/expenses";
-import { BadRequestError, NotFoundError } from "@errors";
+import { BadRequestError, NotFoundError, ServerError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 import { Card, ExpenseSubCategory } from "@entities";
 import { verifyCreateCardBody, isValidCardFilter, isValidCardType } from "@entities/cards/functions/util";
 import { saveCard, getBank } from "@entities/cards/functions/db";
-import { saveExpenseCategory } from "@entities/expenses/functions/db";
+import { saveExpenseCategory, saveExpenseSubCategory } from "@entities/expenses/functions/db";
 
 const router = Router();
 
@@ -205,6 +205,8 @@ router.get("/", async (req, res, next) => {
 *               description: Bad Request Error
 *           404:
 *               description: Not Found Error
+*           500:
+*               description: Server Error
 */
 router.put("/:cardNumber", async (req, res, next) => {
     try {
@@ -212,16 +214,28 @@ router.put("/:cardNumber", async (req, res, next) => {
         const cardNumber = req.params.cardNumber.replace(/\s+/g, ""); // normalizing the given card number by removing white spaces
         const options    = req.body as UpdateCardPayload;
 
-        /* CARD IS VALID */
-        // the given cardNumber to update contains only numbers
+        /* CARD NUMBER IS VALID */
         if( !( /^[0-9]+$/.test(cardNumber) ) ) {
-            throw new BadRequestError(`Card "${cardNumber}" cannot be retrieved to update because a card number can not contain non numeric chars.`);
+            throw new BadRequestError(`Card "${cardNumber}" cannot be retrieved because a card number can not contain non numeric chars.`);
         }
 
-        // a card with the given card number exists to be updated
+        /* CARD DOES EXISTS */
         if(!user.hasCard(cardNumber)) {
-            throw new NotFoundError(`Card cannot be updated because there is none with the given card number: ${cardNumber}.`);
+            throw new NotFoundError(`Card "${cardNumber}" cannot be updated because it does not exist in user data.`);
         }
+
+        /* PARENT CARDS CATEGORY AND CARD SUBCATEGORIE EXISTS */
+        if(!user.hasExpenseCategory("Cards", "name")) {
+            // throw server error since users MUST NOT be able to delete default categories
+            throw new ServerError(`Card "${cardNumber}" cannot be updated because default parent "Card" category does not exist.`);
+        }
+        const cardsCategory = user.getExpenseCategoryByName("Cards");
+        // since card does exist, use its name to find the sub category
+        if(!cardsCategory.hasExpenseSubCategory(user.getCard(cardNumber).name, "name")) {
+            // throw server error since every card must be a subcategorie attached to the cards parent category
+            throw new ServerError(`Card "${cardNumber}" cannot be updated because its expense sub categorie does not exist.`);
+        }
+        const cardSubCategory = user.getExpenseSubCategoryByName(user.getCard(cardNumber).name);
 
         /* CARD NUMBER */
         if(options.cardNumber) {
@@ -309,10 +323,16 @@ router.put("/:cardNumber", async (req, res, next) => {
             }
         }
 
-        // update cached card data
+        // update cached card data using payload
         const toUpdate = user.setOptionsIntoCard(cardNumber, options);
-        // apply card changes in db using updated object
+        // apply card changes in db using cached updated object
         const savedCard = await saveCard(toUpdate);
+
+        // if card name was updated, then update its sub category name
+        if(options.name) {
+            cardSubCategory.name = options.name; // this updates the value in memory
+            await saveExpenseSubCategory(cardSubCategory); // this updates the entity in the db
+        }
 
         return res.status(200).json(savedCard.toInterfaceObject());
     } catch(error) { return next(error); }
