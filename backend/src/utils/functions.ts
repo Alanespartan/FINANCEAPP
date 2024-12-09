@@ -32,3 +32,7 @@ export function ConvertToUTCTimestamp(date?: string | Date | number) {
         toUTC.getUTCMilliseconds()
     ); // Returns the timestamp in UTC
 }
+
+export function stringIsValidID(stringId: string) {
+    return /^[+-]?\d+(\.\d+)?$/.test(stringId);
+}
