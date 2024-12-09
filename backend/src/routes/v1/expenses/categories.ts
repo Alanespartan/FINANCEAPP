@@ -136,7 +136,7 @@ router.put("/:id", async (req, res, next) => {
         // validate a expense type with the given id exists to be updated
         const parsedId = parseInt(id);
         if(!user.hasExpenseCategory(parsedId, "id")) {
-            throw new NotFoundError(`Category cannot be updated because there is none with the given id: ${parsedId}.`);
+            throw new NotFoundError(`Category "${parsedId}" cannot be updated because it does not exist in user data.`);
         }
 
         // update cached expense type data
