@@ -205,7 +205,7 @@ router.get("/:cardNumber", async (req, res, next) => {
     try {
         const user       = req.userData;
         const cardNumber = req.params.cardNumber.replace(/\s+/g, ""); // normalizing the given card number by removing white spaces
-        // TODO ADD TESTS FOR THIS
+
         /* CARD NUMBER IS VALID */
         if( !( /^[0-9]+$/.test(cardNumber) ) ) {
             throw new BadRequestError(`Card "${cardNumber}" cannot be obtained because a card number can not contain non numeric chars.`);
@@ -350,8 +350,6 @@ router.put("/:cardNumber", async (req, res, next) => {
                 // and restart voucher value to default false to avoid errors
                 options.isVoucher = false;
             }
-
-            // TODO CARD if new type is service card add constraints (e.g. AMEX PLATINUM no limit)
         }
 
         /* LIMIT */

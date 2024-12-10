@@ -6,7 +6,7 @@ import * as payloads from "./payloads";
 const cardPath = `/api/${version}/cards`;
 
 describe(`Testing API: ${cardPath}`, function() {
-    // #region Create Card Tests
+    // #region POST Card Tests
     describe("When Creating a Card", function() {
         describe("Given a valid payload for debit card", function() {
             it("Then return '201 Created' and ICard object if required payload parameters are sent", async function() {
@@ -209,8 +209,8 @@ describe(`Testing API: ${cardPath}`, function() {
             });
         });
     });
-    // #endregion Create Card Tests
-    // #region Fetch Cards Tests
+    // #endregion POST Card Tests
+    // #region GET Cards Tests
     describe("When Fetching Cards", function() {
         describe("Given no filter", function() {
             it("Then return '200 Success' and array of all previously created cards", async function() {
@@ -278,8 +278,42 @@ describe(`Testing API: ${cardPath}`, function() {
             });
         });
     });
-    // #endregion Fetch Cards Tests
-    // #region Update Cards Tests
+    // #endregion GET Cards Tests
+    // #region GET Card Tests
+    describe("When Fetching Card", function() {
+        describe("Given an invalid card number", function() {
+            it("Then return '400 Bad Request Error' if card number contains non numeric chars", async function() {
+                const res = await agent
+                    .get(`${cardPath}/${payloads.InvalidCreation_CardNumberIsIncorrect.cardNumber}`)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Card "${payloads.InvalidCreation_CardNumberIsIncorrect.cardNumber}" cannot be obtained because a card number can not contain non numeric chars.`);
+            });
+            it("Then return '404 Not Found Error' if card does not exist in user cards", async function() {
+                const res = await agent
+                    .get(`${cardPath}/${payloads.InvalidUpdate_CardDoesNotExist}`)
+                    .expect(404)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The requested resource could not be found.");
+                expect(res.body).to.have.property("info", `Card "${payloads.InvalidUpdate_CardDoesNotExist}" cannot be obtained because it does not exist in user data.`);
+            });
+        });
+        describe("Given a valid card number", function() {
+            it("Then return '200 Success' and array of all previously created cards if cardType is 0", async function() {
+                const res = await agent
+                    .get(cardPath)
+                    .query({ cardType: 0 })
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.lengthOf(5);
+            });
+        });
+    });
+    // #endregion GET Card Tests
+    // #region PUT Card Tests
     describe("When Updating Cards", function() {
         describe("Given a valid payload for debit card", function() {
             it("Then return '200 Success' and ICard object if required payload parameters are sent", async function() {
@@ -384,7 +418,7 @@ describe(`Testing API: ${cardPath}`, function() {
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
                 expect(res.body).to.have.property("info", `Card "${payloads.InvalidUpdate_CardNumberIsIncorrect}" cannot be obtained because a card number can not contain non numeric chars.`);
             });
-            it("Then return '404 Not Found Error' if card number does no exist in user cards", async function() {
+            it("Then return '404 Not Found Error' if card does not exist in user cards", async function() {
                 const res = await agent
                     .put(`${cardPath}/${payloads.InvalidUpdate_CardDoesNotExist}`)
                     .send(payloads.ValidUpdate_DebitCardSimple)
@@ -510,5 +544,5 @@ describe(`Testing API: ${cardPath}`, function() {
             });
         });
     });
-    // #endregion Update Cards Tests
+    // #endregion PUT Cards Tests
 });
