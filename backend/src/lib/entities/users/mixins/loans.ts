@@ -20,7 +20,7 @@ export const LoansMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
         /**
         * Get a specific stored loan using its name to search for it. Use hasLoan() first for safety check.
         * @param {string} toSearch Loan name to search for
-        * @returns {ExpenseType} The desired Loan object
+        * @returns {Loan} The desired Loan object
         */
         public getLoan(this: User, toSearch: string): Loan {
             return this.loans.find((l) => l.name === toSearch) as Loan;
