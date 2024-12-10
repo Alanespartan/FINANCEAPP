@@ -44,8 +44,11 @@ export class ExpenseCategory extends CategoriesMixin(class {}) implements IExpen
     constructor(options?: CreateExpenseCategoryPayload, userId?: number) {
         super();
         if(options) {
+            // FROM PAYLOAD
             this.name      = options.name;
             this.isDefault = options.isDefault;
+            // DEFAULT ATTRIBUTES
+            this.subcategories = [];
         }
         if(userId) {
             this.userId = userId;

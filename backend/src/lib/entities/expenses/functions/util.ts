@@ -14,7 +14,7 @@ export function verifyCreateExpenseCategoryBody(body: unknown): body is CreateEx
     if(!body) return false;
     const parsed = body as CreateExpenseCategoryPayload;
 
-    return typeof parsed.name === "string" && typeof parsed.isDefault === "boolean";
+    return typeof parsed.name === "string"; // && typeof parsed.isDefault === "boolean";
 }
 
 export const isValidExpenseSubCategory = (value: number): value is TExpenseType => {

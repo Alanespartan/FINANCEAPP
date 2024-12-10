@@ -1,5 +1,5 @@
 import { UpdateExpenseCategoryPayload } from "../../../../../../../common/types/expenses";
 
 export const ValidUpdate_ExpenseCategorySimple = {
-    name: "Debit Card Simple Test"
+    name: "Update Expense Category Simple Test"
 } as UpdateExpenseCategoryPayload;

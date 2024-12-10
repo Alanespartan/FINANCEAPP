@@ -39,17 +39,17 @@ router.post("/", async (req, res, next) => {
         const options = req.body;
 
         if(!verifyCreateExpenseCategoryBody(options)) {
-            throw new BadRequestError("New category cannot be created because a malformed payload sent.");
+            throw new BadRequestError("New category cannot be created because a malformed payload was sent.");
         }
 
         // avoid creating a default category because these are created during user sign up
         if(options.isDefault) {
-            throw new NotFoundError(`Category "${options.name}" cannot be created because user is not allowed to create a default category.`);
+            throw new BadRequestError(`Category "${options.name}" cannot be created because user is not allowed to create a default category.`);
         }
 
         // avoid creating a duplicate
         if(user.hasExpenseCategory(options.name, "name")) {
-            throw new BadRequestError(`An expense type with the given "${options.name}" name already exists.`);
+            throw new BadRequestError(`Category "${options.name}" cannot be created because one with that name already exists.`);
         }
 
         // save new expense category in db

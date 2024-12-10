@@ -20,15 +20,41 @@ describe(`Testing API: ${categoriesPath}`, function() {
                 expect(res.body).to.be.an("object");
 
                 // Check required properties and types
-                const returnedCategory = res.body as IExpenseCategory;
-                console.log(returnedCategory);
-                expect(returnedCategory).to.have.property("id");
-                expect(returnedCategory).to.have.property("userId");
-                expect(returnedCategory).to.have.property("name", payloads.ValidCreation_ExpenseCategorySimple.name);
-                expect(returnedCategory).to.have.property("isDefault", payloads.ValidCreation_ExpenseCategorySimple.isDefault);
+                const category = res.body as IExpenseCategory;
+                expect(category).to.have.property("id").that.is.a("number");
+                expect(category).to.have.property("userId").that.is.a("number");
+                expect(category).to.have.property("name", payloads.ValidCreation_ExpenseCategorySimple.name);
+                expect(category).to.have.property("isDefault", false);
 
                 // Validate subcategories array (must be empty)
-                expect(returnedCategory).to.have.property("subcategories").that.is.an("array").and.to.have.lengthOf(0);
+                expect(category).to.have.property("subcategories").that.is.an("array").and.to.have.lengthOf(0);
+            });
+            it("Then return '201 Created' and IExpenseCategory object if multiple categories are created successfully", async function() {
+                // Send all requests concurrently
+                const responses = await Promise.all(
+                    payloads.ValidCreation_DummyExpenseCategories.map((category) => agent
+                        .post(categoriesPath)
+                        .send(category)
+                        .expect(201)
+                        .expect("Content-Type", /json/)
+                    )
+                );
+
+                // Assertions for all responses
+                responses.forEach((response, index) => {
+                    // Check response is an object
+                    expect(response.body).to.be.an("object");
+
+                    // Check required properties and types
+                    const category = response.body as IExpenseCategory;
+                    expect(category).to.have.property("id").that.is.a("number");
+                    expect(category).to.have.property("userId").that.is.a("number");
+                    expect(category).to.have.property("name", payloads.ValidCreation_DummyExpenseCategories[index].name);
+                    expect(category).to.have.property("isDefault", false);
+
+                    // Validate subcategories array (must be empty)
+                    expect(category).to.have.property("subcategories").that.is.an("array").and.to.have.lengthOf(0);
+                });
             });
         });
         describe("Given an invalid payload", function() {
@@ -43,7 +69,31 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "New category cannot be created because a malformed payload sent.");
+                expect(res.body).to.have.property("info", "New category cannot be created because a malformed payload was sent.");
+            });
+            it("Then return '400 Bad Request Error' if a default category is attempted to be created", async function() {
+                const dummyName = "THIS MUST FAIL AND NOT BE SAVED";
+                const res = await agent
+                    .post(categoriesPath)
+                    .send({
+                        name: dummyName,
+                        isDefault: true
+                    })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Category "${dummyName}" cannot be created because user is not allowed to create a default category.`);
+            });
+            it("Then return '400 Bad Request Error' if a category already exists with the given name", async function() {
+                const res = await agent
+                    .post(categoriesPath)
+                    .send(payloads.ValidCreation_ExpenseCategorySimple)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Category "${payloads.ValidCreation_ExpenseCategorySimple.name}" cannot be created because one with that name already exists.`);
             });
         });
     });
@@ -58,9 +108,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     .expect("Content-Type", /json/);
 
                 // Ensure the response is an array
-                expect(res.body).to.be.an("array");
-
-                console.log(res.body);
+                expect(res.body).to.be.an("array").and.to.have.lengthOf(DefaultCategories.length + payloads.ValidCreation_DummyExpenseCategories.length + 1);
 
                 // Validate each entity against IExpenseCategory
                 res.body.forEach((category: any) => {
@@ -139,7 +187,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                 // Ensure the response is an array
                 expect(res.body).to.be.an("array");
                 // Ensure the length matches the default categories array size value
-                expect(res.body).to.have.lengthOf(1);
+                expect(res.body).to.have.lengthOf(payloads.ValidCreation_DummyExpenseCategories.length + 1);
 
             });
         });
