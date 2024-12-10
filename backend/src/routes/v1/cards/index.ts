@@ -1,13 +1,10 @@
 import { Router } from "express";
-import {
-    OECardTypesFilters,
-    UpdateCardPayload
-} from "@common/types/cards";
+import { OECardTypesFilters } from "@common/types/cards";
 import { CreateExpenseSubCategoryPayload, OETypesOfExpense } from "@common/types/expenses";
 import { BadRequestError, NotFoundError, ServerError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 import { Card, ExpenseSubCategory } from "@entities";
-import { verifyCreateCardBody, isValidCardFilter, isValidCardType } from "@entities/cards/functions/util";
+import { verifyCreateCardBody, verifyUpdateCardBody, isValidCardFilter, isValidCardType } from "@entities/cards/functions/util";
 import { saveCard, getBank } from "@entities/cards/functions/db";
 import { saveExpenseCategory, saveExpenseSubCategory } from "@entities/expenses/functions/db";
 
@@ -208,7 +205,7 @@ router.get("/:cardNumber", async (req, res, next) => {
     try {
         const user       = req.userData;
         const cardNumber = req.params.cardNumber.replace(/\s+/g, ""); // normalizing the given card number by removing white spaces
-
+        // TODO ADD TESTS FOR THIS
         /* CARD NUMBER IS VALID */
         if( !( /^[0-9]+$/.test(cardNumber) ) ) {
             throw new BadRequestError(`Card "${cardNumber}" cannot be obtained because a card number can not contain non numeric chars.`);
@@ -262,7 +259,11 @@ router.put("/:cardNumber", async (req, res, next) => {
     try {
         const user       = req.userData;
         const cardNumber = req.params.cardNumber.replace(/\s+/g, ""); // normalizing the given card number by removing white spaces
-        const options    = req.body as UpdateCardPayload;
+        const options    = req.body;
+
+        if(!verifyUpdateCardBody(options)) {
+            throw new BadRequestError(`Card "${cardNumber}" cannot be updated because a malformed payload was sent.`);
+        }
 
         /* CARD NUMBER IS VALID */
         if( !( /^[0-9]+$/.test(cardNumber) ) ) {
