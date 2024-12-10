@@ -65,6 +65,3 @@ export class ExpenseCategory extends CategoriesMixin(class {}) implements IExpen
         };
     }
 }
-
-// TODO CARD update db functions JSDoc
-// TODO CARD if name was updated, then update expense type

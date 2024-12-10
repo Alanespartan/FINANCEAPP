@@ -6,7 +6,7 @@ import { MixinsConstructor, Card, Bank } from "@entities";
 export const AllCardsMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
     return class extends Base {
         /** Update card custom name.
-         * @param name New card custom name to assign
+         * @param {string} name New card custom name to assign
          */
         public setName(this: Card, name: string): void {
             this.name = name;
@@ -31,6 +31,7 @@ export const AllCardsMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
         }
         /** Update card type, if given value is not valid throws an error.
          * @param {TCardTypes} type New card type value to assign
+         * @throws BadRequestError If provided type is invalid
          */
         public setType(this: Card, type: TCardTypes): void {
             if(!isValidCardType(type)) {
@@ -40,6 +41,7 @@ export const AllCardsMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
         }
         /** Reduce balance from card if there is enough to do a payment, otherwise throws an error.
          * @param {number} amountToPay A number equivalent to the amount of money to substract from the available card balance
+         * @throws BadRequestError If insufficient funds in card to do the payment
          */
         public doPayment(this: Card, amountToPay: number): void {
             if(this.balance < amountToPay) {
