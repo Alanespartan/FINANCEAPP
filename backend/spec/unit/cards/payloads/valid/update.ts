@@ -1,4 +1,4 @@
-import { UpdateCardPayload } from "../../../../../../../common/types/cards";
+import { UpdateCardPayload } from "../../../../../../common/types/cards";
 
 // DEBIT
 export const ValidUpdate_DebitCardSimple = {

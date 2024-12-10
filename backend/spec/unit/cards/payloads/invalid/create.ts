@@ -1,4 +1,4 @@
-import { CreateCardPayload } from "../../../../../../../common/types/cards";
+import { CreateCardPayload } from "../../../../../../common/types/cards";
 
 // GENERAL
 export const InvalidCreation_CardTypeIsIncorrect = {

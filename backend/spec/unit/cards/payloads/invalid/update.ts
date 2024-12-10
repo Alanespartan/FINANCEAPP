@@ -1,5 +1,5 @@
-import { UpdateCardPayload } from "../../../../../../../common/types/cards";
-import { ValidCreation_CreditCardSimple } from "../../valid/create";
+import { UpdateCardPayload } from "../../../../../../common/types/cards";
+import { ValidCreation_CreditCardSimple } from "../valid/create";
 
 // GENERAL
 export const InvalidUpdate_CardNumberIsIncorrect = "4815a6973b7892c1532d";
