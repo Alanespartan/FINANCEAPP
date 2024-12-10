@@ -1,12 +1,14 @@
 import { Router } from "express";
 import { BadRequestError, NotFoundError } from "@errors";
 import { saveExpenseCategory } from "@entities/expenses/functions/db";
-import { CreateExpenseCategoryPayload, UpdateExpenseCategoryPayload } from "@common/types/expenses";
+import { verifyCreateExpenseCategoryBody } from "@entities/expenses/functions/util";
+import { UpdateExpenseCategoryPayload } from "@common/types/expenses";
 import { ExpenseCategory } from "@entities";
 import { stringIsValidID } from "@backend/utils/functions";
 
 const router = Router();
 
+// #region POST Category
 /**
 * @swagger
 * /api/v1/expenses/categories:
@@ -34,23 +36,34 @@ const router = Router();
 router.post("/", async (req, res, next) => {
     try {
         const user    = req.userData;
-        const options = req.body as CreateExpenseCategoryPayload;
+        const options = req.body;
 
-        // avoid creating a duplicate if an expense type with the given name already exists
+        if(!verifyCreateExpenseCategoryBody(options)) {
+            throw new BadRequestError("New category cannot be created because a malformed payload sent.");
+        }
+
+        // avoid creating a default category because these are created during user sign up
+        if(options.isDefault) {
+            throw new NotFoundError(`Category "${options.name}" cannot be created because user is not allowed to create a default category.`);
+        }
+
+        // avoid creating a duplicate
         if(user.hasExpenseCategory(options.name, "name")) {
             throw new BadRequestError(`An expense type with the given "${options.name}" name already exists.`);
         }
 
-        // save new expense type in db
-        const savedExpenseCategory = await saveExpenseCategory(new ExpenseCategory(options, user.id));
+        // save new expense category in db
+        const savedCategory = await saveExpenseCategory(new ExpenseCategory(options, user.id));
 
         // update the in-memory array for future operations
-        user.addExpenseCategory(savedExpenseCategory);
+        user.addExpenseCategory(savedCategory);
 
-        return res.status(201).json(savedExpenseCategory.toInterfaceObject());
+        return res.status(201).json(savedCategory.toInterfaceObject());
     } catch(error) { return next(error); }
 });
+// #endregion POST Category
 
+// #region GET Categories
 /**
 * @swagger
 * /api/v1/expenses/categories:
@@ -90,13 +103,17 @@ router.get("/", async (req, res, next) => {
             }
             if((/true/).test(onlyDefault)) {
                 return res.status(200).json(user.getExpenseCategories().filter((ec) => ec.isDefault));
+            } else {
+                return res.status(200).json(user.getExpenseCategories().filter((ec) => !ec.isDefault));
             }
         }
 
         return res.status(200).json(user.getExpenseCategories());
     } catch(error) { return next(error); }
 });
+// #endregion GET Categories
 
+// #region GET Category
 /**
 * @swagger
 * /api/v1/expenses/categories/{id}:
@@ -143,7 +160,9 @@ router.get("/:id", async (req, res, next) => {
         return res.status(200).json(user.getExpenseCategoryById(parsedId));
     } catch(error) { return next(error); }
 });
+// #endregion GET Category
 
+// #region PUT Category
 /**
 * @swagger
 * /api/v1/expenses/categories/{id}:
@@ -196,16 +215,17 @@ router.put("/:id", async (req, res, next) => {
             throw new BadRequestError(`Category "${parsedId}" cannot be updated because it is an app default category.`);
         }
 
-        // update cached expense type data
+        // update the in-memory object properties directly for future operations
         const toUpdate = user.setOptionsIntoExpenseCategory(parsedId, options);
         // apply expense type changes in db using updated object
         const savedExpenseCategory = await saveExpenseCategory(toUpdate);
-        // update the in-memory object properties directly for future operations
-        const inMemoryCategory = user.getExpenseCategoryById(parsedId);
-        Object.assign(inMemoryCategory, savedExpenseCategory);
+
+        //const inMemoryCategory = user.getExpenseCategoryById(parsedId);
+        //Object.assign(inMemoryCategory, savedExpenseCategory);
 
         return res.status(200).json(savedExpenseCategory.toInterfaceObject());
     } catch(error) { return next(error); }
 });
+// #endregion PUT Category
 
 export default router;
