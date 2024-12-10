@@ -45,7 +45,7 @@ router.post("/", async (req, res, next) => {
         const cardType = options.type;
 
         if(!verifyCreateCardBody(options)) {
-            throw new BadRequestError("New card cannot be created because a malformed payload sent.");
+            throw new BadRequestError("New card cannot be created because a malformed payload was sent.");
         }
 
         // normalizing the card number by removing white spaces

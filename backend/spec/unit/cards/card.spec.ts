@@ -119,7 +119,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "New card cannot be created because a malformed payload sent.");
+                expect(res.body).to.have.property("info", "New card cannot be created because a malformed payload was sent.");
             });
             it("Then return '400 Bad Request Error' if a card number contains non numeric chars", async function() {
                 const res = await agent
