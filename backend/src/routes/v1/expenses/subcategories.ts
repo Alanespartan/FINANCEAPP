@@ -8,6 +8,7 @@ import { stringIsValidID } from "@backend/utils/functions";
 
 const router = Router();
 
+// #region POST Sub Category
 /**
 * @swagger
 * /api/v1/expenses/subcategories:
@@ -73,7 +74,9 @@ router.post("/", async (req, res, next) => {
         return res.status(201).json(createdSubCategory.toInterfaceObject());
     } catch(error) { return next(error); }
 });
+// #endregion POST Sub Category
 
+// #region GET Sub Categories
 /**
 * @swagger
 * /api/v1/expenses/subcategories:
@@ -117,7 +120,9 @@ router.get("/", async (req, res, next) => {
         return res.status(200).json(user.getExpenseSubCategories(filterBy));
     } catch(error) { return next(error); }
 });
+// #endregion GET Sub Categories
 
+// #region GET Sub Category
 /**
 * @swagger
 * /api/v1/expenses/subcategories/{id}:
@@ -164,5 +169,6 @@ router.get("/:id", async (req, res, next) => {
         return res.status(200).json(user.getExpenseSubCategoryById(parsedId));
     } catch(error) { return next(error); }
 });
+// #endregion GET Sub Category
 
 export default router;
