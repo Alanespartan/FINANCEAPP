@@ -2,12 +2,13 @@
 import { expect } from "chai";
 import { DefaultCategories, IExpenseCategory } from "../../../../common/types/expenses";
 import { agent, version } from "../../setup";
+import { validateExpenseCategories, validateExpenseCategory } from "./functions";
 import * as payloads from "./payloads";
 
 const categoriesPath = `/api/${version}/expenses/categories`;
 
 describe(`Testing API: ${categoriesPath}`, function() {
-    // #region Create Categories
+    // #region POST Category Tests
     describe("When Creating a Category", function() {
         describe("Given a valid payload", function() {
             it("Then return '201 Created' and IExpenseCategory object if required payload parameters are sent", async function() {
@@ -97,8 +98,8 @@ describe(`Testing API: ${categoriesPath}`, function() {
             });
         });
     });
-    // #endregion Create Categories
-    // #region Fetch Categories
+    // #endregion POST Category Tests
+    // #region GET Categories Tests
     describe("When Fetching Categories", function() {
         describe("Given no filter", function() {
             it("Then return '200 Success' and array of all created categories", async function() {
@@ -108,37 +109,11 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     .expect("Content-Type", /json/);
 
                 // Ensure the response is an array
-                expect(res.body).to.be.an("array").and.to.have.lengthOf(DefaultCategories.length + payloads.ValidCreation_DummyExpenseCategories.length + 1);
-
-                // Validate each entity against IExpenseCategory
-                res.body.forEach((category: any) => {
-                    // Check required properties and types
-                    expect(category).to.be.an("object");
-                    expect(category).to.have.property("id").that.is.a("number");
-                    expect(category).to.have.property("name").that.is.a("string");
-                    expect(category).to.have.property("isDefault").that.is.a("boolean");
-                    expect(category).to.have.property("userId").that.is.a("number");
-
-                    // Validate subcategories array
-                    expect(category).to.have.property("subcategories").that.is.an("array");
-
-                    // Optionally validate each subcategory
-                    category.subcategories.forEach((sub: any) => {
-                        expect(sub).to.be.an("object");
-                        expect(sub).to.have.property("id").that.is.a("number");
-                        expect(sub).to.have.property("name").that.is.a("string");
-                        expect(sub).to.have.property("userId").that.is.a("number");
-
-                        // Validate 'type' attribute that has the TExpenseType form
-                        expect(sub).to.have.property("type").that.is.oneOf([ 1, 2, 3 ]);
-
-                        // Validate 'instrumentId' attribute
-                        expect(sub).to.have.property("instrumentId");
-                        if(sub.instrumentId !== undefined) {
-                            expect(sub.instrumentId).to.be.a("number");
-                        }
-                    });
-                });
+                expect(res.body).to.be.an("array");
+                // Ensure the length matches the default categories array size value + multiple dummy creations tests + simple creation test
+                expect(res.body).to.have.lengthOf(DefaultCategories.length + payloads.ValidCreation_DummyExpenseCategories.length + 1);
+                // Validate each entity against IExpenseCategory interface
+                validateExpenseCategories(res.body);
             });
         });
         describe("Given an invalid onlyDefault filter", function() {
@@ -176,6 +151,8 @@ describe(`Testing API: ${categoriesPath}`, function() {
                 expect(res.body).to.be.an("array");
                 // Ensure the length matches the default categories array size value
                 expect(res.body).to.have.lengthOf(DefaultCategories.length);
+                // Validate each entity against IExpenseCategory interface
+                validateExpenseCategories(res.body);
             });
             it("Then return '200 Success' and array of all non default categories if onlyDefault is false", async function() {
                 const res = await agent
@@ -186,11 +163,48 @@ describe(`Testing API: ${categoriesPath}`, function() {
 
                 // Ensure the response is an array
                 expect(res.body).to.be.an("array");
-                // Ensure the length matches the default categories array size value
+                // Ensure the length matches the default categories array size value + simple creation test
                 expect(res.body).to.have.lengthOf(payloads.ValidCreation_DummyExpenseCategories.length + 1);
-
+                // Validate each entity against IExpenseCategory interface
+                validateExpenseCategories(res.body);
             });
         });
     });
-    // #endregion Fetch Categories
+    // #endregion GET Categories Tests
+    // #region GET Category Tests
+    describe("When Fetching a Category", function() {
+        describe("Given an invalid id", function() {
+            it("Then return '400 Bad Request Error' if category id has incorrect format", async function() {
+                const id = "idIsNotANumber";
+                const res = await agent
+                    .get(`${categoriesPath}/${id}`)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Category cannot be obtained because the provided id "${id}" was in an incorrect format.`);
+            });
+            it("Then return '404 Not Found Error' if category does not exist in user expense categories", async function() {
+                const id = -1;
+                const res = await agent
+                    .get(`${categoriesPath}/${id}`)
+                    .expect(404)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The requested resource could not be found.");
+                expect(res.body).to.have.property("info", `Category "${id}" cannot be obtained because it does not exist in user data.`);
+            });
+        });
+        describe("Given a valid card number", function() {
+            it("Then return '200 Success' and IExpenseCategory object", async function() {
+                const res = await agent
+                    .get(`${categoriesPath}/1`)
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                // Validate entity against IExpenseCategory interface
+                validateExpenseCategory(res.body);
+            });
+        });
+    });
+    // #endregion GET Category Tests
 });
