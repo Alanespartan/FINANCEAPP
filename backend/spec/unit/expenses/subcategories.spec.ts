@@ -5,6 +5,7 @@ import { validateExpenseSubCategories, validateExpenseSubcategory } from "./func
 import * as payloads from "./payloads";
 
 const subCategoriesPath = `/api/${version}/expenses/subcategories`;
+let lastCreatedId = 0;
 
 describe(`Testing API: ${subCategoriesPath}`, function() {
     // #region POST Sub Category
@@ -87,6 +88,8 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     // Check required properties and types
                     expect(response.body).to.have.property("type", payloads.ValidCreation_ExpenseSubCategory_MultipleDummy[index].type);
                     expect(response.body).to.have.property("name", payloads.ValidCreation_ExpenseSubCategory_MultipleDummy[index].name);
+
+                    lastCreatedId = response.body.id;
                 });
             });
         });
@@ -212,4 +215,73 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
         });
     });
     // #endregion GET Sub Category
+    // #region PUT Sub Category
+    describe("When Updating a Sub Category", function() {
+        describe("Given an invalid id", function() {
+            it("Then return '400 Bad Request Error' if sub category id has incorrect format", async function() {
+                const id = "idIsNotANumber";
+                const res = await agent
+                    .put(`${subCategoriesPath}/${id}`)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Subcategory cannot be updated because the provided id "${id}" was in an incorrect format.`);
+            });
+            it("Then return '404 Not Found Error' if sub category does not exist in user expense sub categories", async function() {
+                const id = -1;
+                const res = await agent
+                    .put(`${subCategoriesPath}/${id}`)
+                    .send({
+                        name: "This should not be applied"
+                    })
+                    .expect(404)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The requested resource could not be found.");
+                expect(res.body).to.have.property("info", `Subcategory "${id}" cannot be updated because it does not exist in user data.`);
+            });
+        });
+        describe("Given an invalid payload", function() {
+            it("Then return '400 Bad Request Error' if a malformed payload is used", async function() {
+                const id = 1;
+                const res = await agent
+                    .put(`${subCategoriesPath}/${id}`)
+                    .send({
+                        incorrectProp1: "",
+                        nonExistingProp: 2
+                    })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Subcategory "${id}" cannot be updated because a malformed payload was sent.`);
+            });
+            it("Then return '400 Bad Request Error' if user is trying to update a non real expense sub category", async function() {
+                const id = 1;
+                const res = await agent
+                    .put(`${subCategoriesPath}/${id}`)
+                    .send(payloads.ValidUpdate_ExpenseSubCategory_SimpleTest)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Subcategory "${id}" cannot be updated because non real expense type sub categories can not be modified.`);
+            });
+        });
+        describe("Given a valid payload and id", function() {
+            it("Then return '200 Success' and IExpenseSubCategory object if required payload parameters are sent", async function() {
+                const res = await agent
+                    .put(`${subCategoriesPath}/${lastCreatedId}`)
+                    .send(payloads.ValidUpdate_ExpenseSubCategory_SimpleTest)
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                // Validate entity against IExpenseCategory interface
+                validateExpenseSubcategory(res.body);
+                // validate updated attribute
+                expect(res.body).to.have.property("name", payloads.ValidUpdate_ExpenseSubCategory_SimpleTest.name);
+            });
+        });
+    });
+    // #endregion PUT Sub Category
 });

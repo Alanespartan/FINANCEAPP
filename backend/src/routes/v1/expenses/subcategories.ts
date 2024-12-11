@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { BadRequestError, NotFoundError } from "@errors";
-import { OETypesOfExpense }    from "@common/types/expenses";
-import { ExpenseSubCategory }  from "@entities";
+import { OETypesOfExpense }   from "@common/types/expenses";
+import { ExpenseSubCategory } from "@entities";
 import { saveExpenseCategory, saveExpenseSubCategory } from "@entities/expenses/functions/db";
 import {
     verifyCreateExpenseSubCategoryBody, verifyUpdateExpenseSubCategoryBody,
@@ -205,7 +205,7 @@ router.get("/:id", async (req, res, next) => {
 *                       $ref: "#/components/schemas/UpdateExpenseSubCategoryPayload"
 *       responses:
 *           200:
-*               description: A JSON representation of the updated expense category.
+*               description: A JSON representation of the updated expense sub category.
 *               content:
 *                   application/json:
 *                       schema:
@@ -226,7 +226,7 @@ router.put("/:id", async (req, res, next) => {
             throw new BadRequestError(`Subcategory cannot be updated because the provided id "${id}" was in an incorrect format.`);
         }
 
-        // validate a expense category with the given id exists
+        // validate a expense sub category with the given id exists
         const parsedId = Number(id);
         if(!user.hasExpenseSubCategory(parsedId, "id")) {
             throw new NotFoundError(`Subcategory "${parsedId}" cannot be updated because it does not exist in user data.`);
@@ -234,12 +234,17 @@ router.put("/:id", async (req, res, next) => {
 
         // verify payload has correct form
         if(!verifyUpdateExpenseSubCategoryBody(options)) {
-            throw new BadRequestError(`Subcategory "${id}" cannot be updated because a malformed payload was sent.`);
+            throw new BadRequestError(`Subcategory "${parsedId}" cannot be updated because a malformed payload was sent.`);
+        }
+
+        // avoid creating sub categories with incorrect type (cards and loans sub categories must be created on their respective endpoints)
+        if(!isValidRealExpense(user.getExpenseSubCategoryById(parsedId).type)) {
+            throw new BadRequestError(`Subcategory "${parsedId}" cannot be updated because non real expense type sub categories can not be modified.`);
         }
 
         // update the in-memory object properties directly for future operations
         const toUpdate = user.setOptionsIntoExpenseSubCategory(parsedId, options);
-        // apply expense category changes in db using updated object
+        // apply expense sub category changes in db using updated object
         const savedExpenseCategory = await saveExpenseSubCategory(toUpdate);
 
         return res.status(200).json(savedExpenseCategory.toInterfaceObject());
