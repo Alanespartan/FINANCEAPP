@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from "chai";
 import { agent, version } from "../../setup";
-import { validateSubcategory } from "./functions";
+import { validateExpenseSubcategory } from "./functions";
 import * as payloads from "./payloads";
 
 const subCategoriesPath = `/api/${version}/expenses/subcategories`;
@@ -62,13 +62,13 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     .expect(201)
                     .expect("Content-Type", /json/);
                 // Validate entity against IExpenseSubCategory interface
-                validateSubcategory(res.body);
+                validateExpenseSubcategory(res.body);
 
                 // Check required properties and types
                 expect(res.body).to.have.property("type", payloads.ValidCreation_ExpenseSubCategory_SimpleTest.type);
                 expect(res.body).to.have.property("name", payloads.ValidCreation_ExpenseSubCategory_SimpleTest.name);
             });
-            it("Then return '201 Created' and IExpenseCategory object if multiple sub categories are created successfully", async function() {
+            it("Then return '201 Created' and IExpenseSubCategory objects if multiple sub categories are created successfully", async function() {
                 // Send all requests concurrently
                 const responses = await Promise.all(
                     payloads.ValidCreation_ExpenseSubCategory_MultipleDummy.map((category) => agent
@@ -82,7 +82,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                 // Assertions for all responses
                 responses.forEach((response, index) => {
                     // Validate entity against IExpenseSubCategory interface
-                    validateSubcategory(response.body);
+                    validateExpenseSubcategory(response.body);
 
                     // Check required properties and types
                     expect(response.body).to.have.property("type", payloads.ValidCreation_ExpenseSubCategory_MultipleDummy[index].type);
@@ -91,4 +91,42 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
             });
         });
     });
+    // #endregion POST Sub Category
+
+    // #region GET Sub Category
+    describe("When Fetching a Sub Category", function() {
+        describe("Given an invalid id", function() {
+            it("Then return '400 Bad Request Error' if sub category id has incorrect format", async function() {
+                const id = "idIsNotANumber";
+                const res = await agent
+                    .get(`${subCategoriesPath}/${id}`)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Subcategory cannot be obtained because the provided id "${id}" was in an incorrect format.`);
+            });
+            it("Then return '404 Not Found Error' if sub category does not exist in user expense sub categories", async function() {
+                const id = -1;
+                const res = await agent
+                    .get(`${subCategoriesPath}/${id}`)
+                    .expect(404)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The requested resource could not be found.");
+                expect(res.body).to.have.property("info", `Subcategory "${id}" cannot be obtained because it does not exist in user data.`);
+            });
+        });
+        describe("Given a valid sub category id", function() {
+            it("Then return '200 Success' and IExpenseSubCategory object", async function() {
+                const res = await agent
+                    .get(`${subCategoriesPath}/1`)
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                // Validate entity against IExpenseSubCategory interface
+                validateExpenseSubcategory(res.body);
+            });
+        });
+    });
+    // #endregion GET Sub Category
 });

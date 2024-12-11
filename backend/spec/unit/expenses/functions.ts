@@ -17,11 +17,11 @@ export function validateExpenseCategory(category: any) {
 
     // Validate subcategories array
     expect(category).to.have.property("subcategories").that.is.an("array");
-    category.subcategories.forEach(validateSubcategory);
+    category.subcategories.forEach(validateExpenseSubcategory);
 }
 
 /** Utility function to validate a single expense sub category */
-export function validateSubcategory(subcategory: any) {
+export function validateExpenseSubcategory(subcategory: any) {
     expect(subcategory).to.be.an("object");
     expect(subcategory).to.have.property("id").that.is.a("number");
     expect(subcategory).to.have.property("name").that.is.a("string");
