@@ -20,6 +20,11 @@ export function validateExpenseCategory(category: any) {
     category.subcategories.forEach(validateExpenseSubcategory);
 }
 
+/** Utility function to validate an array of sub categories */
+export function validateExpenseSubCategories(categories: any[]) {
+    categories.forEach(validateExpenseSubcategory);
+}
+
 /** Utility function to validate a single expense sub category */
 export function validateExpenseSubcategory(subcategory: any) {
     expect(subcategory).to.be.an("object");

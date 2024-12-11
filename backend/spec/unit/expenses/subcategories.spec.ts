@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from "chai";
 import { agent, version } from "../../setup";
-import { validateExpenseSubcategory } from "./functions";
+import { validateExpenseSubCategories, validateExpenseSubcategory } from "./functions";
 import * as payloads from "./payloads";
 
 const subCategoriesPath = `/api/${version}/expenses/subcategories`;
@@ -92,7 +92,90 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
         });
     });
     // #endregion POST Sub Category
+    // #region GET Sub Categories
+    describe("When Fetching Sub Categories", function() {
+        describe("Given no filter", function() {
+            it("Then return '200 Success' and array of all created categories", async function() {
+                const res = await agent
+                    .get(subCategoriesPath)
+                    .expect(200)
+                    .expect("Content-Type", /json/);
 
+                // Ensure the response is an array
+                expect(res.body).to.be.an("array");
+                expect(res.body).to.have.lengthOf(9);
+                // Validate each entity against IExpenseCategory interface
+                validateExpenseSubCategories(res.body);
+            });
+        });
+        describe("Given an invalid type filter", function() {
+            it("Then return '400 Bad Request Error' if type filter is not in correct string format", async function() {
+                const res = await agent
+                    .get(subCategoriesPath)
+                    .query({ type: [ true, false ] })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", "Subcategories cannot be obtained because the type filter provided was in an incorrect format.");
+            });
+            it("Then return '400 Bad Request Error' if type filter has incorrect value", async function() {
+                const incorrectFilter = -1;
+                const res = await agent
+                    .get(subCategoriesPath)
+                    .query({ type: incorrectFilter })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Subcategories cannot be obtained because an incorrect type filter was used in the request: ${incorrectFilter}.`);
+            });
+        });
+        describe("Given a valid filter", function() {
+            it("Then return '200 Success' and array of all expense sub categories if type filter is 0", async function() {
+                const res = await agent
+                    .get(subCategoriesPath)
+                    .query({ type: 0 })
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+
+                // Ensure the response is an array
+                expect(res.body).to.be.an("array");
+                expect(res.body).to.have.lengthOf(9);
+                // Validate each entity against IExpenseCategory interface
+                validateExpenseSubCategories(res.body);
+            });
+            it("Then return '200 Success' and array of all real expense sub categories if type filter is 1", async function() {
+                const res = await agent
+                    .get(subCategoriesPath)
+                    .query({ type: 1 })
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+
+                // Ensure the response is an array
+                expect(res.body).to.be.an("array");
+                // Ensure the length matches the amount of real expense categories created in prior tests
+                expect(res.body).to.have.lengthOf(4);
+                // Validate each entity against IExpenseCategory interface
+                validateExpenseSubCategories(res.body);
+            });
+            it("Then return '200 Success' and array of all card expense sub categories if type filter is 2", async function() {
+                const res = await agent
+                    .get(subCategoriesPath)
+                    .query({ type: 2 })
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+
+                // Ensure the response is an array
+                expect(res.body).to.be.an("array");
+                // Ensure the length matches the amount of created cards
+                expect(res.body).to.have.lengthOf(5);
+                // Validate each entity against IExpenseCategory interface
+                validateExpenseSubCategories(res.body);
+            });
+        });
+    });
+    // #endregion Sub Categories
     // #region GET Sub Category
     describe("When Fetching a Sub Category", function() {
         describe("Given an invalid id", function() {
