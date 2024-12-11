@@ -1,8 +1,7 @@
 import { Router } from "express";
 import { BadRequestError, NotFoundError } from "@errors";
 import { saveExpenseCategory } from "@entities/expenses/functions/db";
-import { verifyCreateExpenseCategoryBody } from "@entities/expenses/functions/util";
-import { UpdateExpenseCategoryPayload } from "@common/types/expenses";
+import { verifyCreateExpenseCategoryBody, verifyUpdateExpenseCategoryBody } from "@entities/expenses/functions/util";
 import { ExpenseCategory } from "@entities";
 import { stringIsValidID } from "@backend/utils/functions";
 
@@ -190,13 +189,15 @@ router.get("/:id", async (req, res, next) => {
 *                   application/json:
 *                       schema:
 *                           $ref: "#/components/schemas/IExpenseCategory"
+*           400:
+*               description: Bad Request Error
 *           404:
 *               description: Not Found Error
 */
 router.put("/:id", async (req, res, next) => {
     try {
         const user    = req.userData;
-        const options = req.body as UpdateExpenseCategoryPayload;
+        const options = req.body;
         const id      = req.params.id;
 
         // check if given id is in correct form
@@ -210,6 +211,10 @@ router.put("/:id", async (req, res, next) => {
             throw new NotFoundError(`Category "${parsedId}" cannot be updated because it does not exist in user data.`);
         }
 
+        if(!verifyUpdateExpenseCategoryBody(options)) {
+            throw new BadRequestError(`Category "${id}" cannot be updated because a malformed payload was sent.`);
+        }
+
         // check if user is trying to update a default category
         if(user.getExpenseCategoryById(parsedId).isDefault) {
             throw new BadRequestError(`Category "${parsedId}" cannot be updated because it is an app default category.`);
@@ -217,11 +222,8 @@ router.put("/:id", async (req, res, next) => {
 
         // update the in-memory object properties directly for future operations
         const toUpdate = user.setOptionsIntoExpenseCategory(parsedId, options);
-        // apply expense type changes in db using updated object
+        // apply expense category changes in db using updated object
         const savedExpenseCategory = await saveExpenseCategory(toUpdate);
-
-        //const inMemoryCategory = user.getExpenseCategoryById(parsedId);
-        //Object.assign(inMemoryCategory, savedExpenseCategory);
 
         return res.status(200).json(savedExpenseCategory.toInterfaceObject());
     } catch(error) { return next(error); }

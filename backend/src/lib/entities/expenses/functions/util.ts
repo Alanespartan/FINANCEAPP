@@ -17,6 +17,22 @@ export function verifyCreateExpenseCategoryBody(body: unknown): body is CreateEx
     return typeof parsed.name === "string"; // && typeof parsed.isDefault === "boolean";
 }
 
+/**
+ * Ensures body is in correct format and all required information is present to update an expense category.
+ * @param {unknown} body Body from update expense category request.
+ * @returns bodyisUpdateExpenseCategoryPayload wheter or not the body is valid
+ */
+export function verifyUpdateExpenseCategoryBody(body: unknown): body is UpdateExpenseCategoryPayload {
+    if(typeof body !== "object") { return false; } // if body is not an object
+    if(!body) { return false; } // null or undefined
+    if(Object.entries(body).length === 0) { return false; } // if empty object {}
+    const parsed = body as UpdateExpenseCategoryPayload;
+    let count = 0;
+    if(parsed.name) { count++; if(typeof parsed.name !== "string")       { return false; } }
+    if(count === 0) { return false; } // if obj has keys but none is from update expense category payload interface
+    return true;
+}
+
 export const isValidExpenseSubCategory = (value: number): value is TExpenseType => {
     return value === OETypesOfExpense.REALEXPENSE
         || value === OETypesOfExpense.CARD

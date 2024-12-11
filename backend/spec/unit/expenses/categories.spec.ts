@@ -195,7 +195,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                 expect(res.body).to.have.property("info", `Category "${id}" cannot be obtained because it does not exist in user data.`);
             });
         });
-        describe("Given a valid card number", function() {
+        describe("Given a valid category id", function() {
             it("Then return '200 Success' and IExpenseCategory object", async function() {
                 const res = await agent
                     .get(`${categoriesPath}/1`)
@@ -207,4 +207,76 @@ describe(`Testing API: ${categoriesPath}`, function() {
         });
     });
     // #endregion GET Category Tests
+    // #region PUT Category Tests
+    describe("When Updating a Category", function() {
+        describe("Given an invalid id", function() {
+            it("Then return '400 Bad Request Error' if category id has incorrect format", async function() {
+                const id = "idIsNotANumber";
+                const res = await agent
+                    .put(`${categoriesPath}/${id}`)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Category cannot be updated because the provided id "${id}" was in an incorrect format.`);
+            });
+            it("Then return '404 Not Found Error' if category does not exist in user expense categories", async function() {
+                const id = -1;
+                const res = await agent
+                    .put(`${categoriesPath}/${id}`)
+                    .send({
+                        name: "This should not be applied"
+                    })
+                    .expect(404)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The requested resource could not be found.");
+                expect(res.body).to.have.property("info", `Category "${id}" cannot be updated because it does not exist in user data.`);
+            });
+            it("Then return '400 Bad Request Error' if user is trying to update a default category", async function() {
+                const id = 1;
+                const res = await agent
+                    .put(`${categoriesPath}/${id}`)
+                    .send({
+                        name: "This should not be applied to the default category"
+                    })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Category "${id}" cannot be updated because it is an app default category.`);
+            });
+        });
+        describe("Given an invalid payload", function() {
+            it("Then return '400 Bad Request Error' if a malformed payload is used", async function() {
+                const id = 1;
+                const res = await agent
+                    .put(`${categoriesPath}/${id}`)
+                    .send({
+                        incorrectProp1: "",
+                        nonExistingProp: 2
+                    })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Category "${id}" cannot be updated because a malformed payload was sent.`);
+            });
+        });
+        describe("Given a valid payload and id", function() {
+            it("Then return '200 Success' and IExpenseCategory object if required payload parameters are sent", async function() {
+                const id = DefaultCategories.length + 1;
+                const res = await agent
+                    .put(`${categoriesPath}/${id}`)
+                    .send(payloads.ValidUpdate_ExpenseCategorySimple)
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                // Validate entity against IExpenseCategory interface
+                validateExpenseCategory(res.body);
+                // validate updated attribute
+                expect(res.body).to.have.property("name", payloads.ValidUpdate_ExpenseCategorySimple.name);
+            });
+        });
+    });
+    // #endregion PUT Category Tests
 });
