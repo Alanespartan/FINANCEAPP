@@ -3,7 +3,7 @@ import { CreateCardPayload } from "../../../../../../common/types/cards";
 // DEBIT
 export const ValidCreation_DebitCardSimple = {
     cardNumber: "4815697378921530",
-    expires:    new Date(),
+    expires:    new Date().getTime(),
     type:       1,
     bankId:     1,
     balance:    10000,
@@ -12,7 +12,7 @@ export const ValidCreation_DebitCardSimple = {
 } as CreateCardPayload;
 export const ValidCreation_DebitCardIsVoucher = {
     cardNumber: "4815697378921531",
-    expires:    new Date(),
+    expires:    new Date().getTime(),
     type:       1,
     bankId:     1,
     balance:    20000,
@@ -22,7 +22,7 @@ export const ValidCreation_DebitCardIsVoucher = {
 } as CreateCardPayload;
 export const ValidCreation_DebitCardNoName = {
     cardNumber: "4815697378921532",
-    expires:    new Date(),
+    expires:    new Date().getTime(),
     type:       1,
     bankId:     1,
     balance:    30000
@@ -31,7 +31,7 @@ export const ValidCreation_DebitCardNoName = {
 // CREDIT
 export const ValidCreation_CreditCardSimple = {
     cardNumber: "5815697378921530",
-    expires:    new Date(),
+    expires:    new Date().getTime(),
     type:       2,
     bankId:     1,
     balance:    10000,
@@ -41,7 +41,7 @@ export const ValidCreation_CreditCardSimple = {
 } as CreateCardPayload;
 export const ValidCreation_CreditCardNoName = {
     cardNumber: "5815697378921531",
-    expires:    new Date(),
+    expires:    new Date().getTime(),
     type:       2,
     bankId:     1,
     balance:    30000,

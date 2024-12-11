@@ -10,21 +10,21 @@ export const InvalidCreation_CardTypeIsIncorrect = {
 };
 export const InvalidCreation_CardNumberIsIncorrect = {
     cardNumber: "4915a6973b7892c1530d",
-    expires:    new Date(),
+    expires:    new Date().getTime(),
     type:       1,
     bankId:     1,
     balance:    10000
 } as CreateCardPayload;
 export const InvalidCreation_DuplicatedCard = {
     cardNumber: "4815697378921530",
-    expires:    new Date(),
+    expires:    new Date().getTime(),
     type:       1,
     bankId:     1,
     balance:    10000
 } as CreateCardPayload;
 export const InvalidCreation_BankDoesNotExist = {
     cardNumber: "4915697378921530",
-    expires:    new Date(),
+    expires:    new Date().getTime(),
     type:       1,
     bankId:     -1,
     balance:    10000
@@ -33,7 +33,7 @@ export const InvalidCreation_BankDoesNotExist = {
 // DEBIT
 export const InvalidCreation_DebitCardHasLimit = {
     cardNumber: "4915697378921530",
-    expires:    new Date(),
+    expires:    new Date().getTime(),
     type:       1,
     bankId:     1,
     balance:    10000,
@@ -44,14 +44,14 @@ export const InvalidCreation_DebitCardHasLimit = {
 // CREDIT
 export const InvalidCreation_CreditCardNoLimit = {
     cardNumber: "5915697378921530",
-    expires:    new Date(),
+    expires:    new Date().getTime(),
     type:       2,
     bankId:     1,
     balance:    10000,
 } as CreateCardPayload;
 export const InvalidCreation_CreditCardLimitIsIncorrect = {
     cardNumber: "5915697378921530",
-    expires:    new Date(),
+    expires:    new Date().getTime(),
     type:       2,
     bankId:     1,
     balance:    10000,
@@ -60,7 +60,7 @@ export const InvalidCreation_CreditCardLimitIsIncorrect = {
 } as CreateCardPayload;
 export const InvalidCreation_CreditCardIsVoucher = {
     cardNumber: "5915697378921530",
-    expires:    new Date(),
+    expires:    new Date().getTime(),
     type:       2,
     bankId:     1,
     balance:    30000,

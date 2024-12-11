@@ -160,10 +160,9 @@ export interface SimpleCardOptions {
 *                   example: 4815 6973 7892 1530
 *                   description: This will be DB Unique ID
 *               expires:
-*                   type: string
-*                   format: date
-*                   example: 2029-04-01
-*                   description: Expiration date in timestamp format
+*                   type: number
+*                   example: 1732497156317
+*                   description: Expiration date in timestamp format.
 *               type:
 *                   $ref: "#/components/schemas/TCardTypes"
 *                   example: 1
@@ -202,7 +201,7 @@ export interface CreateCardPayload {
     /** This will be DB Unique ID */
     cardNumber: string;
     /** Expiration date in timestamp format */
-    expires: Date;
+    expires: number;
     /** The type of card, it can be either debit (1), credit (2) or service (3) card. */
     type: TCardTypes;
     /** DB Foreign Key - Bank ID */
