@@ -175,7 +175,6 @@ router.get("/:id", async (req, res, next) => {
 *             name: id
 *             schema:
 *               type: string
-*               description: The id of the desired expense category to update.
 *       requestBody:
 *           required: true
 *           content:
