@@ -30,9 +30,8 @@ export function validateSubcategory(subcategory: any) {
     // Validate 'type' attribute that has the TExpenseType form
     expect(subcategory).to.have.property("type").that.is.oneOf([ 1, 2, 3 ]);
 
-    // Validate 'instrumentId' attribute
-    expect(subcategory).to.have.property("instrumentId");
-    if(subcategory.instrumentId !== undefined) {
+    // Validate 'instrumentId' attribute if not undefined
+    if(subcategory.instrumentId) {
         expect(subcategory.instrumentId).to.be.a("number");
     }
 }

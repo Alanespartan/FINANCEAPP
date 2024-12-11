@@ -64,7 +64,7 @@ export class ExpenseSubCategory extends SubCategoriesMixin(class {}) implements 
             name:         this.name,
             type:         this.type,
             userId:       this.userId,
-            instrumentId: this.instrumentId
+            instrumentId: this.instrumentId ?? undefined
         };
     }
 }
