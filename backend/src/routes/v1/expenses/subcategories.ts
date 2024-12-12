@@ -17,7 +17,7 @@ const router = Router();
 * /api/v1/expenses/subcategories:
 *   post:
 *       summary: New expense sub category
-*       description: Create and assign a new expense sub category.
+*       description: Create and save a new expense sub category.
 *       tags:
 *           - Expenses
 *       requestBody:

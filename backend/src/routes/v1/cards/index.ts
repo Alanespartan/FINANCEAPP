@@ -16,7 +16,7 @@ const router = Router();
 * /api/v1/cards:
 *   post:
 *       summary: New card
-*       description: Create and assign a new card (debit, credit, voucher, services).
+*       description: Create and save a new card (debit, credit, voucher, services).
 *       tags:
 *           - Cards
 *       requestBody:

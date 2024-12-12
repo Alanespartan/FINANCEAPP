@@ -13,7 +13,7 @@ const router = Router();
 * /api/v1/expenses/categories:
 *   post:
 *       summary: New expense category
-*       description: Create and assign a new expense category.
+*       description: Create and save a new expense category.
 *       tags:
 *           - Expenses
 *       requestBody:
