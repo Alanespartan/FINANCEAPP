@@ -3,7 +3,7 @@ import { CreateCardPayload } from "../../../../../../common/types/cards";
 // GENERAL
 export const InvalidCreation_CardTypeIsIncorrect = {
     cardNumber: "4915697378921530",
-    expires:    new Date(),
+    expires:    new Date().getTime(),
     type:       -1,
     bankId:     1,
     balance:    10000

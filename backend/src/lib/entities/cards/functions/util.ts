@@ -19,7 +19,7 @@ export function verifyCreateCardBody(body: unknown): body is CreateCardPayload {
         && typeof parsed.type       === "number"
         && typeof parsed.bankId     === "number"
         && typeof parsed.balance    === "number"
-        && typeof parsed.expires    === "string"
+        && typeof parsed.expires    === "number"
         && validName && validLimit && validIsVoucher;
 }
 
