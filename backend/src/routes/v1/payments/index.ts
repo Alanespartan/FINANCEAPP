@@ -1,14 +1,17 @@
-import { randomUUID } from "crypto";
+// import { randomUUID } from "crypto";
 import { Router } from "express";
-import { Expense, PaymentConfig, PaymentMethod } from "@common/types/payments";
-import { BadRequestError } from "@errors";
+// import { Expense, PaymentConfig, PaymentMethod } from "@common/types/payments";
+// import { BadRequestError } from "@errors";
 
 const router = Router();
 
 router.post("/add-payment", (req, res) => {
     const user    = req.userData;
-    const options = req.body as PaymentConfig;
+    // const options = req.body as PaymentConfig;
 
+    console.log(user);
+
+    /*
     // create expense record
     const newExpense = {
         id:          randomUUID(),
@@ -44,14 +47,15 @@ router.post("/add-payment", (req, res) => {
         paidCard.addBalance(newExpense.total);
     }
 
-    /* if what the user paid was a loan, add balance to that loan
+    // if what the user paid was a loan, add balance to that loan
     if(user.hasLoan(newExpense.category.alias)) {
         user.getLoan(user.getLoanIndex(newExpense.category.alias)).pay(newExpense.total);
-    } */
+    }
 
     user.addExpense(newExpense);
+    */
 
-    return res.status(200);
+    return res.sendStatus(200);
 });
 
 // todo create endpoint to add balance to savings account and pull money from it

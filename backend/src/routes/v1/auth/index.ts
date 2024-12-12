@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { ConnectionStore } from "@backend/session/connectionStore";
 import { BadRequestError, ForbiddenError, UnauthorizedError } from "@errors";
-import { clearSession, verifyLoginBody, verifySignUpBody } from "./functions";
-import userController from "@entities/users/userController";
+import { clearSession, verifyLoginBody, verifySignUpBody } from "./functions/util";
+import { getByEmail, createUser } from "./functions/db";
 
 const router = Router();
 
@@ -52,7 +52,7 @@ router.post("/login", async (req, res, next) => {
         const email    = req.body.email;
         const password = req.body.password;
 
-        const foundUser = await userController.getByEmail(email);
+        const foundUser = await getByEmail(email);
         if(!foundUser) {
             throw new UnauthorizedError("User does not exist. Please check credentials and try again.");
         }
@@ -97,7 +97,6 @@ router.post("/login", async (req, res, next) => {
 */
 router.post("/logout", async (req, res, next) => {
     try {
-        ConnectionStore.deleteConnection(req.sessionID);
         await clearSession(req);
         return res.status(200).json({ status: "success" });
     } catch(error) { next(error); }
@@ -119,8 +118,8 @@ router.post("/logout", async (req, res, next) => {
 *                   schema:
 *                       $ref: "#/components/schemas/SignUpPayload"
 *       responses:
-*           200:
-*               description: A successful login
+*           201:
+*               description: User account created
 *           400:
 *               description: Bad Request Error
 */
@@ -130,9 +129,9 @@ router.post("/signup", async (req, res, next) => {
             throw new BadRequestError("Malformed sign up body sent.");
         }
 
-        userController.create("test@gmail.com", "admin", "John", "Doe");
+        await createUser(req.body.email, req.body.password, req.body.firstName, req.body.lastName);
 
-        return res.sendStatus(200);
+        return res.sendStatus(201);
     } catch(error) { next(error); }
 });
 

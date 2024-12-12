@@ -9,7 +9,10 @@
     "prebuild": "npm run lint",
     "build": "tsc --build --pretty && tsc-alias",
     "build:nolint": "tsc --build --pretty && tsc-alias -v",
-    "start": "npm run build && node ."
+    "start": "npm run build && node .",
+    "start:test": "concurrently --kill-others-on-fail \"node .\" \"wait-on http://localhost:3000 && npm run test\"",
+    "test": "ts-mocha spec/setup.ts -p tsconfig.json spec/**/**/*.spec.ts --exit",
+    "test-file": "ts-mocha -p tsconfig.json --exit"
   },
   "author": "Arturo Cruz",
   "contributors": [],
@@ -37,6 +40,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@types/supertest": "^6.0.2",
     "@types/chai": "^4.3.1",
     "@types/cookie-parser": "1.4.7",
     "@types/crypto-js": "4.1.1",
@@ -55,6 +59,7 @@
     "@typescript-eslint/eslint-plugin": "^5.27.0",
     "@typescript-eslint/parser": "^5.27.5",
     "chai": "^4.3.6",
+    "supertest": "^7.0.0",
     "eslint": "^8.16.0",
     "eslint-plugin-editorconfig": "^3.2.0",
     "mocha": "^9.2.2",
@@ -62,6 +67,8 @@
     "ts-mocha": "^9.0.2",
     "tsc-alias": "^1.6.7",
     "typedoc": "^0.22.17",
-    "typescript": "^4.4.4"
+    "typescript": "^4.4.4",
+    "concurrently": "^9.1.0",
+    "wait-on": "^8.0.1"
   }
 }

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { UnauthorizedError } from "@errors";
 import { ConnectionStore } from "@backend/session/connectionStore";
-import { clearSession } from "@backend/routes/v1/auth/functions";
+import { clearSession } from "@backend/routes/v1/auth/functions/util";
 
 /**
  * Session IDs that are blacklisted.

@@ -1,89 +1,76 @@
 import { Router } from "express";
-import { randomUUID } from "crypto";
-import {
-    CreateCardPayload,
-    OECardTypesFilters,
-    UpdateCardPayload
-} from "@common/types/cards";
-import { BadRequestError, NotFoundError } from "@errors";
+import { OECardTypesFilters } from "@common/types/cards";
+import { CreateExpenseSubCategoryPayload, OETypesOfExpense } from "@common/types/expenses";
+import { BadRequestError, NotFoundError, ServerError } from "@errors";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
-import { ExpenseCategory } from "@common/types/payments";
-import { getHeaders } from "@backend/utils/requests";
-import { User, Card } from "@entities";
-import {
-    isValidCardFilter,
-    isValidCardType,
-    MapNewToExistingArray
-} from "./functions";
-import { getUserCards, updateCard } from "@entities/cards/functions";
-import DBContextSource from "@db";
+import { Card, ExpenseSubCategory } from "@entities";
+import { verifyCreateCardBody, verifyUpdateCardBody, isValidCardFilter, isValidCardType } from "@entities/cards/functions/util";
+import { saveCard, getBank } from "@entities/cards/functions/db";
+import { saveExpenseCategory, saveExpenseSubCategory } from "@entities/expenses/functions/db";
 
 const router = Router();
 
+// #region POST Card
 /**
 * @swagger
 * /api/v1/cards:
 *   post:
-*       summary: Create a new user card
-*       description: Given a configuration of card options, create and assign a new card (debit, credit, voucher, services) to the user information
+*       summary: New card
+*       description: Create and assign a new card (debit, credit, voucher, services).
 *       tags:
 *           - Cards
-*       parameters:
-*           - in: header
-*             name: cardType
-*             schema:
-*               type: string
-*             required: true
 *       requestBody:
-*           description: Payload that includes all the required new card data.
 *           required: true
 *           content:
 *               application/json:
 *                   schema:
 *                       $ref: "#/components/schemas/CreateCardPayload"
 *       responses:
-*           200:
-*               description: An array of cards a user has registered including the recently added.
+*           201:
+*               description: A JSON representation of the created card.
 *               content:
 *                   application/json:
 *                       schema:
-*                           type: array
-*                           items:
-*                               $ref: "#/components/schemas/ICard"
+*                           $ref: "#/components/schemas/ICard"
 *           400:
 *               description: Bad Request Error
 */
 router.post("/", async (req, res, next) => {
     try {
-        const user    = req.userData;
-        const options = req.body as CreateCardPayload;
+        const user     = req.userData;
+        const options  = req.body;
+        const cardType = options.type;
 
-        const { cardType } = getHeaders(req,
-            [ "cardType", "Expected 'cardType' header was not provided." ]
-        );
-
-        const parsedType = parseInt(cardType);
-        if(!isValidCardType(parsedType)) {
-            throw new BadRequestError("Invalid type for creating a new card.");
+        if(!verifyCreateCardBody(options)) {
+            throw new BadRequestError("New card cannot be created because a malformed payload was sent.");
         }
 
         // normalizing the card number by removing white spaces
         options.cardNumber = options.cardNumber.replace(/\s+/g, "");
         // remove any whitespace and then validate the cardNumber contains only numbers
         if( !( /^[0-9]+$/.test(options.cardNumber) ) ) {
-            throw new BadRequestError(`Invalid card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
+            throw new BadRequestError(`Card "${options.cardNumber}" cannot be created because a card number can not contain non numeric chars.`);
         }
+
+        if(!isValidCardType(cardType)) {
+            throw new BadRequestError(`Card "${options.cardNumber}" cannot be created because an incorrect type was used in the request: ${cardType}.`);
+        }
+
+        if( !(await getBank(options.bankId)) ) {
+            throw new BadRequestError(`Card "${options.cardNumber}" cannot be created because an incorrect bank id was used in the request: ${options.bankId}.`);
+        }
+
         // avoid creating a duplicate if a card with the given card number already exists
-        if(user.cards.find((c) => c.cardNumber === options.cardNumber)) {
-            throw new BadRequestError(`A card with the "${options.cardNumber}" number already exists.`);
+        if(user.hasCard(options.cardNumber)) {
+            throw new BadRequestError(`Card "${options.cardNumber}" cannot be created because one with that name already exists.`);
         }
 
-        const newCard = new Card(options, parsedType, user);
+        const newCard = new Card(options, user.id);
 
-        switch (parsedType) {
+        switch (cardType) {
             case OECardTypesFilters.DEBIT:
                 if(options.limit) {
-                    throw new BadRequestError("A debit card can't have a limit.");
+                    throw new BadRequestError(`Debit card "${options.cardNumber}" cannot be created because an incorrect card limit was used in the request: ${options.type}.`);
                 }
                 if(options.isVoucher) {
                     newCard.setIsVoucher(true);
@@ -91,14 +78,15 @@ router.post("/", async (req, res, next) => {
                 break;
             case OECardTypesFilters.CREDIT:
                 if(!options.limit) {
-                    throw new BadRequestError("No limit value was given to create the new credit card.");
+                    throw new BadRequestError(`Credit card "${options.cardNumber}" cannot be created because no limit value was given to create the card.`);
                 }
                 if(options.limit <= 0) {
-                    throw new BadRequestError("Can't set the limit of a credit card to have a value of less or equal to 0.");
+                    throw new BadRequestError(`Credit card "${options.cardNumber}" cannot be created because an incorrect card limit was used in the request: ${options.limit}.`);
                 }
                 if(options.isVoucher) {
-                    throw new BadRequestError("A credit card can't be categorized as a voucher card.");
+                    throw new BadRequestError(`Credit card "${options.cardNumber}" cannot be created because it can not be categorized as voucher card.`);
                 }
+                // TODO CARD validate this scenario is working correclty: if new card is added with used balance or full balance
                 newCard.setLimit(options.limit);
                 break;
             case OECardTypesFilters.SERVICES:
@@ -107,25 +95,41 @@ router.post("/", async (req, res, next) => {
         }
 
         // save new card in db
-        await DBContextSource.manager.save(newCard);
-        // save new card in server cache
-        const mapped = MapNewToExistingArray(newCard);
-        user.addCard(mapped);
+        const savedCard = await saveCard(newCard);
 
-        // create expense category using card alias
-        // so we can register when paying "TO A CARD"
-        user.addCategory({
-            id:        randomUUID(),
-            alias:     newCard.getName(),
-            isDefault: false
-        } as ExpenseCategory);
+        /* Developer Note:
+            Updating both sides (e.g., adding the SubCategory to Category.subcategories and adding the Category to SubCategory.categories) is redundant.
+            TypeORM will synchronize the relationship correctly based on the owning side (Category in this case).
+        */
+        // get cards default parent expense category
+        let cardsCategory = user.getExpenseCategoryByName("Cards");
 
-        const data = user.getCards(OECardTypesFilters.ALL);
+        // create new expense sub category using card info so we can register when paying "TO THIS CARD"
+        const toSaveSubCategory = new ExpenseSubCategory(
+            {
+                name: savedCard.name,
+                type: OETypesOfExpense.CARD,
+                instrumentId: savedCard.id
+            } as CreateExpenseSubCategoryPayload, user.id
+        );
 
-        return res.status(200).json(data);
+        // add sub category into "Cards" category (no need to have id since category has cascade when updated)
+        cardsCategory.addSubCategory(toSaveSubCategory);
+
+        // save updated cards category which is the owner of the relationship (it has JoinColumn decorator and cascade) and has the new sub category
+        const savedCardsCategory = await saveExpenseCategory(cardsCategory);
+
+        // update cached data for future get operations
+        user.addCard(savedCard);
+        cardsCategory = savedCardsCategory; // replace existing ref in memory value with returned object from query
+        user.addExpenseSubCategory(savedCardsCategory.getExpenseSubCategoryByName(toSaveSubCategory.name)); // from returned object get the card sub category and add it to user array
+
+        return res.status(201).json(savedCard.toInterfaceObject());
     } catch(error) { return next(error); }
 });
+// #endregion POST Card
 
+// #region GET Cards
 /**
 * @swagger
 * /api/v1/cards:
@@ -153,33 +157,71 @@ router.post("/", async (req, res, next) => {
 */
 router.get("/", async (req, res, next) => {
     try {
-        const user: User = req.userData;
+        const user     = req.userData;
         const cardType = req.query.cardType; // by default is always "ALL" cards (if not modified by user in the front end)
 
         if(cardType && typeof cardType !== "string") {
-            throw new BadRequestError("No card type filter was given in the correct format.");
+            throw new BadRequestError("Cards cannot be obtained because the card type filter provided was in an incorrect format.");
         }
 
         // If no cardType given, default is to get all
         const filterBy = cardType ? parseInt(cardType) : OECardTypesFilters.ALL;
         if(!isValidCardFilter(filterBy)) {
-            throw new BadRequestError("Invalid type for filtering cards.");
+            throw new BadRequestError(`Cards cannot be obtained because an incorrect card type filter was used in the request: ${filterBy}.`);
         }
 
-        // get data from db
-        const cards = await getUserCards(user.id);
-        // update cached data for future operations
-        user.cards = [];
-        user.cards = cards;
-
-        if(filterBy === OECardTypesFilters.ALL) {
-            return res.status(200).json(cards);
-        } else {
-            return res.status(200).json(cards.filter((card) => card.type === filterBy));
-        }
+        return res.status(200).json(user.getCards(filterBy));
     } catch(error) { return next(error); }
 });
+// #endregion GET Cards
 
+// #region GET Card
+/**
+* @swagger
+* /api/v1/cards/{cardNumber}:
+*   get:
+*       summary: Fetch card
+*       description: Get desired card from user data using an id.
+*       tags:
+*           - Cards
+*       parameters:
+*           - in: path
+*             name: cardNumber
+*             schema:
+*               type: string
+*       responses:
+*           200:
+*               description: A JSON representation of the desired card.
+*               content:
+*                   application/json:
+*                       schema:
+*                           $ref: "#/components/schemas/ICard"
+*           400:
+*               description: Bad Request Error
+*           404:
+*               description: Not Found Error
+*/
+router.get("/:cardNumber", async (req, res, next) => {
+    try {
+        const user       = req.userData;
+        const cardNumber = req.params.cardNumber.replace(/\s+/g, ""); // normalizing the given card number by removing white spaces
+
+        /* CARD NUMBER IS VALID */
+        if( !( /^[0-9]+$/.test(cardNumber) ) ) {
+            throw new BadRequestError(`Card "${cardNumber}" cannot be obtained because a card number can not contain non numeric chars.`);
+        }
+
+        /* CARD DOES EXISTS */
+        if(!user.hasCard(cardNumber)) {
+            throw new NotFoundError(`Card "${cardNumber}" cannot be obtained because it does not exist in user data.`);
+        }
+
+        return res.status(200).json(user.getCard(cardNumber).toInterfaceObject());
+    } catch(error) { return next(error); }
+});
+// #endregion GET Card
+
+// #region PUT Card
 /**
 * @swagger
 * /api/v1/cards/{cardNumber}:
@@ -193,9 +235,7 @@ router.get("/", async (req, res, next) => {
 *             name: cardNumber
 *             schema:
 *               type: string
-*               description: The current card number assigned to the desired card to update.
 *       requestBody:
-*           description: Payload that includes all the desired updates for the given card.
 *           required: true
 *           content:
 *               application/json:
@@ -212,48 +252,63 @@ router.get("/", async (req, res, next) => {
 *               description: Bad Request Error
 *           404:
 *               description: Not Found Error
+*           500:
+*               description: Server Error
 */
 router.put("/:cardNumber", async (req, res, next) => {
     try {
         const user       = req.userData;
         const cardNumber = req.params.cardNumber.replace(/\s+/g, ""); // normalizing the given card number by removing white spaces
-        const options    = req.body as UpdateCardPayload;
+        const options    = req.body;
 
-        /* CARD TO UPDATE */
-        // the given cardNumber to update contains only numbers
+        if(!verifyUpdateCardBody(options)) {
+            throw new BadRequestError(`Card "${cardNumber}" cannot be updated because a malformed payload was sent.`);
+        }
+
+        /* CARD NUMBER IS VALID */
         if( !( /^[0-9]+$/.test(cardNumber) ) ) {
-            throw new BadRequestError(`Invalid card number "${cardNumber}". A card number can not contain non numeric chars.`);
+            throw new BadRequestError(`Card "${cardNumber}" cannot be obtained because a card number can not contain non numeric chars.`);
         }
 
-        // a card with the given card number exists to be updated
+        /* CARD DOES EXISTS */
         if(!user.hasCard(cardNumber)) {
-            throw new NotFoundError(`There is no "${cardNumber}" card to update.`);
+            throw new NotFoundError(`Card "${cardNumber}" cannot be updated because it does not exist in user data.`);
         }
 
-        let cardNumberToReturn = cardNumber;
-        /* NEW CARD NUMBER */
+        /* PARENT CARDS CATEGORY AND CARD SUBCATEGORIE EXISTS */
+        if(!user.hasExpenseCategory("Cards", "name")) {
+            // throw server error since users MUST NOT be able to delete default categories
+            throw new ServerError(`Card "${cardNumber}" cannot be updated because default parent "Card" category does not exist.`);
+        }
+        const cardsCategory = user.getExpenseCategoryByName("Cards");
+        // since card does exist, use its name to find the sub category
+        if(!cardsCategory.hasExpenseSubCategory(user.getCard(cardNumber).name, "name")) {
+            // throw server error since every card must be a subcategorie attached to the cards parent category
+            throw new ServerError(`Card "${cardNumber}" cannot be updated because its expense sub categorie does not exist.`);
+        }
+        const cardSubCategory = user.getExpenseSubCategoryByName(user.getCard(cardNumber).name);
+
+        /* CARD NUMBER */
         if(options.cardNumber) {
             // normalizing the given card number by removing white spaces
             options.cardNumber = options.cardNumber.replace(/\s+/g, "");
 
             // the new cardNumber contains only numbers
             if(!( /^[0-9]+$/.test(options.cardNumber) )) {
-                throw new BadRequestError(`Invalid new card number "${options.cardNumber}". A card number can not contain non numeric chars.`);
+                throw new BadRequestError(`Card "${cardNumber}" cannot be updated because the new card number "${options.cardNumber}" can not contain non numeric chars.`);
             }
 
             // avoid creating a duplicate if a card with the new card number already exists
             if(user.hasCard(options.cardNumber)) {
-                throw new BadRequestError(`A card with the "${options.cardNumber}" number already exists.`);
+                throw new BadRequestError(`Card "${cardNumber}" cannot be updated because one with the new card number "${options.cardNumber}" already exists.`);
             }
-
-            cardNumberToReturn = options.cardNumber; // to know what card number to search for when returning json data
         }
 
         /* CARD EXPIRATION DATE */
         if(options.expires) {
             // using UTC function for correct timestamp comparision
             if(ConvertToUTCTimestamp(options.expires) < ConvertToUTCTimestamp(new Date())) {
-                throw new BadRequestError(`New expiration date "${options.expires}" can't be less than today's date.`);
+                throw new BadRequestError(`Card "${cardNumber}" cannot be updated because new expiration date "${options.expires}" can't be less than today's date.`);
             }
         }
 
@@ -262,55 +317,75 @@ router.put("/:cardNumber", async (req, res, next) => {
         if(options.type) {
             typeModified = true;
             if(!isValidCardType(options.type)) {
-                throw new BadRequestError(`Invalid card type: "${options.type}" given for updating "${cardNumber}" card.`);
+                throw new BadRequestError(`Card "${cardNumber}" cannot be updated because an incorrect new card type was used in the request: ${options.type}.`);
             }
 
             // if new type is debit card
             if(options.type === OECardTypesFilters.DEBIT) {
                 // ensure no limit was sent in the payload
                 if(options.limit) {
-                    throw new BadRequestError(`Can't update the limit of "${cardNumber}" card if it's going to be a Debit Card.`);
+                    throw new BadRequestError(`Card "${cardNumber}" cannot be updated to debit card because an incorrect card limit was used in the request: ${options.limit}.`);
                 }
+                // avoid users modying limit of new debit card (previous credit card)
+                // and restart limit value to default 0 to avoid errors
+                options.limit = 0;
             }
 
             // if new type is credit card
             if(options.type === OECardTypesFilters.CREDIT) {
                 // ensure a limit was sent in the payload
                 if(!options.limit) {
-                    throw new BadRequestError(`No limit value was provided for updating "${cardNumber}" card to be a Credit Card.`);
+                    throw new BadRequestError(`Card "${cardNumber}" cannot be updated to credit card because no limit value was given in the request.`);
                 }
 
                 if(options.limit <= 0) {
-                    throw new BadRequestError("Can't set the limit of a credit card to have a value of less or equal to 0.");
+                    throw new BadRequestError(`Card "${cardNumber}" cannot be updated to credit card because an incorrect card limit was used in the request: ${options.limit}.`);
                 }
-            }
 
-            // TODO CARD if new type is service card add constraints (e.g. AMEX PLATINUM no limit)
+                if(options.isVoucher) {
+                    throw new BadRequestError(`Card "${cardNumber}" cannot be updated to credit card because it can not be categorized as voucher card.`);
+                }
+
+                // avoid users modying voucher state of new credit card (previous debit card)
+                // and restart voucher value to default false to avoid errors
+                options.isVoucher = false;
+            }
         }
 
         /* LIMIT */
         if(options.limit && !typeModified) {
             // if user wants to set a limit to the given card to update but its not a credit card
-            if(user.getCardType(cardNumber) !== OECardTypesFilters.CREDIT) {
-                throw new BadRequestError("Can't modify the limit attribute of a non credit card.");
+            if(user.getCard(cardNumber).type !== OECardTypesFilters.CREDIT) {
+                throw new BadRequestError(`Card "${cardNumber}" cannot be updated because a card limit (${options.limit}) was used in the request to update a non credit card.`);
             }
             // if the new limit of a credit card is less or equal to 0
             if(options.limit <= 0) {
-                throw new BadRequestError("Can't modify the limit of a credit card to have a value of less or equal to 0.");
+                throw new BadRequestError(`Credit card "${cardNumber}" cannot be updated because an incorrect card limit was used in the request: ${options.limit}.`);
             }
         }
 
-        // update card data in db
-        await updateCard(user.getCardId(cardNumber), options);
+        /* IS VOUCHER */
+        if(options.isVoucher && !typeModified) {
+            // if user wants to set a limit to the given card to update but its not a credit card
+            if(user.getCard(cardNumber).type !== OECardTypesFilters.DEBIT) {
+                throw new BadRequestError(`Card "${cardNumber}" cannot be updated because it can not be categorized as voucher card.`);
+            }
+        }
 
-        // get updated data from db
-        const cards = await getUserCards(user.id);
-        // update cached data for future operations
-        user.cards = [];
-        user.cards = cards;
+        // update cached card data using payload
+        const toUpdate = user.setOptionsIntoCard(cardNumber, options);
+        // apply card changes in db using cached updated object
+        const savedCard = await saveCard(toUpdate);
 
-        return res.status(200).json(cards.find((card) => card.getCardNumber() === cardNumberToReturn));
+        // if card name was updated, then update its sub category name
+        if(options.name) {
+            cardSubCategory.name = options.name; // this updates the value in memory
+            await saveExpenseSubCategory(cardSubCategory); // this updates the entity in the db
+        }
+
+        return res.status(200).json(savedCard.toInterfaceObject());
     } catch(error) { return next(error); }
 });
+// #endregion PUT Card
 
 export default router;

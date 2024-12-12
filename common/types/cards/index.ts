@@ -19,7 +19,7 @@
 *       TCardTypes:
 *           type: integer
 *           description: A multi-option type representing all the available card types a user can create.
-*           enum: [0, 1, 2, 3]
+*           enum: [1, 2, 3]
 *           x-enum-varnames: [ALL, DEBIT, CREDIT, SERVICES]
 *           properties:
 *               1:
@@ -48,9 +48,14 @@ export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
 *       ICard:
 *           type: object
 *           properties:
+*               id:
+*                   type: number
+*                   format: integer
+*                   description: DB Primary Key
+*                   example: 1
 *               cardNumber:
 *                   type: string
-*                   description: The card number.
+*                   description: DB Unique ID.
 *                   example: 4815 6973 7892 1530
 *               name:
 *                   type: string
@@ -59,29 +64,29 @@ export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
 *               expires:
 *                   type: number
 *                   example: 1732497156317
-*                   description: The expiration date of the card in timestamp format.
-*               ownerId:
-*                   type: number
-*                   format: integer
-*                   description: The associated user id.
-*                   example: 1
-*               issuerId:
-*                   type: number
-*                   format: integer
-*                   description: The associated bank id.
-*                   example: 1
+*                   description: Expiration date in timestamp utc format.
 *               balance:
 *                   type: number
 *                   format: double
-*                   description: The balance available on the card.
+*                   description: Available money in card.
 *                   example: 4000.00
 *               type:
 *                   $ref: "#/components/schemas/TCardTypes"
 *                   example: 2
-*                   description: The type of card, represented as the value 2 from the TCardTypes enum.
+*                   description: Card Type (Debit = 1 | Credit = 2 | Services = 3)
 *               archived:
 *                   type: boolean
 *                   example: false
+*               userId:
+*                   type: number
+*                   format: integer
+*                   description: DB Foreign Key - User ID.
+*                   example: 1
+*               bankId:
+*                   type: number
+*                   format: integer
+*                   description: DB Foreign Key - Bank ID.
+*                   example: 1
 *               limit:
 *                   type: number
 *                   format: double
@@ -91,31 +96,43 @@ export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
 *                   type: boolean
 *                   description: Indicates whether the card is a debit voucher card.
 *           required:
+*               - id
 *               - cardNumber
 *               - name
 *               - expires
-*               - ownerId
-*               - issuerId
 *               - balance
 *               - type
 *               - archived
+*               - limit
+*               - isVoucher
+*               - userId
+*               - bankId
 */
 /** Interface used to have a representation of all attributes within the Card Class */
 export interface ICard {
-    /** Card ID */
+    /** DB Primary Key */
+    id: number;
+    /** DB Unique ID */
     cardNumber: string;
+    /** Users can assign a custom name to their cards */
     name: string;
-    /** Date timestamp */
+    /** Expiration date in timestamp format */
     expires: number;
-    /** User ID */
-    ownerId: number;
-    /** Bank ID */
-    issuerId: number;
+    /** Available money in card */
     balance: number;
+    /** Card Type (Debit = 1 | Credit = 2 | Services = 3) */
     type: TCardTypes;
+    /** DB Foreign Key - User ID */
+    userId: number;
+    /** DB Foreign Key - Bank ID */
+    bankId: number;
+
+    /** If card is active or not */
     archived: boolean;
-    limit?: number;
-    isVoucher?: boolean;
+    /** If card is credit, it must have a limit */
+    limit: number;
+    /** Is card a voucher card given by employer? */
+    isVoucher: boolean;
 }
 
 /*************************************/
@@ -141,18 +158,25 @@ export interface SimpleCardOptions {
 *               cardNumber:
 *                   type: string
 *                   example: 4815 6973 7892 1530
+*                   description: This will be DB Unique ID
 *               expires:
-*                   type: string
-*                   format: date
-*                   example: 2029-04-01
-*               issuerId:
+*                   type: number
+*                   example: 1732497156317
+*                   description: Expiration date in timestamp format.
+*               type:
+*                   $ref: "#/components/schemas/TCardTypes"
+*                   example: 1
+*                   description: The type of card, it can be either debit (1), credit (2) or service (3) card.
+*               bankId:
 *                   type: number
 *                   format: integer
 *                   example: 1
+*                   description: DB Foreign Key - Bank ID
 *               balance:
 *                   type: number
 *                   format: double
 *                   example: 4000.00
+*                   description: How many money the card has when created
 *               name:
 *                   type: string
 *                   example: Visa Crédito BBVA Digital
@@ -160,23 +184,35 @@ export interface SimpleCardOptions {
 *                   type: number
 *                   format: double
 *                   example: 10000.00
+*                   description: If card is credit, how much is its limit
 *               isVoucher:
 *                   type: boolean
 *                   example: false
+*                   description: Is card a voucher card given by employer?
 *           required:
 *               - cardNumber
 *               - expires
-*               - issuerId
+*               - type
+*               - bankId
 *               - balance
 */
 /** Interface that defines all the attributes the payload for creating a new user card needs. */
 export interface CreateCardPayload {
+    /** This will be DB Unique ID */
     cardNumber: string;
-    expires: Date;
-    issuerId: number;
+    /** Expiration date in timestamp format */
+    expires: number;
+    /** The type of card, it can be either debit (1), credit (2) or service (3) card. */
+    type: TCardTypes;
+    /** DB Foreign Key - Bank ID */
+    bankId: number;
+    /** How many money the card has when created  */
     balance: number;
+    /** Users can assign a custom name to their cards */
     name?: string;
+    /** If card is credit, how much is its limit */
     limit?: number;
+     /** Is card a voucher card given by employer? */
     isVoucher?: boolean;
 }
 
@@ -211,6 +247,9 @@ export interface CreateCardPayload {
 *                   type: string
 *                   description: The name of the card.
 *                   example: Visa (Crédito|Débito) BBVA Digital
+*               isVoucher:
+*                   type: boolean
+*                   description: Indicates whether the card is a debit voucher card.
 */
 /** Representes the expected and possible parameters during a PUT request to update a user card. */
 export interface UpdateCardPayload {
@@ -218,6 +257,7 @@ export interface UpdateCardPayload {
     cardNumber?: string;
     /** If user decides to delete a card, archived instead for data safety and governance. */
     archived?: boolean;
+    /** New expiration date in timestamp format */
     expires?: number;
     /** The type of card, it can be either debit (1), credit (2) or service (3) card. */
     type?: TCardTypes;
@@ -225,4 +265,6 @@ export interface UpdateCardPayload {
     limit?: number;
     /** If user set a new name to the card. */
     name?: string;
+    /** Is card a voucher card given by employer? */
+    isVoucher?: boolean;
 }

@@ -8,6 +8,7 @@ import statusRouter  from "./status";
 import jobRouter     from "./jobs";
 
 import cardsRouter   from "./cards";
+import expenseRouter from "./expenses";
 
 const v1Router = Router();
 
@@ -36,6 +37,12 @@ v1Router.use("/jobs",
 v1Router.use("/cards",
     requiresAuth,
     cardsRouter
+);
+
+// Expenses
+v1Router.use("/expenses",
+    requiresAuth,
+    expenseRouter
 );
 
 

@@ -2,18 +2,23 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } 
 import { ILoan, CreateLoanPayload } from "@common/types/loans";
 import { TPayFrequency } from "@common/types/util";
 import { User, Bank }  from "@entities";
+import { ConvertToUTCTimestamp } from "@backend/utils/functions";
+
+/* TypeScript and TypeORM Custom Attributes Explanation */
+// Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
+// @Index is used when querying by certain "field" is frequent, and adding database indexes improves performance
+// onDelete: "CASCADE" - When parent entity is deleted, related objects will be deleted too
 
 @Entity()
 export class Loan implements ILoan {
-    // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
     @PrimaryGeneratedColumn()
     public id!: number;
     @Column()
     public name!: string;
     @Column()
-    public createdOn!: Date;
+    public createdOn!: number;
     @Column()
-    public expires!: Date;
+    public expires!: number;
     @Column()
     public borrowed!: number;
     @Column()
@@ -26,35 +31,43 @@ export class Loan implements ILoan {
     public payFrequency!: TPayFrequency;
 
     // Many-to-One relationship: A loan belongs to one user, but a user can have many loans
-    // Since querying by owner is frequent, adding database indexes to improve performance
-    @ManyToOne(() => User, (user) => user.loans, { nullable: false })
-    @JoinColumn({ name: "ownerId" }) // Explicitly map the foreign key column
+    @ManyToOne(() => User, (user) => user.loans, {
+        nullable: false,
+        onDelete: "CASCADE"
+    })
+    @JoinColumn({ name: "userId" }) // Explicitly map the foreign key column
     @Index()
-    public owner!: User;
+    public user!: User;
     @Column()
-    public ownerId!: number; // Explicitly define the foreign key column
+    public userId!: number; // Explicitly define the foreign key column
 
-    // Many-to-One relationship: A loan is issued by one bank
-    // There is only nagivation from loan to bank, bank class does not know the relationship with loan (missing One-to-Many relationship)
-    @ManyToOne(() => Bank, (bank) => bank.id, { nullable: false })
-    @JoinColumn({ name: "issuerId" }) // Explicitly map the foreign key column
-    public issuer!: Bank;
+    // Many-to-One relationship: A loan is issued by one bank, but a bank can have issued many loans
+    @ManyToOne(() => Bank, (bank) => bank.loans, {
+        nullable: false,
+        onDelete: "CASCADE"
+    })
+    @JoinColumn({ name: "bankId" }) // Explicitly map the foreign key column
+    public bank!: Bank;
     @Column()
-    public issuerId!: number; // Explicitly define the foreign key column
+    public bankId!: number; // Explicitly define the foreign key column
 
-    public constructor(options?: CreateLoanPayload) {
-        if(options) {
-            // from payload
+    public constructor(options?: CreateLoanPayload, userId?: number) {
+        if(options && userId) {
+            // FROM PAYLOAD
             this.name         = options.name;
             this.expires      = options.expires;
-            this.issuer       = options.issuer;
             this.borrowed     = options.borrowed;
             this.payFrequency = options.payFrequency;
-            // default options
+
+            // RELATIONSHIP ATTRIBUTES
+            this.userId = userId;
+            this.bankId = options.bankId;
+
+            // DEFAULT ATTRIBUTES
             this.paid         = 0;
             this.interests    = 0;
             this.isFinished   = false;
-            this.createdOn    = new Date();
+            this.createdOn    = ConvertToUTCTimestamp();
         }
     }
 

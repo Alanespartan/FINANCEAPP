@@ -5,12 +5,15 @@ import { Logger } from "@common/types/logger";
 
 const logger = new Logger();
 
-const type     = "postgres";
-const username = process.env.DB_USER;
-const password = process.env.DB_PASSWORD;
-const host     = process.env.DB_HOST;
-const port     = parseInt(process.env.DB_PORT ?? "0");
-const database = process.env.DB_NAME;
+const type       = "postgres";
+const username   = process.env.DB_USER;
+const password   = process.env.DB_PASSWORD;
+const host       = process.env.DB_HOST;
+const port       = parseInt(process.env.DB_PORT ?? "0");
+const database   = process.env.DB_NAME;
+// customize typeorm flags according to .env values
+const dropSchema = process.env.NODE_ENV  === "production" ? false : true;
+const logging    = process.env.LOG_LEVEL === "trace" ? true : false;
 
 if(!username) throw new ServerError("Must provide a username environment variable");
 if(!password) throw new ServerError("Must provide a password environment variable");
@@ -18,7 +21,7 @@ if(!host)     throw new ServerError("Must provide a host environment variable");
 if(port <= 0) throw new ServerError("Must provide a port environment variable");
 if(!database) throw new ServerError("Must provide a database environment variable");
 
-import { User, Card, Loan, Bank } from "@entities";
+import { User, Card, Loan, Bank, ExpenseCategory, ExpenseSubCategory } from "@entities";
 
 logger.info("Creating TypeORM Connection...");
 logger.info(`Type: ${type}`);
@@ -35,13 +38,9 @@ const TypeORMConfig: DataSourceOptions = {
     password,
     database,
     synchronize: true,
-    logging: true,
-    entities: [
-        User,
-        Card,
-        Loan,
-        Bank
-    ],
+    logging,
+    dropSchema,
+    entities: [ User, Card, Bank, Loan, ExpenseCategory, ExpenseSubCategory ],
     subscribers: [],
     migrations: []
 };
@@ -59,7 +58,11 @@ DBContextSource.initialize()
     })
     .catch((error) => console.log(error));
 
-export const cardStore = DBContextSource.getRepository(Card);
 export const userStore = DBContextSource.getRepository(User);
+export const cardStore = DBContextSource.getRepository(Card);
+export const bankStore = DBContextSource.getRepository(Bank);
+export const loanStore = DBContextSource.getRepository(Loan);
+export const expenseCategoryStore    = DBContextSource.getRepository(ExpenseCategory);
+export const expenseSubCategoryStore = DBContextSource.getRepository(ExpenseSubCategory);
 
 export default DBContextSource;
