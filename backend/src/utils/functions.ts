@@ -1,3 +1,5 @@
+import { TPayFrequency, OEPayFrequency } from "@common/types/util";
+
 /**
  * Breaks an array into multiple smaller arrays.
  * @param  {T[]} array Array to split.
@@ -36,3 +38,10 @@ export function ConvertToUTCTimestamp(date?: string | Date | number) {
 export function stringIsValidID(stringId: string) {
     return /^[+-]?\d+(\.\d+)?$/.test(stringId);
 }
+
+export const isValidPayFrequency = (value: number): value is TPayFrequency => {
+    return value === OEPayFrequency.SemiWeekly
+        || value === OEPayFrequency.Weekly
+        || value === OEPayFrequency.SemiMonthly
+        || value === OEPayFrequency.Monthly;
+};
