@@ -8,7 +8,7 @@ import * as payloads from "./payloads";
 const categoriesPath = `/api/${version}/expenses/categories`;
 
 describe(`Testing API: ${categoriesPath}`, function() {
-    // #region POST Category Tests
+    // #region POST Category
     describe("When Creating a Category", function() {
         describe("Given a valid payload", function() {
             it("Then return '201 Created' and IExpenseCategory object if required payload parameters are sent", async function() {
@@ -98,8 +98,8 @@ describe(`Testing API: ${categoriesPath}`, function() {
             });
         });
     });
-    // #endregion POST Category Tests
-    // #region GET Categories Tests
+    // #endregion POST Category
+    // #region GET Categories
     describe("When Fetching Categories", function() {
         describe("Given no filter", function() {
             it("Then return '200 Success' and array of all created categories", async function() {
@@ -110,7 +110,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
 
                 // Ensure the response is an array
                 expect(res.body).to.be.an("array");
-                // Ensure the length matches the default categories array size value + multiple dummy creations tests + simple creation test
+                // Ensure the length matches the default categories array size value + multiple dummy creations + simple creation test
                 expect(res.body).to.have.lengthOf(DefaultCategories.length + payloads.ValidCreation_DummyExpenseCategories.length + 1);
                 // Validate each entity against IExpenseCategory interface
                 validateExpenseCategories(res.body);
@@ -170,8 +170,8 @@ describe(`Testing API: ${categoriesPath}`, function() {
             });
         });
     });
-    // #endregion GET Categories Tests
-    // #region GET Category Tests
+    // #endregion GET Categories
+    // #region GET Category
     describe("When Fetching a Category", function() {
         describe("Given an invalid id", function() {
             it("Then return '400 Bad Request Error' if category id has incorrect format", async function() {
@@ -206,8 +206,8 @@ describe(`Testing API: ${categoriesPath}`, function() {
             });
         });
     });
-    // #endregion GET Category Tests
-    // #region PUT Category Tests
+    // #endregion GET Category
+    // #region PUT Category
     describe("When Updating a Category", function() {
         describe("Given an invalid id", function() {
             it("Then return '400 Bad Request Error' if category id has incorrect format", async function() {
@@ -278,5 +278,5 @@ describe(`Testing API: ${categoriesPath}`, function() {
             });
         });
     });
-    // #endregion PUT Category Tests
+    // #endregion PUT Category
 });

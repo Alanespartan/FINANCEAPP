@@ -157,7 +157,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
 
                 // Ensure the response is an array
                 expect(res.body).to.be.an("array");
-                // Ensure the length matches the amount of real expense categories created in prior tests
+                // Ensure the length matches the amount of real expense categories created previously
                 expect(res.body).to.have.lengthOf(4);
                 // Validate each entity against IExpenseCategory interface
                 validateExpenseSubCategories(res.body);

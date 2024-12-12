@@ -7,7 +7,7 @@ import * as payloads from "./payloads";
 const cardPath = `/api/${version}/cards`;
 
 describe(`Testing API: ${cardPath}`, function() {
-    // #region POST Card Tests
+    // #region POST Card
     describe("When Creating a Card", function() {
         describe("Given a valid payload for debit card", function() {
             it("Then return '201 Created' and ICard object if required payload parameters are sent", async function() {
@@ -137,8 +137,8 @@ describe(`Testing API: ${cardPath}`, function() {
             });
         });
     });
-    // #endregion POST Card Tests
-    // #region GET Cards Tests
+    // #endregion POST Card
+    // #region GET Cards
     describe("When Fetching Cards", function() {
         describe("Given no filter", function() {
             it("Then return '200 Success' and array of all previously created cards", async function() {
@@ -148,7 +148,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 // Ensure the response is an array
                 expect(res.body).to.be.an("array");
-                // Ensure the length matches the created cards during previous tests
+                // Ensure the length matches the created cards previously
                 expect(res.body).to.have.lengthOf(5);
                 // Validate each entity against IExpenseCategory interface
                 validateCards(res.body);
@@ -181,7 +181,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 // Ensure the response is an array
                 expect(res.body).to.be.an("array");
-                // Ensure the length matches the created cards during previous tests
+                // Ensure the length matches the created cards previously
                 expect(res.body).to.have.lengthOf(5);
                 // Validate each entity against IExpenseCategory interface
                 validateCards(res.body);
@@ -194,7 +194,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 // Ensure the response is an array
                 expect(res.body).to.be.an("array");
-                // Ensure the length matches the created debit cards during previous tests
+                // Ensure the length matches the created debit previously
                 expect(res.body).to.have.lengthOf(3);
                 // Validate each entity against IExpenseCategory interface
                 validateCards(res.body);
@@ -207,7 +207,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .expect("Content-Type", /json/);
                 // Ensure the response is an array
                 expect(res.body).to.be.an("array");
-                // Ensure the length matches the created credit cards during previous tests
+                // Ensure the length matches the created credit cards previously
                 expect(res.body).to.have.lengthOf(2);
                 // Validate each entity against IExpenseCategory interface
                 validateCards(res.body);
@@ -222,8 +222,8 @@ describe(`Testing API: ${cardPath}`, function() {
             });
         });
     });
-    // #endregion GET Cards Tests
-    // #region GET Card Tests
+    // #endregion GET Cards
+    // #region GET Card
     describe("When Fetching Card", function() {
         describe("Given an invalid card number", function() {
             it("Then return '400 Bad Request Error' if card number contains non numeric chars", async function() {
@@ -251,8 +251,8 @@ describe(`Testing API: ${cardPath}`, function() {
             });
         });
     });
-    // #endregion GET Card Tests
-    // #region PUT Card Tests
+    // #endregion GET Card
+    // #region PUT Card
     describe("When Updating Cards", function() {
         describe("Given a valid payload for debit card", function() {
             it("Then return '200 Success' and ICard object if required payload parameters are sent", async function() {
@@ -431,5 +431,5 @@ describe(`Testing API: ${cardPath}`, function() {
             });
         });
     });
-    // #endregion PUT Cards Tests
+    // #endregion PUT Cards
 });
