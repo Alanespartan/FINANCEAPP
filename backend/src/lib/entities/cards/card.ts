@@ -54,6 +54,7 @@ export class Card extends AllCardsMixin(CreditCardMixin(VoucherCardMixin(class {
     public bankId!: number; // Explicitly define the foreign key column
 
     // Index signature allows using a string key to access properties
+    // Note: This might cause erros with prototype if not handled correctly!!
     [key: string]: any;  // You can replace `any` with a more specific type if needed
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
