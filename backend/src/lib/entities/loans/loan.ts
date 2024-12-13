@@ -19,9 +19,9 @@ export class Loan extends AllLoansMixin(class {}) implements ILoan {
     public id!: number;
     @Column()
     public name!: string;
-    @Column()
+    @Column({ type: "bigint" }) // to handle timestamp numbers
     public createdOn!: number;
-    @Column()
+    @Column({ type: "bigint" }) // to handle timestamp numbers
     public expires!: number;
     @Column({ type: "numeric" })
     public fixedPaymentAmount!: number;
@@ -65,7 +65,7 @@ export class Loan extends AllLoansMixin(class {}) implements ILoan {
 
     public constructor(options?: CreateLoanPayload, userId?: number) {
         super();
-        if(options && userId) {
+        if(options) {
             // FROM PAYLOAD
             this.name         = options.name;
             this.expires      = options.expires;
