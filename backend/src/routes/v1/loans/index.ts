@@ -147,9 +147,9 @@ router.get("/", async (req, res, next) => {
         const { archived, isFinished, payFrequency } = req.query;
 
         // Validate query parameters
-        const archivedFilter     = validateQueryParams(archived,     "boolean", "archived");
-        const isFinishedFilter   = validateQueryParams(isFinished,   "boolean", "isFinished");
-        const payFrequencyFilter = validateQueryParams(payFrequency, "number",  "payFrequency");
+        const archivedFilter     = validateQueryParams(archived,     "boolean", "archived") as boolean;
+        const isFinishedFilter   = validateQueryParams(isFinished,   "boolean", "isFinished") as boolean;
+        const payFrequencyFilter = validateQueryParams(payFrequency, "number",  "payFrequency") as number;
 
         // Apply filters
         let loans = user.getLoans();
@@ -160,7 +160,7 @@ router.get("/", async (req, res, next) => {
             loans = loans.filter((loan) => loan.isFinished === isFinishedFilter);
         }
         if(payFrequencyFilter !== undefined) {
-            if(payFrequencyFilter && !isValidPayFrequency(payFrequencyFilter as number)) {
+            if(payFrequencyFilter && !isValidPayFrequency(payFrequencyFilter)) {
                 throw new BadRequestError("Invalid payFrequency value.");
             }
             loans = loans.filter((loan) => loan.payFrequency === payFrequencyFilter);
