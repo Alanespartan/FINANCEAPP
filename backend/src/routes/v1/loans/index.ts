@@ -88,17 +88,17 @@ router.post("/", async (req, res, next) => {
             } as CreateExpenseSubCategoryPayload, user.id
         );
         // save new loan sub category
-        const savedLoansSubCategory = await saveExpenseSubCategory(toSaveSubCategory);
+        const savedLoanSubCategory = await saveExpenseSubCategory(toSaveSubCategory);
 
-        // add saved loan sub category into "Loans" category
-        loansCategory.addSubCategory(savedLoansSubCategory);
+        // add saved loan sub category into "Loans" category (since there is no cascade enabled and object is already saved, entry to many to many table is created when parent is saved)
+        loansCategory.addSubCategory(savedLoanSubCategory);
 
         // add relationship between loans category and new sub category into many to many table
         const savedLoansCategory = await saveExpenseCategory(loansCategory);
 
         // update cached data for future get operations
         user.addLoan(savedLoan);
-        user.addExpenseSubCategory(savedLoansSubCategory); // use saved sub category loan object
+        user.addExpenseSubCategory(savedLoanSubCategory); // use saved sub category loan object
         loansCategory = savedLoansCategory; // replace existing ref in memory value with returned object from query
 
         return res.status(201).json(savedLoan.toInterfaceObject());

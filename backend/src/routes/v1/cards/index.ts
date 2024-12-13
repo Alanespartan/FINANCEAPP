@@ -65,15 +65,10 @@ router.post("/", async (req, res, next) => {
             throw new BadRequestError(`Card "${options.cardNumber}" cannot be created because one with that name already exists.`);
         }
 
-        const newCard = new Card(options, user.id);
-
         switch (cardType) {
             case OECardTypesFilters.DEBIT:
                 if(options.limit) {
                     throw new BadRequestError(`Debit card "${options.cardNumber}" cannot be created because an incorrect card limit was used in the request: ${options.type}.`);
-                }
-                if(options.isVoucher) {
-                    newCard.setIsVoucher(true);
                 }
                 break;
             case OECardTypesFilters.CREDIT:
@@ -86,8 +81,9 @@ router.post("/", async (req, res, next) => {
                 if(options.isVoucher) {
                     throw new BadRequestError(`Credit card "${options.cardNumber}" cannot be created because it can not be categorized as voucher card.`);
                 }
-                // TODO CARD validate this scenario is working correclty: if new card is added with used balance or full balance
-                newCard.setLimit(options.limit);
+                if(options.balance < 0 || options.balance > options.limit) {
+                    // TODO CARD validate this scenario is working correclty: if new card is added with used balance or full balance
+                }
                 break;
             case OECardTypesFilters.SERVICES:
                 // services extra logic here
@@ -95,12 +91,9 @@ router.post("/", async (req, res, next) => {
         }
 
         // save new card in db
+        const newCard = new Card(options, user.id);
         const savedCard = await saveCard(newCard);
 
-        /* Developer Note:
-            Updating both sides (e.g., adding the SubCategory to Category.subcategories and adding the Category to SubCategory.categories) is redundant.
-            TypeORM will synchronize the relationship correctly based on the owning side (Category in this case).
-        */
         // get cards default parent expense category
         let cardsCategory = user.getExpenseCategoryByName("Cards");
 
@@ -112,17 +105,19 @@ router.post("/", async (req, res, next) => {
                 instrumentId: savedCard.id
             } as CreateExpenseSubCategoryPayload, user.id
         );
+        // save new card sub category
+        const savedCardSubCategory = await saveExpenseSubCategory(toSaveSubCategory);
 
-        // add sub category into "Cards" category (no need to have id since category has cascade when updated)
-        cardsCategory.addSubCategory(toSaveSubCategory);
+        // add saved card sub category into "Cards" category (since there is no cascade enabled and object is already saved, entry to many to many table is created when parent is saved)
+        cardsCategory.addSubCategory(savedCardSubCategory);
 
-        // save updated cards category which is the owner of the relationship (it has JoinColumn decorator and cascade) and has the new sub category
+        // add relationship between cards category and new sub category into many to many table
         const savedCardsCategory = await saveExpenseCategory(cardsCategory);
 
         // update cached data for future get operations
         user.addCard(savedCard);
+        user.addExpenseSubCategory(savedCardSubCategory); // use saved sub category card object
         cardsCategory = savedCardsCategory; // replace existing ref in memory value with returned object from query
-        user.addExpenseSubCategory(savedCardsCategory.getExpenseSubCategoryByName(toSaveSubCategory.name)); // from returned object get the card sub category and add it to user array
 
         return res.status(201).json(savedCard.toInterfaceObject());
     } catch(error) { return next(error); }

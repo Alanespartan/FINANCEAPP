@@ -67,6 +67,8 @@ export class Card extends AllCardsMixin(CreditCardMixin(VoucherCardMixin(class {
             this.balance    = options.balance;
             this.type       = options.type;
             this.expires    = ConvertToUTCTimestamp(options.expires);
+            this.isVoucher  = options.isVoucher ?? false;
+            this.limit      = options.limit ?? 0;
 
             // RELATIONSHIP ATTRIBUTES
             this.bankId = options.bankId;
