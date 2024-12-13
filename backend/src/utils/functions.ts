@@ -23,6 +23,7 @@ export function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     return chunks;
 }
 
+/** Helper function to convert a date into UTC timestamp. */
 export function ConvertToUTCTimestamp(date?: string | Date | number) {
     const toUTC = date ? new Date(date) : new Date();
     return Date.UTC(
@@ -46,6 +47,7 @@ export function stringIsValidNumber(stringId: string) {
     return /^[+-]?\d+(\.\d+)?$/.test(stringId);
 }
 
+/** Helper function to check if the given value is a valid value from pay frequency enum. */
 export const isValidPayFrequency = (value: number): value is TPayFrequency => {
     return value === OEPayFrequency.SemiWeekly
         || value === OEPayFrequency.Weekly

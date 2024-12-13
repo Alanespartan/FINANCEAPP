@@ -70,16 +70,19 @@ export function verifyUpdateExpenseSubCategoryBody(body: unknown): body is Updat
     return true;
 }
 
+/** Helper function to check if the given value is a valid value from expense subcategory type enum. */
 export const isValidExpenseSubCategory = (value: number): value is TExpenseType => {
     return value === OETypesOfExpense.REALEXPENSE
         || value === OETypesOfExpense.CARD
         || value === OETypesOfExpense.LOAN;
 };
 
+/** Helper function to check if the given value is equal to real expense value from expense subcategory type enum. */
 export const isValidRealExpense = (value: number): value is TExpenseType => {
     return value === OETypesOfExpense.REALEXPENSE;
 };
 
+/** Helper function to check if the given value is a valid value from sub category filters enum. */
 export const isValidExpenseSubCategoryFilter = (value: number): value is TExpenseTypeFilter => {
     return value === OETypesOfExpense.ALL
         || value === OETypesOfExpense.REALEXPENSE

@@ -46,6 +46,7 @@ export function verifyUpdateCardBody(body: unknown): body is UpdateCardPayload {
     return true;
 }
 
+/** Helper function to check if the given value is a valid value from card filters enum. */
 export const isValidCardFilter = (value: number): value is TCardFilters => {
     return value === OECardTypesFilters.ALL
         || value === OECardTypesFilters.DEBIT
@@ -53,6 +54,7 @@ export const isValidCardFilter = (value: number): value is TCardFilters => {
         || value === OECardTypesFilters.SERVICES;
 };
 
+/** Helper function to check if the given value is a valid value from card types enum. */
 export const isValidCardType = (value: number): value is TCardTypes => {
     return value === OECardTypesFilters.DEBIT
         || value === OECardTypesFilters.CREDIT
