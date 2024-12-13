@@ -5,6 +5,29 @@ import { Request } from "express";
 export type HeaderOption<H extends string> = H | [H, string];
 
 /**
+* Helper to validate and cast query parameters. Handles type conversion for query parameters since req.query always contains strings or undefined.
+* @param  {any} param Param type object from req object.
+* @param  {boolean | string | number} type Expected type of query parameter
+* @param  {string} name Name of query parameter
+* @throws BadRequestError if the value doesn't match the expected type
+* @returns Object containing headers.
+*/
+export function validateQueryParams(param: any, type: "boolean" | "string" | "number", name: string) {
+    if(param === undefined) return undefined;
+    if(type === "boolean") {
+        if(param === "true")  return true;
+        if(param === "false") return false;
+        throw new BadRequestError(`Invalid format for '${name}' query param, expected boolean.`);
+    }
+    if(type === "number") {
+        const parsed = Number(param);
+        if(!isNaN(parsed)) return parsed;
+        throw new BadRequestError(`Invalid format for '${name}' query param, expected number.`);
+    }
+    return String(param); // Default to string
+}
+
+/**
  * Gets headers from a request.
  * @param  {Request} req Request containing headers.
  * @param  {HeaderOption<H>[]} ...options Header options.
