@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CreateLoanPayload, UpdateLoanPayload } from "@common/types/loans";
+import {
+    CreateLoanPayload, CreateLoanRequiredKeys,
+    UpdateLoanPayload, UpdateLoanOptionalKeys
+} from "@common/types/loans";
 import { isValidPayFrequency } from "@backend/utils/functions";
 
 /**
@@ -12,10 +15,8 @@ export function verifyCreateLoanBody(body: unknown): body is CreateLoanPayload {
         return false; // Reject null, undefined, or non-object values
     }
 
-    const requiredKeys: (keyof CreateLoanPayload)[] = [ "name", "expires", "payFrequency", "borrowed", "fixedPaymentAmount", "interestsToPay", "annualInterestRate", "bankId" ];
-
     // Check if all required keys exist and have valid types
-    for(const key of requiredKeys) {
+    for(const key of CreateLoanRequiredKeys) {
         const value = (body as Record<string, unknown>)[key];
 
         switch (key) {
@@ -51,16 +52,27 @@ export function verifyUpdateLoanBody(body: unknown): body is UpdateLoanPayload {
         return false; // Reject null, undefined, or non-object values
     }
 
-    const optionalKeys: (keyof UpdateLoanPayload)[] = [ "name" ];
-
     // Validate optional fields
-    for(const key of optionalKeys) {
+    for(const key of UpdateLoanOptionalKeys) {
         const value = (body as Record<string, unknown>)[key];
-
         if(value !== undefined) {
             switch (key) {
                 case "name":
                     if(typeof value !== "string") return false;
+                    break;
+                case "expires":
+                case "borrowed":
+                case "fixedPaymentAmount":
+                case "interestsToPay":
+                case "annualInterestRate":
+                    if(typeof value !== "number") return false;
+                    break;
+                case "isFinished":
+                case "archived":
+                    if(typeof value !== "boolean") return false;
+                    break;
+                case "payFrequency":
+                    if(typeof value !== "number" || !isValidPayFrequency(value)) return false; // Check is number but also a valid entry in TPayFrequency numeric enum
                     break;
                 default: return false; // Unexpected key found
             }

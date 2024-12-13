@@ -1,5 +1,6 @@
 import { filterNonNullableAttributes } from "@backend/utils/functions";
 import { UpdateLoanPayload } from "@common/types/loans";
+import { TPayFrequency } from "@common/types/util";
 import { MixinsConstructor, Loan, User } from "@entities";
 
 export const LoansMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
@@ -63,9 +64,15 @@ export const LoansMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
             Object.entries(payload).forEach(([ key, value ]) => {
                 if(key in toUpdate) {
                     switch (key) {
-                        case "name": toUpdate.name = value as string; break;
-                        case "payFrequency": break;
-                        default: return false; // Unexpected key found
+                        case "name":               toUpdate.name               = value as string; break;
+                        case "expires":            toUpdate.expires            = value as number; break;
+                        case "borrowed":           toUpdate.borrowed           = value as number; break;
+                        case "fixedPaymentAmount": toUpdate.fixedPaymentAmount = value as number; break;
+                        case "interestsToPay":     toUpdate.interestsToPay     = value as number; break;
+                        case "annualInterestRate": toUpdate.annualInterestRate = value as number; break;
+                        case "isFinished":         toUpdate.isFinished         = value as boolean; break;
+                        case "archived":           toUpdate.archived           = value as boolean; break;
+                        case "payFrequency":       toUpdate.payFrequency       = value as TPayFrequency; break;
                     }
                 }
             });
