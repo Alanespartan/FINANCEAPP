@@ -75,7 +75,7 @@ router.post("/", async (req, res, next) => {
 *           - in: query
 *             name: onlyDefault
 *             schema:
-*               type: string
+*               type: boolean
 *       responses:
 *           200:
 *               description: An array of expense categories a user has registered.
@@ -174,7 +174,7 @@ router.get("/:id", async (req, res, next) => {
 *           - in: path
 *             name: id
 *             schema:
-*               type: string
+*               type: integer
 *       requestBody:
 *           required: true
 *           content:

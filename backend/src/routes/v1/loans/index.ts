@@ -184,7 +184,7 @@ router.get("/", async (req, res, next) => {
 *           - in: path
 *             name: id
 *             schema:
-*               type: string
+*               type: integer
 *       responses:
 *           200:
 *               description: A JSON representation of the desired loan.

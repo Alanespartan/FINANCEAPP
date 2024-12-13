@@ -142,7 +142,7 @@ router.post("/", async (req, res, next) => {
 *           - in: query
 *             name: cardType
 *             schema:
-*               type: integer
+*               $ref: "#/components/schemas/TCardFilters"
 *       responses:
 *           200:
 *               description: An array of cards a user has registered.

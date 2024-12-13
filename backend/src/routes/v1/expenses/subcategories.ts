@@ -96,7 +96,7 @@ router.post("/", async (req, res, next) => {
 *           - in: query
 *             name: type
 *             schema:
-*               type: integer
+*               $ref: "#/components/schemas/TExpenseTypeFilter"
 *       responses:
 *           200:
 *               description: An array of expense sub categories a user has registered.
@@ -196,7 +196,7 @@ router.get("/:id", async (req, res, next) => {
 *           - in: path
 *             name: id
 *             schema:
-*               type: string
+*               type: integer
 *       requestBody:
 *           required: true
 *           content:
