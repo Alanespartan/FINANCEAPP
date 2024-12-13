@@ -35,7 +35,13 @@ export function ConvertToUTCTimestamp(date?: string | Date | number) {
     ); // Returns the timestamp in UTC
 }
 
+/** Validates the given id in string format is a positive integer. */
 export function stringIsValidID(stringId: string) {
+    return /^[1-9]\d*$/.test(stringId);
+}
+
+/** Validates the given string is a number either positive or negative and with or without decimal numbers. */
+export function stringIsValidNumber(stringId: string) {
     return /^[+-]?\d+(\.\d+)?$/.test(stringId);
 }
 
