@@ -20,8 +20,8 @@ export const ExpenseCategoriesMixin = <TBase extends MixinsConstructor>(Base: TB
         */
         public hasExpenseCategory(this: User, toSearch: string | number, field: string): boolean {
             switch (field) {
-                case "name": return this.expenseCategories.find((et) => et.name === (toSearch as string)) ? true : false;
-                case "id": return this.expenseCategories.find((et) => et.id === (toSearch as number)) ? true : false;
+                case "name": return this.expenseCategories.find((ec) => ec.name === (toSearch as string)) ? true : false;
+                case "id": return this.expenseCategories.find((ec) => ec.id === (toSearch as number)) ? true : false;
                 default: return false;
             }
         }
@@ -49,7 +49,7 @@ export const ExpenseCategoriesMixin = <TBase extends MixinsConstructor>(Base: TB
             return this.expenseCategories;
         }
         /**
-        * Get a desired stored card and update its attributes using a given set of options.
+        * Get a desired stored expense category and update its attributes using a given set of options.
         * @param {number} id Expense category id used to retrieve object from user data
         * @param {UpdateExpenseCategoryPayload} options Object containing the new values to assign
         * @returns {ExpenseCategory} Updated expense category object
