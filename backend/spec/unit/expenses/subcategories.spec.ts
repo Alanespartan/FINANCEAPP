@@ -192,8 +192,18 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
                 expect(res.body).to.have.property("info", `Subcategory cannot be obtained because the provided id "${id}" was in an incorrect format.`);
             });
-            it("Then return '404 Not Found Error' if sub category does not exist in user expense sub categories", async function() {
+            it("Then return '400 Bad Request Error' if sub category id is negative", async function() {
                 const id = -1;
+                const res = await agent
+                    .get(`${subCategoriesPath}/${id}`)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Subcategory cannot be obtained because the provided id "${id}" was in an incorrect format.`);
+            });
+            it("Then return '404 Not Found Error' if sub category does not exist in user expense sub categories", async function() {
+                const id = 155123;
                 const res = await agent
                     .get(`${subCategoriesPath}/${id}`)
                     .expect(404)
@@ -228,13 +238,20 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                 expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
                 expect(res.body).to.have.property("info", `Subcategory cannot be updated because the provided id "${id}" was in an incorrect format.`);
             });
-            it("Then return '404 Not Found Error' if sub category does not exist in user expense sub categories", async function() {
+            it("Then return '400 Bad Request Error' if sub category id is negative", async function() {
                 const id = -1;
                 const res = await agent
                     .put(`${subCategoriesPath}/${id}`)
-                    .send({
-                        name: "This should not be applied"
-                    })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expect(res.body).to.have.property("status", "error");
+                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
+                expect(res.body).to.have.property("info", `Subcategory cannot be updated because the provided id "${id}" was in an incorrect format.`);
+            });
+            it("Then return '404 Not Found Error' if sub category does not exist in user expense sub categories", async function() {
+                const id = 155123;
+                const res = await agent
+                    .put(`${subCategoriesPath}/${id}`)
                     .expect(404)
                     .expect("Content-Type", /json/);
                 expect(res.body).to.have.property("status", "error");
