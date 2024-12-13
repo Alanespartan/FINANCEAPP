@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from "chai";
-import { DefaultCategories, IExpenseCategory } from "../../../../common/types/expenses";
+import { DefaultCategories } from "../../../../common/types/expenses";
 import { agent, version } from "../../setup";
 import { expectBadRequestError, expectNotFoundError } from "../../util/errors";
 import { validateExpenseCategories, validateExpenseCategory } from "./functions";
@@ -18,18 +18,12 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     .send(payloads.ValidCreation_ExpenseCategorySimple)
                     .expect(201)
                     .expect("Content-Type", /json/);
-                // Check response is an object
-                expect(res.body).to.be.an("object");
-
-                // Check required properties and types
-                const category = res.body as IExpenseCategory;
-                expect(category).to.have.property("id").that.is.a("number");
-                expect(category).to.have.property("userId").that.is.a("number");
-                expect(category).to.have.property("name", payloads.ValidCreation_ExpenseCategorySimple.name);
-                expect(category).to.have.property("isDefault", false);
-
-                // Validate subcategories array (must be empty)
-                expect(category).to.have.property("subcategories").that.is.an("array").and.to.have.lengthOf(0);
+                // Validate entity against IExpenseCategory interface
+                validateExpenseCategory(res.body);
+                // extra checks bound to this specific test scenario
+                expect(res.body).to.have.property("name", payloads.ValidCreation_ExpenseCategorySimple.name);
+                expect(res.body).to.have.property("isDefault", false);
+                expect(res.body).to.have.property("subcategories").that.is.an("array").and.to.have.lengthOf(0);
             });
             it("Then return '201 Created' and IExpenseCategory object if multiple categories are created successfully", async function() {
                 // Send all requests concurrently
@@ -44,18 +38,12 @@ describe(`Testing API: ${categoriesPath}`, function() {
 
                 // Assertions for all responses
                 responses.forEach((response, index) => {
-                    // Check response is an object
-                    expect(response.body).to.be.an("object");
-
-                    // Check required properties and types
-                    const category = response.body as IExpenseCategory;
-                    expect(category).to.have.property("id").that.is.a("number");
-                    expect(category).to.have.property("userId").that.is.a("number");
-                    expect(category).to.have.property("name", payloads.ValidCreation_DummyExpenseCategories[index].name);
-                    expect(category).to.have.property("isDefault", false);
-
-                    // Validate subcategories array (must be empty)
-                    expect(category).to.have.property("subcategories").that.is.an("array").and.to.have.lengthOf(0);
+                    // Validate entity against IExpenseCategory interface
+                    validateExpenseCategory(response.body);
+                    // extra checks bound to this specific test scenario
+                    expect(response.body).to.have.property("name", payloads.ValidCreation_DummyExpenseCategories[index].name);
+                    expect(response.body).to.have.property("isDefault", false);
+                    expect(response.body).to.have.property("subcategories").that.is.an("array").and.to.have.lengthOf(0);
                 });
             });
         });
