@@ -15,7 +15,7 @@ import {
 } from "@common/types/expenses";
 import { getBank  } from "@entities/cards/functions/db";
 import { saveLoan } from "@entities/loans/functions/db";
-import { verifyCreateLoanBody }     from "@entities/loans/functions/util";
+import { verifyCreateLoanBody, verifyUpdateLoanBody } from "@entities/loans/functions/util";
 import { Loan, ExpenseSubCategory } from "@entities";
 import { BadRequestError, NotFoundError } from "@errors";
 
@@ -217,5 +217,69 @@ router.get("/:id", async (req, res, next) => {
     } catch(error) { return next(error); }
 });
 // #endregion GET Loan
+
+// #region PUT Loan
+/**
+* @swagger
+* /api/v1/loans/{id}:
+*   put:
+*       summary: Update loan
+*       description: From a given loan id, fetch the desired loan and apply all the updates that appear in the payload configuration.
+*       tags:
+*           - Loans
+*       parameters:
+*           - in: path
+*             name: id
+*             schema:
+*               type: integer
+*       requestBody:
+*           required: true
+*           content:
+*               application/json:
+*                   schema:
+*                       $ref: "#/components/schemas/UpdateLoanPayload"
+*       responses:
+*           200:
+*               description: A JSON representation of the updated loan.
+*               content:
+*                   application/json:
+*                       schema:
+*                           $ref: "#/components/schemas/ILoan"
+*           400:
+*               description: Bad Request Error
+*           404:
+*               description: Not Found Error
+*/
+router.put("/:id", async (req, res, next) => {
+    try {
+        const user    = req.userData;
+        const options = req.body;
+        const id      = req.params.id;
+
+        // check if given id is in correct form
+        if(!stringIsValidID(id)) {
+            throw new BadRequestError(`Loan cannot be updated because the provided id "${id}" was in an incorrect format.`);
+        }
+
+        // validate a loan with the given id exists
+        const parsedId = Number(id);
+        if(!user.hasLoan(parsedId, "id")) {
+            throw new NotFoundError(`Loan "${parsedId}" cannot be updated because it does not exist in user data.`);
+        }
+
+        // verify payload has correct form
+        if(!verifyUpdateLoanBody(options)) {
+            throw new BadRequestError(`Loan "${id}" cannot be updated because a malformed payload was sent.`);
+        }
+
+        // update the in-memory object properties directly for future operations
+        const toUpdate = user.setOptionsIntoLoan(parsedId, options);
+        // apply loan changes in db using updated object
+        const savedLoan = await saveLoan(toUpdate);
+
+        return res.status(200).json(savedLoan.toInterfaceObject());
+    } catch(error) { return next(error); }
+});
+// #endregion PUT Loan
 
 export default router;
