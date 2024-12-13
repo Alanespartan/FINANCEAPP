@@ -2,6 +2,7 @@
 import { expect } from "chai";
 import { DefaultCategories, IExpenseCategory } from "../../../../common/types/expenses";
 import { agent, version } from "../../setup";
+import { expectBadRequestError, expectNotFoundError } from "../../util/errors";
 import { validateExpenseCategories, validateExpenseCategory } from "./functions";
 import * as payloads from "./payloads";
 
@@ -68,9 +69,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     })
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "New category cannot be created because a malformed payload was sent.");
+                expectBadRequestError(res.body, "New category cannot be created because a malformed payload was sent.");
             });
             it("Then return '400 Bad Request Error' if a default category is attempted to be created", async function() {
                 const dummyName = "THIS MUST FAIL AND NOT BE SAVED";
@@ -82,9 +81,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     })
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Category "${dummyName}" cannot be created because user is not allowed to create a default category.`);
+                expectBadRequestError(res.body, `Category "${dummyName}" cannot be created because user is not allowed to create a default category.`);
             });
             it("Then return '400 Bad Request Error' if a category already exists with the given name", async function() {
                 const res = await agent
@@ -92,9 +89,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     .send(payloads.ValidCreation_ExpenseCategorySimple)
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Category "${payloads.ValidCreation_ExpenseCategorySimple.name}" cannot be created because one with that name already exists.`);
+                expectBadRequestError(res.body, `Category "${payloads.ValidCreation_ExpenseCategorySimple.name}" cannot be created because one with that name already exists.`);
             });
         });
     });
@@ -123,9 +118,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     .query({ onlyDefault: [ true, false ] })
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "Categories cannot be obtained because the onlyDefault filter provided was in an incorrect format.");
+                expectBadRequestError(res.body, "Categories cannot be obtained because the onlyDefault filter provided was in an incorrect format.");
             });
             it("Then return '400 Bad Request Error' if onlyDefault filter is incorrect boolean string", async function() {
                 const incorrectFilter = "truee";
@@ -134,9 +127,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     .query({ onlyDefault: incorrectFilter })
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Categories cannot be obtained because an incorrect onlyDefault filter was used in the request: ${incorrectFilter}.`);
+                expectBadRequestError(res.body, `Categories cannot be obtained because an incorrect onlyDefault filter was used in the request: ${incorrectFilter}.`);
             });
         });
         describe("Given a valid filter", function() {
@@ -180,9 +171,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     .get(`${categoriesPath}/${id}`)
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Category cannot be obtained because the provided id "${id}" was in an incorrect format.`);
+                expectBadRequestError(res.body, `Category cannot be obtained because the provided id "${id}" was in an incorrect format.`);
             });
             it("Then return '400 Bad Request Error' if category id is negative", async function() {
                 const id = -1;
@@ -190,9 +179,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     .get(`${categoriesPath}/${id}`)
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Category cannot be obtained because the provided id "${id}" was in an incorrect format.`);
+                expectBadRequestError(res.body, `Category cannot be obtained because the provided id "${id}" was in an incorrect format.`);
             });
             it("Then return '404 Not Found Error' if category does not exist in user expense categories", async function() {
                 const id = 155123;
@@ -200,9 +187,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     .get(`${categoriesPath}/${id}`)
                     .expect(404)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The requested resource could not be found.");
-                expect(res.body).to.have.property("info", `Category "${id}" cannot be obtained because it does not exist in user data.`);
+                expectNotFoundError(res.body, `Category "${id}" cannot be obtained because it does not exist in user data.`);
             });
         });
         describe("Given a valid category id", function() {
@@ -226,9 +211,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     .put(`${categoriesPath}/${id}`)
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Category cannot be updated because the provided id "${id}" was in an incorrect format.`);
+                expectBadRequestError(res.body, `Category cannot be updated because the provided id "${id}" was in an incorrect format.`);
             });
             it("Then return '400 Bad Request Error' if category id is negative", async function() {
                 const id = -1;
@@ -236,9 +219,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     .put(`${categoriesPath}/${id}`)
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Category cannot be updated because the provided id "${id}" was in an incorrect format.`);
+                expectBadRequestError(res.body, `Category cannot be updated because the provided id "${id}" was in an incorrect format.`);
             });
             it("Then return '404 Not Found Error' if category does not exist in user expense categories", async function() {
                 const id = 155123;
@@ -246,9 +227,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     .put(`${categoriesPath}/${id}`)
                     .expect(404)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The requested resource could not be found.");
-                expect(res.body).to.have.property("info", `Category "${id}" cannot be updated because it does not exist in user data.`);
+                expectNotFoundError(res.body, `Category "${id}" cannot be updated because it does not exist in user data.`);
             });
             it("Then return '400 Bad Request Error' if user is trying to update a default category", async function() {
                 const id = 1;
@@ -259,9 +238,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     })
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Category "${id}" cannot be updated because it is an app default category.`);
+                expectBadRequestError(res.body, `Category "${id}" cannot be updated because it is an app default category.`);
             });
         });
         describe("Given an invalid payload", function() {
@@ -275,9 +252,7 @@ describe(`Testing API: ${categoriesPath}`, function() {
                     })
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Category "${id}" cannot be updated because a malformed payload was sent.`);
+                expectBadRequestError(res.body, `Category "${id}" cannot be updated because a malformed payload was sent.`);
             });
         });
         describe("Given a valid payload and id", function() {

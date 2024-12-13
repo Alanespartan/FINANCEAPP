@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from "chai";
 import { agent, version } from "../../setup";
+import { expectBadRequestError, expectNotFoundError } from "../../util/errors";
 import { validateExpenseSubCategories, validateExpenseSubcategory } from "./functions";
 import * as payloads from "./payloads";
 
@@ -20,9 +21,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     })
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "New subcategory cannot be created because a malformed payload was sent.");
+                expectBadRequestError(res.body, "New subcategory cannot be created because a malformed payload was sent.");
             });
             it("Then return '400 Bad Request Error' if an invalid sub category type is used", async function() {
                 const res = await agent
@@ -30,19 +29,15 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     .send(payloads.InvalidCreation_ExpenseSubCategory_IncorrectType)
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Subcategory "${payloads.InvalidCreation_ExpenseSubCategory_IncorrectType.name}" cannot be created because an incorrect type was used in the request: ${payloads.InvalidCreation_ExpenseSubCategory_IncorrectType.type}.`);
+                expectBadRequestError(res.body, `Subcategory "${payloads.InvalidCreation_ExpenseSubCategory_IncorrectType.name}" cannot be created because an incorrect type was used in the request: ${payloads.InvalidCreation_ExpenseSubCategory_IncorrectType.type}.`);
             });
-            it("Then return '400 Bad Request Error' if parent category does not exists", async function() {
+            it("Then return '404 Not Found Error' if parent category does not exists", async function() {
                 const res = await agent
                     .post(subCategoriesPath)
                     .send(payloads.InvalidCreation_ExpenseSubCategory_ParentDoesNotExist)
                     .expect(404)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The requested resource could not be found.");
-                expect(res.body).to.have.property("info", `Parent category cannot be obtained because an incorrect parent id was used in the request: ${payloads.InvalidCreation_ExpenseSubCategory_ParentDoesNotExist.categoryId}.`);
+                expectNotFoundError(res.body, `Parent category cannot be obtained because an incorrect parent id was used in the request: ${payloads.InvalidCreation_ExpenseSubCategory_ParentDoesNotExist.categoryId}.`);
             });
             it("Then return '400 Bad Request Error' if a sub category already exists with the given name", async function() {
                 const res = await agent
@@ -50,9 +45,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     .send(payloads.InvalidCreation_ExpenseSubCategory_Duplicated)
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Subcategory "${payloads.InvalidCreation_ExpenseSubCategory_Duplicated.name}" cannot be created because one with that name already exists.`);
+                expectBadRequestError(res.body, `Subcategory "${payloads.InvalidCreation_ExpenseSubCategory_Duplicated.name}" cannot be created because one with that name already exists.`);
             });
         });
         describe("Given a valid payload", function() {
@@ -118,9 +111,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     .query({ type: [ true, false ] })
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", "Subcategories cannot be obtained because the type filter provided was in an incorrect format.");
+                expectBadRequestError(res.body, "Subcategories cannot be obtained because the type filter provided was in an incorrect format.");
             });
             it("Then return '400 Bad Request Error' if type filter has incorrect value", async function() {
                 const incorrectFilter = -1;
@@ -129,9 +120,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     .query({ type: incorrectFilter })
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Subcategories cannot be obtained because an incorrect type filter was used in the request: ${incorrectFilter}.`);
+                expectBadRequestError(res.body, `Subcategories cannot be obtained because an incorrect type filter was used in the request: ${incorrectFilter}.`);
             });
         });
         describe("Given a valid filter", function() {
@@ -188,9 +177,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     .get(`${subCategoriesPath}/${id}`)
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Subcategory cannot be obtained because the provided id "${id}" was in an incorrect format.`);
+                expectBadRequestError(res.body, `Subcategory cannot be obtained because the provided id "${id}" was in an incorrect format.`);
             });
             it("Then return '400 Bad Request Error' if sub category id is negative", async function() {
                 const id = -1;
@@ -198,9 +185,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     .get(`${subCategoriesPath}/${id}`)
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Subcategory cannot be obtained because the provided id "${id}" was in an incorrect format.`);
+                expectBadRequestError(res.body, `Subcategory cannot be obtained because the provided id "${id}" was in an incorrect format.`);
             });
             it("Then return '404 Not Found Error' if sub category does not exist in user expense sub categories", async function() {
                 const id = 155123;
@@ -208,9 +193,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     .get(`${subCategoriesPath}/${id}`)
                     .expect(404)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The requested resource could not be found.");
-                expect(res.body).to.have.property("info", `Subcategory "${id}" cannot be obtained because it does not exist in user data.`);
+                expectNotFoundError(res.body, `Subcategory "${id}" cannot be obtained because it does not exist in user data.`);
             });
         });
         describe("Given a valid sub category id", function() {
@@ -234,9 +217,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     .put(`${subCategoriesPath}/${id}`)
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Subcategory cannot be updated because the provided id "${id}" was in an incorrect format.`);
+                expectBadRequestError(res.body, `Subcategory cannot be updated because the provided id "${id}" was in an incorrect format.`);
             });
             it("Then return '400 Bad Request Error' if sub category id is negative", async function() {
                 const id = -1;
@@ -244,9 +225,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     .put(`${subCategoriesPath}/${id}`)
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Subcategory cannot be updated because the provided id "${id}" was in an incorrect format.`);
+                expectBadRequestError(res.body, `Subcategory cannot be updated because the provided id "${id}" was in an incorrect format.`);
             });
             it("Then return '404 Not Found Error' if sub category does not exist in user expense sub categories", async function() {
                 const id = 155123;
@@ -254,9 +233,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     .put(`${subCategoriesPath}/${id}`)
                     .expect(404)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The requested resource could not be found.");
-                expect(res.body).to.have.property("info", `Subcategory "${id}" cannot be updated because it does not exist in user data.`);
+                expectNotFoundError(res.body, `Subcategory "${id}" cannot be updated because it does not exist in user data.`);
             });
         });
         describe("Given an invalid payload", function() {
@@ -270,9 +247,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     })
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Subcategory "${id}" cannot be updated because a malformed payload was sent.`);
+                expectBadRequestError(res.body, `Subcategory "${id}" cannot be updated because a malformed payload was sent.`);
             });
             it("Then return '400 Bad Request Error' if user is trying to update a non real expense sub category", async function() {
                 const id = 1;
@@ -281,9 +256,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     .send(payloads.ValidUpdate_ExpenseSubCategory_SimpleTest)
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expect(res.body).to.have.property("status", "error");
-                expect(res.body).to.have.property("message", "The server did not understand the request or could not read the request body.");
-                expect(res.body).to.have.property("info", `Subcategory "${id}" cannot be updated because non real expense type sub categories can not be modified.`);
+                expectBadRequestError(res.body, `Subcategory "${id}" cannot be updated because non real expense type sub categories can not be modified.`);
             });
         });
         describe("Given a valid payload and id", function() {
