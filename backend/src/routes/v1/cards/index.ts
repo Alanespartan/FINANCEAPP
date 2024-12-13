@@ -226,7 +226,7 @@ router.get("/:cardNumber", async (req, res, next) => {
 * @swagger
 * /api/v1/cards/{cardNumber}:
 *   put:
-*       summary: Update user card
+*       summary: Update card
 *       description: From a given card number, fetch the desired card and apply all the updates that appear in the payload configuration.
 *       tags:
 *           - Cards
@@ -261,6 +261,7 @@ router.put("/:cardNumber", async (req, res, next) => {
         const cardNumber = req.params.cardNumber.replace(/\s+/g, ""); // normalizing the given card number by removing white spaces
         const options    = req.body;
 
+        // verify payload has correct form
         if(!verifyUpdateCardBody(options)) {
             throw new BadRequestError(`Card "${cardNumber}" cannot be updated because a malformed payload was sent.`);
         }

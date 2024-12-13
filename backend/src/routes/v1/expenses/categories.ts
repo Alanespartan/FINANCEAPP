@@ -210,6 +210,7 @@ router.put("/:id", async (req, res, next) => {
             throw new NotFoundError(`Category "${parsedId}" cannot be updated because it does not exist in user data.`);
         }
 
+        // verify payload has correct form
         if(!verifyUpdateExpenseCategoryBody(options)) {
             throw new BadRequestError(`Category "${id}" cannot be updated because a malformed payload was sent.`);
         }
