@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { loanStore } from "@db";
-import { filterNonNullableAttributes } from "./util";
+import { filterNonNullableAttributes } from "@backend/utils/functions";
 import { Loan } from "@entities";
 
 export async function getById(loanId: number) {

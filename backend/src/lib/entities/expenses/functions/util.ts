@@ -86,14 +86,3 @@ export const isValidExpenseSubCategoryFilter = (value: number): value is TExpens
         || value === OETypesOfExpense.CARD
         || value === OETypesOfExpense.LOAN;
 };
-
-/** Helper function to remove null|undefined attributes from given expense category/subcategory update options. */
-export function filterNonNullableAttributes(options: UpdateExpenseCategoryPayload | UpdateExpenseSubCategoryPayload) {
-    // Create a new object with only defined keys
-    return Object.entries(options).reduce((acc, [ key, value ]) => {
-        if(value !== undefined && value !== null) {
-            acc[key] = value;
-        }
-        return acc;
-    }, {} as any);
-}

@@ -63,14 +63,3 @@ export function verifyUpdateLoanBody(body: unknown): body is UpdateLoanPayload {
 
     return true;
 } */
-
-/** Helper function to remove null|undefined attributes from given loan update options. */
-export function filterNonNullableAttributes(options: any) {
-    // Create a new object with only defined keys
-    return Object.entries(options).reduce((acc, [ key, value ]) => {
-        if(value !== undefined && value !== null) {
-            acc[key] = value;
-        }
-        return acc;
-    }, {} as any);
-}

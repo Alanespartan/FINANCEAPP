@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { UpdateExpenseCategoryPayload } from "@common/types/expenses";
 import { MixinsConstructor, ExpenseCategory, User } from "@entities";
-import { filterNonNullableAttributes } from "@entities/expenses/functions/util";
+import { filterNonNullableAttributes } from "@backend/utils/functions";
 
 export const ExpenseCategoriesMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
     return class extends Base {

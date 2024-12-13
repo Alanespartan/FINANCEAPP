@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TPayFrequency, OEPayFrequency } from "@common/types/util";
 
 /**
@@ -51,3 +52,14 @@ export const isValidPayFrequency = (value: number): value is TPayFrequency => {
         || value === OEPayFrequency.SemiMonthly
         || value === OEPayFrequency.Monthly;
 };
+
+/** Helper function to remove null|undefined attributes from given object. */
+export function filterNonNullableAttributes(options: any) {
+    // Create a new object with only defined keys
+    return Object.entries(options).reduce((acc, [ key, value ]) => {
+        if(value !== undefined && value !== null) {
+            acc[key] = value;
+        }
+        return acc;
+    }, {} as any);
+}
