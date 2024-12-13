@@ -12,7 +12,7 @@ import { TPayFrequency } from "../util";
 *                   example: BBVA Loan for Nissan Versa
 *               expires:
 *                   type: number
-*                   example: 1732497156317
+*                   example: 1832497156317
 *                   description: Expiration date in timestamp utc format. Its the loan term the user has to pay for it
 *               payFrequency:
 *                   $ref: "#/components/schemas/TPayFrequency"
@@ -69,4 +69,10 @@ export interface CreateLoanPayload {
     annualInterestRate: number;
     /** DB Foreign Key - Bank ID */
     bankId: number;
+}
+
+
+export interface UpdateLoanPayload {
+    /** e.g. BBVA Loan 10,000 May 2024 */
+    name: string;
 }
