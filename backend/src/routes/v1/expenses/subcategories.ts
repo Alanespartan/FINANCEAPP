@@ -183,7 +183,7 @@ router.get("/:id", async (req, res, next) => {
 });
 // #endregion GET Sub Category
 
-// #region Sub Category
+// #region PUT Sub Category
 /**
 * @swagger
 * /api/v1/expenses/subcategories/{id}:
