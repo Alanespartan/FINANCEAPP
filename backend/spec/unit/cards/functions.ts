@@ -43,7 +43,7 @@ export function validateCard(card: any, toMatch?: CreateCardPayload | UpdateCard
             if((toMatch as UpdateCardPayload).expires) {
                 expect(card).to.have.property("expires", (toMatch as UpdateCardPayload).expires);
             } else {
-                expect(card).to.have.property("expires").that.is.a("number");
+                expect(card).to.have.property("expires").that.is.a("number").and.is.greaterThan(0);
             }
 
             if((toMatch as UpdateCardPayload).type) {
@@ -76,7 +76,7 @@ export function validateCard(card: any, toMatch?: CreateCardPayload | UpdateCard
     else {
         expect(card).to.have.property("cardNumber").that.is.a("string");
         expect(card).to.have.property("name").that.is.a("string");
-        expect(card).to.have.property("expires").that.is.a("number");
+        expect(card).to.have.property("expires").that.is.a("number").and.is.greaterThan(0);
         expect(card).to.have.property("balance").that.is.a("number");
         expect(card).to.have.property("type").that.is.oneOf([ 1, 2, 3 ]); // TCardTypes values
         expect(card).to.have.property("archived").that.is.a("boolean");
