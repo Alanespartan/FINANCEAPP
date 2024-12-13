@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { ConvertToUTCTimestamp, isValidPayFrequency } from "@backend/utils/functions";
+import {
+    ConvertToUTCTimestamp,
+    isValidPayFrequency,
+    stringIsValidID
+} from "@backend/utils/functions";
 import { validateQueryParams } from "@backend/utils/requests";
 import {
     saveExpenseCategory,
@@ -13,7 +17,7 @@ import { getBank  } from "@entities/cards/functions/db";
 import { saveLoan } from "@entities/loans/functions/db";
 import { verifyCreateLoanBody }     from "@entities/loans/functions/util";
 import { Loan, ExpenseSubCategory } from "@entities";
-import { BadRequestError } from "@errors";
+import { BadRequestError, NotFoundError } from "@errors";
 
 const router = Router();
 
@@ -56,7 +60,7 @@ router.post("/", async (req, res, next) => {
         }
 
         // avoid creating a duplicate if a loan with the given loan number already exists
-        if(user.hasLoan(options.name)) {
+        if(user.hasLoan(options.name, "name")) {
             throw new BadRequestError(`Loan "${options.name}" cannot be created because one with that name already exists.`);
         }
 
@@ -123,7 +127,7 @@ router.post("/", async (req, res, next) => {
 *           - in: query
 *             name: payFrequency
 *             schema:
-*               type: integer
+*               $ref: "#/components/schemas/TPayFrequency"
 *       responses:
 *           200:
 *               description: An array of loans a user has registered.
@@ -166,5 +170,52 @@ router.get("/", async (req, res, next) => {
     } catch(error) { return next(error); }
 });
 // #endregion GET Loans
+
+// #region GET Loan
+/**
+* @swagger
+* /api/v1/loans/{id}:
+*   get:
+*       summary: Fetch loan
+*       description: Get desired loan from user data using an id.
+*       tags:
+*           - Loans
+*       parameters:
+*           - in: path
+*             name: id
+*             schema:
+*               type: string
+*       responses:
+*           200:
+*               description: A JSON representation of the desired loan.
+*               content:
+*                   application/json:
+*                       schema:
+*                           $ref: "#/components/schemas/ILoan"
+*           400:
+*               description: Bad Request Error
+*           404:
+*               description: Not Found Error
+*/
+router.get("/:id", async (req, res, next) => {
+    try {
+        const user = req.userData;
+        const id   = req.params.id;
+
+        // check if given id is in correct form
+        if(!stringIsValidID(id)) {
+            throw new BadRequestError(`Loan cannot be obtained because the provided id "${id}" was in an incorrect format.`);
+        }
+
+        // validate a loan with the given id exists
+        const parsedId = Number(id);
+        if(!user.hasLoan(parsedId, "id")) {
+            throw new NotFoundError(`Loan "${parsedId}" cannot be obtained because it does not exist in user data.`);
+        }
+
+        return res.status(200).json(user.getLoanById(parsedId).toInterfaceObject());
+    } catch(error) { return next(error); }
+});
+// #endregion GET Loan
 
 export default router;
