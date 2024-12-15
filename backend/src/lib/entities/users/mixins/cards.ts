@@ -1,6 +1,6 @@
 import { TCardFilters, UpdateCardPayload } from "@common/types/cards";
 import { MixinsConstructor, Card, User } from "@entities";
-import { filterNonNullableAttributes } from "@entities/cards/functions/util";
+import { filterNonNullableAttributes } from "@backend/utils/functions";
 
 export const CardsMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
     return class extends Base {

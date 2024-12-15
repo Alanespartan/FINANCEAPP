@@ -13,7 +13,7 @@ const router = Router();
 * /api/v1/expenses/categories:
 *   post:
 *       summary: New expense category
-*       description: Create and assign a new expense category.
+*       description: Create and save a new expense category.
 *       tags:
 *           - Expenses
 *       requestBody:
@@ -75,7 +75,7 @@ router.post("/", async (req, res, next) => {
 *           - in: query
 *             name: onlyDefault
 *             schema:
-*               type: string
+*               type: boolean
 *       responses:
 *           200:
 *               description: An array of expense categories a user has registered.
@@ -174,7 +174,7 @@ router.get("/:id", async (req, res, next) => {
 *           - in: path
 *             name: id
 *             schema:
-*               type: string
+*               type: integer
 *       requestBody:
 *           required: true
 *           content:
@@ -210,6 +210,7 @@ router.put("/:id", async (req, res, next) => {
             throw new NotFoundError(`Category "${parsedId}" cannot be updated because it does not exist in user data.`);
         }
 
+        // verify payload has correct form
         if(!verifyUpdateExpenseCategoryBody(options)) {
             throw new BadRequestError(`Category "${id}" cannot be updated because a malformed payload was sent.`);
         }

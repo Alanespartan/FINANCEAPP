@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { TExpenseTypeFilter, UpdateExpenseSubCategoryPayload } from "@common/types/expenses";
 import { MixinsConstructor, ExpenseSubCategory, User } from "@entities";
-import { filterNonNullableAttributes } from "@entities/expenses/functions/util";
+import { filterNonNullableAttributes } from "@backend/utils/functions";
 
 export const ExpenseSubCategoriesMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
     return class extends Base {
@@ -43,7 +43,7 @@ export const ExpenseSubCategoriesMixin = <TBase extends MixinsConstructor>(Base:
         }
         /**
         * Get all stored user expense categories.
-        * @param {TExpenseTypeFilter} type Used to filter user cards if a type was given in the request. Otherwise, it returns all cards the user has
+        * @param {TExpenseTypeFilter} type Used to filter user expense sub categories if a type was given in the request. Otherwise, it returns all expense sub categories the user has
         * @returns {ExpenseSubCategory[]} User expense categories array
         */
         public getExpenseSubCategories(this: User, type: TExpenseTypeFilter): ExpenseSubCategory[] {
@@ -53,7 +53,7 @@ export const ExpenseSubCategoriesMixin = <TBase extends MixinsConstructor>(Base:
             return this.expenseSubCategories;
         }
         /**
-        * Get a desired stored card and update its attributes using a given set of options.
+        * Get a desired stored expense sub category and update its attributes using a given set of options.
         * @param {number} id expense sub category id used to retrieve object from user data
         * @param {UpdateExpenseSubCategoryPayload} options Object containing the new values to assign
         * @returns {ExpenseSubCategory} Updated expense sub category object

@@ -8,7 +8,7 @@ import { CardsMixin, LoansMixin, ExpenseCategoriesMixin, ExpenseSubCategoriesMix
 // Use TypeORM decorators directly in the final class instead of mixins
 // Assertion! added since TypeORM will generate the value hence TypeScript does eliminates compile-time null and undefined checks
 // eager: true - When user is fetched, typeorm will automatically fetch all the attached objects
-// cascade: true - unless you specify the cascade option in the relationship decorator, TypeORM wont automatically save related entities when saving the parent user entity.
+// cascade: ["insert"] - unless you specify the cascade option in the relationship decorator, TypeORM wont automatically save related entities when saving the parent user entity.
 
 @Entity()
 @Unique([ "email" ]) // This creates a unique constraint on the email column
@@ -32,7 +32,7 @@ export class User extends ExpenseCategoriesMixin(ExpenseSubCategoriesMixin(Cards
     public cash!: number;
 
     // One-to-Many relationship: A user can have many cards
-    @OneToMany(() => Card, (card) => card.user, { eager: true, cascade: true })
+    @OneToMany(() => Card, (card) => card.user, { eager: true })
     public cards!: Card[];
 
     // One-to-Many relationship: A user can have many loans
@@ -42,15 +42,12 @@ export class User extends ExpenseCategoriesMixin(ExpenseSubCategoriesMixin(Cards
     // One-to-Many relationship: A user can have many expense categories
     @OneToMany(() => ExpenseCategory, (category) => category.user, {
         eager: true,
-        cascade: true
+        cascade: [ "insert" ]
     })
     public expenseCategories!: ExpenseCategory[];
 
-    // One-to-Many relationship: A user can have many expense sub categories
-    @OneToMany(() => ExpenseSubCategory, (subCategory) => subCategory.user, {
-        eager: true,
-        cascade: true
-    })
+    // One-to-Many relationship: A user can have many expense sub categories (these are added manually in the endpoints, categories are the only ones created during sign up)
+    @OneToMany(() => ExpenseSubCategory, (subCategory) => subCategory.user, { eager: true })
     public expenseSubCategories!: ExpenseSubCategory[];
 
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).

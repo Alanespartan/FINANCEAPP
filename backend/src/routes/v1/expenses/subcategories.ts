@@ -17,7 +17,7 @@ const router = Router();
 * /api/v1/expenses/subcategories:
 *   post:
 *       summary: New expense sub category
-*       description: Create and assign a new expense sub category.
+*       description: Create and save a new expense sub category.
 *       tags:
 *           - Expenses
 *       requestBody:
@@ -63,22 +63,22 @@ router.post("/", async (req, res, next) => {
         // get parent expense category
         let parentCategory = user.getExpenseCategoryById(options.categoryId);
 
-        // create new expense sub category using payload info
+        // save new expense sub category in db using payload info
         const toSaveSubCategory = new ExpenseSubCategory(options, user.id);
+        const savedSubCategory = await saveExpenseSubCategory(toSaveSubCategory);
 
-        // add new sub category object into "Parent" category (no need to have new object id since category entity has cascade insert option enabled)
-        parentCategory.addSubCategory(toSaveSubCategory);
+        // add new sub category object into "Parent" category
+        // since there is no cascade enabled and object is already saved, entry to many to many table is created when parent is saved
+        parentCategory.addSubCategory(savedSubCategory);
 
-        // save updated parent category which is the owner of the relationship and has the new sub category
+        // add relationship between parent category and new sub category into many to many table
         const savedParentCategory = await saveExpenseCategory(parentCategory);
 
         // update cached data for future get operations
+        user.addExpenseSubCategory(savedSubCategory);
         parentCategory = savedParentCategory; // replace existing ref in memory value with returned object from query
-        // from returned object get the new sub category and add it to user array
-        const createdSubCategory = parentCategory.getExpenseSubCategoryByName(toSaveSubCategory.name);
-        user.addExpenseSubCategory(createdSubCategory);
 
-        return res.status(201).json(createdSubCategory.toInterfaceObject());
+        return res.status(201).json(savedSubCategory.toInterfaceObject());
     } catch(error) { return next(error); }
 });
 // #endregion POST Sub Category
@@ -96,7 +96,7 @@ router.post("/", async (req, res, next) => {
 *           - in: query
 *             name: type
 *             schema:
-*               type: integer
+*               $ref: "#/components/schemas/TExpenseTypeFilter"
 *       responses:
 *           200:
 *               description: An array of expense sub categories a user has registered.
@@ -183,7 +183,7 @@ router.get("/:id", async (req, res, next) => {
 });
 // #endregion GET Sub Category
 
-// #region Sub Category
+// #region PUT Sub Category
 /**
 * @swagger
 * /api/v1/expenses/subcategories/{id}:
@@ -196,7 +196,7 @@ router.get("/:id", async (req, res, next) => {
 *           - in: path
 *             name: id
 *             schema:
-*               type: string
+*               type: integer
 *       requestBody:
 *           required: true
 *           content:
