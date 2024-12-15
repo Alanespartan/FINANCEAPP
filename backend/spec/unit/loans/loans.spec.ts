@@ -6,6 +6,14 @@ import { validateLoans, validateLoan } from "./functions";
 import * as payloads from "./payloads";
 
 const loansPath = `/api/${version}/loans`;
+/** ValidCreation_LoanSimple ID that is then updated by ValidUpdate_LoanSimple payload */
+const toUpdate1 = 1; // first created loan
+/** Dummy Loan 1 ID */
+const toUpdate2 = 2;
+/** Dummy Loan 2 ID */
+const toUpdate3 = 3;
+/** Dummy Loan 3 ID */
+const toUpdate4 = 4;
 
 describe(`Testing API: ${loansPath}`, function() {
     // #region POST Loan
@@ -18,7 +26,7 @@ describe(`Testing API: ${loansPath}`, function() {
                     .expect(201)
                     .expect("Content-Type", /json/);
                 // Validate entity against ILoan interface
-                validateLoan(res.body);
+                validateLoan(res.body, payloads.ValidCreation_LoanSimple);
             });
             it("Then return '201 Created' and ILoan object if multiple loans are created successfully", async function() {
                 // Send all requests concurrently
@@ -33,9 +41,9 @@ describe(`Testing API: ${loansPath}`, function() {
                 }
 
                 // Assertions for all responses
-                responses.forEach((response: any, ) => {
+                responses.forEach((response: any, index: number) => {
                     // Validate entity against ILoan interface
-                    validateLoan(response.body);
+                    validateLoan(response.body, payloads.ValidCreation_MultipleDummyLoans[index]);
                 });
             });
         });
@@ -154,11 +162,11 @@ describe(`Testing API: ${loansPath}`, function() {
                 expectNotFoundError(res.body, `Loan "${id}" cannot be updated because it does not exist in user data.`);
             });
         });
-        /** Loan ID from ValidCreation_LoanSimple test */
-        const validId = 1;
-        /** Loan Name from ValidCreation_LoanSimple test */
-        const validName = payloads.ValidCreation_LoanSimple.name;
         describe("Given an invalid payload", function() {
+            /** Loan ID from ValidCreation_LoanSimple test */
+            const validId = 1;
+            /** Loan Name from ValidCreation_LoanSimple test */
+            const validName = payloads.ValidCreation_LoanSimple.name;
             it("Then return '400 Bad Request Error' if a malformed payload is used", async function() {
                 const res = await agent
                     .put(`${loansPath}/${validId}`)
@@ -172,7 +180,7 @@ describe(`Testing API: ${loansPath}`, function() {
             });
             it("Then return '400 Bad Request Error' if a loan already exists with the given name", async function() {
                 const res = await agent
-                    .put(`${loansPath}/1`)
+                    .put(`${loansPath}/${validId}`)
                     .send(payloads.InvalidUpdate_DuplicatedLoan)
                     .expect(400)
                     .expect("Content-Type", /json/);
@@ -180,7 +188,7 @@ describe(`Testing API: ${loansPath}`, function() {
             });
             it("Then return '400 Bad Request Error' if expiration date is incorrect", async function() {
                 const res = await agent
-                    .put(`${loansPath}/1`)
+                    .put(`${loansPath}/${validId}`)
                     .send(payloads.InvalidUpdate_ExpirationDateIsIncorrect)
                     .expect(400)
                     .expect("Content-Type", /json/);
@@ -188,7 +196,7 @@ describe(`Testing API: ${loansPath}`, function() {
             });
             it("Then return '400 Bad Request Error' if borrowed amount is incorrect", async function() {
                 const res = await agent
-                    .put(`${loansPath}/1`)
+                    .put(`${loansPath}/${validId}`)
                     .send(payloads.InvalidUpdate_BorrowedIsIncorrect)
                     .expect(400)
                     .expect("Content-Type", /json/);
@@ -196,7 +204,7 @@ describe(`Testing API: ${loansPath}`, function() {
             });
             it("Then return '400 Bad Request Error' if fixed payment amount is incorrect", async function() {
                 const res = await agent
-                    .put(`${loansPath}/1`)
+                    .put(`${loansPath}/${validId}`)
                     .send(payloads.InvalidUpdate_FixedPaymentAmountIsIncorrect)
                     .expect(400)
                     .expect("Content-Type", /json/);
@@ -204,7 +212,7 @@ describe(`Testing API: ${loansPath}`, function() {
             });
             it("Then return '400 Bad Request Error' if interests to pay amount is incorrect", async function() {
                 const res = await agent
-                    .put(`${loansPath}/1`)
+                    .put(`${loansPath}/${validId}`)
                     .send(payloads.InvalidUpdate_InterestsToPayIsIncorrect)
                     .expect(400)
                     .expect("Content-Type", /json/);
@@ -212,7 +220,7 @@ describe(`Testing API: ${loansPath}`, function() {
             });
             it("Then return '400 Bad Request Error' if interests to pay amount is greater than borrowed money", async function() {
                 const res = await agent
-                    .put(`${loansPath}/1`)
+                    .put(`${loansPath}/${validId}`)
                     .send(payloads.InvalidUpdate_InterestsToPayIsGreaterThanBorrowedMoney)
                     .expect(400)
                     .expect("Content-Type", /json/);
@@ -220,7 +228,7 @@ describe(`Testing API: ${loansPath}`, function() {
             });
             it("Then return '400 Bad Request Error' if annual interest rate is incorrect", async function() {
                 const res = await agent
-                    .put(`${loansPath}/1`)
+                    .put(`${loansPath}/${validId}`)
                     .send(payloads.InvalidUpdate_AnnualInterestRateIsIncorrect)
                     .expect(400)
                     .expect("Content-Type", /json/);
@@ -228,7 +236,7 @@ describe(`Testing API: ${loansPath}`, function() {
             });
             it("Then return '400 Bad Request Error' if an invalid pay frequency type is used", async function() {
                 const res = await agent
-                    .put(`${loansPath}/1`)
+                    .put(`${loansPath}/${validId}`)
                     .send(payloads.InvalidUpdate_PayFrequencyIsIncorrect)
                     .expect(400)
                     .expect("Content-Type", /json/);
@@ -236,16 +244,38 @@ describe(`Testing API: ${loansPath}`, function() {
             });
         });
         describe("Given a valid payload", function() {
-            /*it("Then return '200 Success' and ICard object if required payload parameters are sent", async function() {
+            it("Then return '200 Success' and ILoan object if required payload parameters are sent", async function() {
                 const res = await agent
-                    .put(`${loansPath}/${payloads.ValidCreation_DebitCardNoName.cardNumber}`)
-                    .send(payloads.ValidUpdate_DebitCardSimple)
+                    .put(`${loansPath}/${toUpdate1}`)
+                    .send(payloads.ValidUpdate_LoanSimple)
                     .expect(200)
                     .expect("Content-Type", /json/);
-                validateLoan(res.body);
-                // extra checks bound to this specific test scenario
-                expect(res.body).to.have.property("balance", payloads.ValidCreation_DebitCardNoName.balance);
-            });*/
+                validateLoan(res.body, payloads.ValidUpdate_LoanSimple);
+            });
+            it("Then return '200 Success' and ILoan object if loan is finished", async function() {
+                const res = await agent
+                    .put(`${loansPath}/${toUpdate2}`)
+                    .send(payloads.ValidUpdate_LoanIsFinished)
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                validateLoan(res.body, payloads.ValidUpdate_LoanIsFinished);
+            });
+            it("Then return '200 Success' and ILoan object if loan is archived", async function() {
+                const res = await agent
+                    .put(`${loansPath}/${toUpdate3}`)
+                    .send(payloads.ValidUpdate_LoanArchived)
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                validateLoan(res.body, payloads.ValidUpdate_LoanArchived);
+            });
+            it("Then return '200 Success' and ILoan object if loan is finished and archived", async function() {
+                const res = await agent
+                    .put(`${loansPath}/${toUpdate4}`)
+                    .send(payloads.ValidUpdate_LoanIsFinishedAndArchived)
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                validateLoan(res.body, payloads.ValidUpdate_LoanIsFinishedAndArchived);
+            });
         });
     });
     // #endregion PUT Loan
@@ -266,7 +296,7 @@ describe(`Testing API: ${loansPath}`, function() {
             });
         });
         describe("Given invalid filters", function() {
-            it("Then return '400 Bad Request Error' if archived filter is not boolean", async function() {
+            it("Then return '400 Bad Request Error' if 'archived' filter is not boolean", async function() {
                 const res = await agent
                     .get(loansPath)
                     .query({ archived: [ true, false ] })
@@ -274,7 +304,7 @@ describe(`Testing API: ${loansPath}`, function() {
                     .expect("Content-Type", /json/);
                 expectBadRequestError(res.body, "Invalid format for 'archived' query param, expected boolean.");
             });
-            it("Then return '400 Bad Request Error' if isFinished filter is not boolean", async function() {
+            it("Then return '400 Bad Request Error' if 'isFinished' filter is not boolean", async function() {
                 const res = await agent
                     .get(loansPath)
                     .query({ isFinished: -1 })
@@ -282,7 +312,7 @@ describe(`Testing API: ${loansPath}`, function() {
                     .expect("Content-Type", /json/);
                 expectBadRequestError(res.body, "Invalid format for 'isFinished' query param, expected boolean.");
             });
-            it("Then return '400 Bad Request Error' if payFrequency is not in correct number format", async function() {
+            it("Then return '400 Bad Request Error' if 'payFrequency' is not in correct number format", async function() {
                 const res = await agent
                     .get(loansPath)
                     .query({ payFrequency: "INCORRECT QUERY VALUE" })
@@ -290,7 +320,7 @@ describe(`Testing API: ${loansPath}`, function() {
                     .expect("Content-Type", /json/);
                 expectBadRequestError(res.body, "Invalid format for 'payFrequency' query param, expected number.");
             });
-            it("Then return '400 Bad Request Error' if payFrequency is not in correct number format", async function() {
+            it("Then return '400 Bad Request Error' if 'payFrequency' is not in correct number format", async function() {
                 const value = -1;
                 const res = await agent
                     .get(loansPath)
@@ -301,7 +331,54 @@ describe(`Testing API: ${loansPath}`, function() {
             });
         });
         describe("Given valid filters", function() {
-            // TODO
+            it("Then return '400 Bad Request Error' if 'archived' filter was used", async function() {
+                const res = await agent
+                    .get(loansPath)
+                    .query({ archived: true })
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                // Ensure the response is an array
+                expect(res.body).to.be.an("array");
+                expect(res.body).to.have.lengthOf(3);
+                // Validate each entity against ILoan interface
+                validateLoans(res.body);
+            });
+            it("Then return '400 Bad Request Error' if 'isFinished' filter was used", async function() {
+                const res = await agent
+                    .get(loansPath)
+                    .query({ isFinished: true })
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                // Ensure the response is an array
+                expect(res.body).to.be.an("array");
+                expect(res.body).to.have.lengthOf(3);
+                // Validate each entity against ILoan interface
+                validateLoans(res.body);
+            });
+            it("Then return '400 Bad Request Error' if 'payFrequency' filter was used", async function() {
+                const res = await agent
+                    .get(loansPath)
+                    .query({ payFrequency: 1 })
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                // Ensure the response is an array
+                expect(res.body).to.be.an("array");
+                expect(res.body).to.have.lengthOf(2);
+                // Validate each entity against ILoan interface
+                validateLoans(res.body);
+            });
+            it("Then return '400 Bad Request Error' if 'isFinished' and 'archived' filters were used", async function() {
+                const res = await agent
+                    .get(loansPath)
+                    .query({ isFinished: true, archived: true })
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                // Ensure the response is an array
+                expect(res.body).to.be.an("array");
+                expect(res.body).to.have.lengthOf(2);
+                // Validate each entity against ILoan interface
+                validateLoans(res.body);
+            });
         });
     });
     // #endregion GET Loans
@@ -336,11 +413,11 @@ describe(`Testing API: ${loansPath}`, function() {
         describe("Given a valid loan id", function() {
             it("Then return '200 Success' and ILoan object", async function() {
                 const res = await agent
-                    .get(`${loansPath}/1`)
+                    .get(`${loansPath}/${toUpdate1}`)
                     .expect(200)
                     .expect("Content-Type", /json/);
                 // Validate entity against ILoan interface
-                validateLoan(res.body);
+                validateLoan(res.body, payloads.ValidUpdate_LoanSimple);
             });
         });
     });
