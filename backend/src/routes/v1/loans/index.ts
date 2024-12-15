@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-    ConvertToUTCTimestamp,
     isValidPayFrequency,
     stringIsValidID
 } from "@backend/utils/functions";
@@ -13,9 +12,8 @@ import {
     CreateExpenseSubCategoryPayload,
     OETypesOfExpense
 } from "@common/types/expenses";
-import { getBank  } from "@entities/cards/functions/db";
 import { saveLoan } from "@entities/loans/functions/db";
-import { verifyCreateLoanBody, verifyUpdateLoanBody } from "@entities/loans/functions/util";
+import { RunPayloadsParamsChecks, VerifyCreateLoanBody, VerifyUpdateLoanBody } from "@entities/loans/functions/util";
 import { Loan, ExpenseSubCategory } from "@entities";
 import { BadRequestError, NotFoundError } from "@errors";
 
@@ -48,29 +46,16 @@ const router = Router();
 */
 router.post("/", async (req, res, next) => {
     try {
-        const user     = req.userData;
-        const options  = req.body;
+        const user    = req.userData;
+        const options = req.body;
 
-        if(!verifyCreateLoanBody(options)) {
+        // check payload is in correct form
+        if(!VerifyCreateLoanBody(options)) {
             throw new BadRequestError("New loan cannot be created because a malformed payload was sent.");
         }
 
-        if( !(await getBank(options.bankId)) ) {
-            throw new BadRequestError(`Loan "${options.name}" cannot be created because an incorrect bank id was used in the request: ${options.bankId}.`);
-        }
-
-        // avoid creating a duplicate if a loan with the given loan number already exists
-        if(user.hasLoan(options.name, "name")) {
-            throw new BadRequestError(`Loan "${options.name}" cannot be created because one with that name already exists.`);
-        }
-
-        // validate loan expiration date is correct
-        if(options.expires) {
-            // using UTC function for correct timestamp comparision
-            if(ConvertToUTCTimestamp(options.expires) < ConvertToUTCTimestamp(new Date())) {
-                throw new BadRequestError(`Loan "${options.name}" cannot be created because expiration date "${options.expires}" can't be less than today's date.`);
-            }
-        }
+        // run individual check on payload attributes, if no error is thrown here then payload values are ok
+        RunPayloadsParamsChecks(user, options, "create", options.name);
 
         // save new loan in db
         const newLoan = new Loan(options, user.id);
@@ -267,10 +252,13 @@ router.put("/:id", async (req, res, next) => {
             throw new NotFoundError(`Loan "${parsedId}" cannot be updated because it does not exist in user data.`);
         }
 
-        // verify payload has correct form
-        if(!verifyUpdateLoanBody(options)) {
-            throw new BadRequestError(`Loan "${id}" cannot be updated because a malformed payload was sent.`);
+        // check payload is in correct form
+        if(!VerifyUpdateLoanBody(options)) {
+            throw new BadRequestError(`Loan "${parsedId}" cannot be updated because a malformed payload was sent.`);
         }
+
+        // run individual check on payload attributes, if no error is thrown here then payload values are ok
+        RunPayloadsParamsChecks(user, options, "update", user.getLoanById(parsedId).name);
 
         // update the in-memory object properties directly for future operations
         const toUpdate = user.setOptionsIntoLoan(parsedId, options);
