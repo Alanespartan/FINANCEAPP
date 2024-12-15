@@ -130,22 +130,22 @@ export const UpdateLoanOptionalKeys: (keyof UpdateLoanPayload)[] = [
 ];
 /** Representes the expected and possible parameters during a PUT request to update a user loan. */
 export interface UpdateLoanPayload {
-        /** e.g. BBVA Loan 10,000 May 2024 */
-        name?: string;
-        /** Expiration date in timestamp format. Its the loan term the user has to pay for it */
-        expires?: number;
-        /** How much money was borrowed from the bank */
-        borrowed?: number;
-        /** How much money is planned to be paid each time the pay frequency established is met */
-        fixedPaymentAmount?: number;
-        /** How much money as interest is planned to be paid at the end of the term */
-        interestsToPay?: number;
-        /** Is the yearly interest rate charged on a loan. It's expressed as a percentage */
-        annualInterestRate?: number;
-        /** If user already pay all the borrowed money or not */
-        isFinished?: boolean;
-        /** If loan is active or not */
-        archived?: boolean;
-        /** If its payments are done semy weekly, weekly, semi monthly, monthly, etc. */
-        payFrequency?: TPayFrequency;
+    /** e.g. BBVA Loan 10,000 May 2024 */
+    name?: string;
+    /** Expiration date in timestamp format. Its the loan term the user has to pay for it */
+    expires?: number;
+    /** How much money was borrowed from the bank */
+    borrowed?: number;
+    /** How much money is planned to be paid each time the pay frequency established is met */
+    fixedPaymentAmount?: number;
+    /** How much money as interest is planned to be paid at the end of the term */
+    interestsToPay?: number;
+    /** Is the yearly interest rate charged on a loan. It's expressed as a percentage */
+    annualInterestRate?: number;
+    /** If user already pay all the borrowed money or not */
+    isFinished?: boolean;
+    /** If loan is active or not */
+    archived?: boolean;
+    /** If its payments are done semy weekly, weekly, semi monthly, monthly, etc. */
+    payFrequency?: TPayFrequency;
 }
