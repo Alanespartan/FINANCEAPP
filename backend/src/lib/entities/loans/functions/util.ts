@@ -1,8 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-    CreateLoanPayload, CreateLoanRequiredKeys,
-    UpdateLoanPayload, UpdateLoanOptionalKeys
-} from "@common/types/loans";
+import { CreateLoanPayload, UpdateLoanPayload } from "@common/types/loans";
 import { ConvertToUTCTimestamp, isValidPayFrequency } from "@backend/utils/functions";
 import { getBank  } from "@entities/cards/functions/db";
 import { BadRequestError, ServerError } from "@errors";
@@ -106,8 +103,10 @@ export function VerifyCreateLoanBody(body: unknown): body is CreateLoanPayload {
         return false; // Reject null, undefined, or non-object values
     }
 
+    const bodyOptions = Object.entries(body).map(([ key, ]) => key);
+
     // Check if all required keys exist and have valid types
-    for(const key of CreateLoanRequiredKeys) {
+    for(const key of bodyOptions) {
         const value = (body as Record<string, unknown>)[key];
 
         switch (key) {
@@ -123,8 +122,7 @@ export function VerifyCreateLoanBody(body: unknown): body is CreateLoanPayload {
             case "bankId":
                 if(typeof value !== "number") return false;
                 break;
-            default:
-                return false; // Unexpected key found
+            default: return false; // Unexpected key found
         }
     }
 
@@ -141,8 +139,10 @@ export function VerifyUpdateLoanBody(body: unknown): body is UpdateLoanPayload {
         return false; // Reject null, undefined, or non-object values
     }
 
+    const bodyOptions = Object.entries(body).map(([ key, ]) => key);
+
     // Validate optional fields
-    for(const key of UpdateLoanOptionalKeys) {
+    for(const key of bodyOptions) {
         const value = (body as Record<string, unknown>)[key];
         if(value !== undefined) {
             switch (key) {

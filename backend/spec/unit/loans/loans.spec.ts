@@ -126,6 +126,129 @@ describe(`Testing API: ${loansPath}`, function() {
         });
     });
     // #endregion POST Loan
+    // #region PUT Loan
+    describe("When Updating a Loan", function() {
+        describe("Given an invalid id", function() {
+            it("Then return '400 Bad Request Error' if loan id has incorrect format", async function() {
+                const id = "idIsNotANumber";
+                const res = await agent
+                    .put(`${loansPath}/${id}`)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan cannot be updated because the provided id "${id}" was in an incorrect format.`);
+            });
+            it("Then return '400 Bad Request Error' if loan id is negative", async function() {
+                const id = -1;
+                const res = await agent
+                    .put(`${loansPath}/${id}`)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan cannot be updated because the provided id "${id}" was in an incorrect format.`);
+            });
+            it("Then return '404 Not Found Error' if loan does not exist in user loans", async function() {
+                const id = 155123;
+                const res = await agent
+                    .put(`${loansPath}/${id}`)
+                    .expect(404)
+                    .expect("Content-Type", /json/);
+                expectNotFoundError(res.body, `Loan "${id}" cannot be updated because it does not exist in user data.`);
+            });
+        });
+        /** Loan ID from ValidCreation_LoanSimple test */
+        const validId = 1;
+        /** Loan Name from ValidCreation_LoanSimple test */
+        const validName = payloads.ValidCreation_LoanSimple.name;
+        describe("Given an invalid payload", function() {
+            it("Then return '400 Bad Request Error' if a malformed payload is used", async function() {
+                const res = await agent
+                    .put(`${loansPath}/${validId}`)
+                    .send({
+                        incorrectProp1: "",
+                        nonExistingProp: 2
+                    })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${validId}" cannot be updated because a malformed payload was sent.`);
+            });
+            it("Then return '400 Bad Request Error' if a loan already exists with the given name", async function() {
+                const res = await agent
+                    .put(`${loansPath}/1`)
+                    .send(payloads.InvalidUpdate_DuplicatedLoan)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${validName}" cannot be updated because one with that name already exists.`);
+            });
+            it("Then return '400 Bad Request Error' if expiration date is incorrect", async function() {
+                const res = await agent
+                    .put(`${loansPath}/1`)
+                    .send(payloads.InvalidUpdate_ExpirationDateIsIncorrect)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${validName}" cannot be updated because expiration date "${payloads.InvalidUpdate_ExpirationDateIsIncorrect.expires}" can't be less than today's date.`);
+            });
+            it("Then return '400 Bad Request Error' if borrowed amount is incorrect", async function() {
+                const res = await agent
+                    .put(`${loansPath}/1`)
+                    .send(payloads.InvalidUpdate_BorrowedIsIncorrect)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${validName}" cannot be updated because an incorrect "borrowed" value was used in the request: ${payloads.InvalidUpdate_BorrowedIsIncorrect.borrowed}.`);
+            });
+            it("Then return '400 Bad Request Error' if fixed payment amount is incorrect", async function() {
+                const res = await agent
+                    .put(`${loansPath}/1`)
+                    .send(payloads.InvalidUpdate_FixedPaymentAmountIsIncorrect)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${validName}" cannot be updated because an incorrect "fixedPaymentAmount" value was used in the request: ${payloads.InvalidUpdate_FixedPaymentAmountIsIncorrect.fixedPaymentAmount}.`);
+            });
+            it("Then return '400 Bad Request Error' if interests to pay amount is incorrect", async function() {
+                const res = await agent
+                    .put(`${loansPath}/1`)
+                    .send(payloads.InvalidUpdate_InterestsToPayIsIncorrect)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${validName}" cannot be updated because an incorrect "interestsToPay" value was used in the request: ${payloads.InvalidUpdate_InterestsToPayIsIncorrect.fixedPaymentAmount}.`);
+            });
+            it("Then return '400 Bad Request Error' if interests to pay amount is greater than borrowed money", async function() {
+                const res = await agent
+                    .put(`${loansPath}/1`)
+                    .send(payloads.InvalidUpdate_InterestsToPayIsGreaterThanBorrowedMoney)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${validName}" cannot be updated because interests debt "${payloads.InvalidUpdate_InterestsToPayIsGreaterThanBorrowedMoney.interestsToPay}" can't be greater than borrowed "${payloads.InvalidUpdate_InterestsToPayIsGreaterThanBorrowedMoney.borrowed}" money.`);
+            });
+            it("Then return '400 Bad Request Error' if annual interest rate is incorrect", async function() {
+                const res = await agent
+                    .put(`${loansPath}/1`)
+                    .send(payloads.InvalidUpdate_AnnualInterestRateIsIncorrect)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${validName}" cannot be updated because an incorrect "annualInterestRate" value was used in the request: ${payloads.InvalidUpdate_AnnualInterestRateIsIncorrect.annualInterestRate}.`);
+            });
+            it("Then return '400 Bad Request Error' if an invalid pay frequency type is used", async function() {
+                const res = await agent
+                    .put(`${loansPath}/1`)
+                    .send(payloads.InvalidUpdate_PayFrequencyIsIncorrect)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${validName}" cannot be updated because an incorrect pay frequency type was used in the request: ${payloads.InvalidUpdate_PayFrequencyIsIncorrect.payFrequency}.`);
+            });
+        });
+        describe("Given a valid payload", function() {
+            /*it("Then return '200 Success' and ICard object if required payload parameters are sent", async function() {
+                const res = await agent
+                    .put(`${loansPath}/${payloads.ValidCreation_DebitCardNoName.cardNumber}`)
+                    .send(payloads.ValidUpdate_DebitCardSimple)
+                    .expect(200)
+                    .expect("Content-Type", /json/);
+                validateLoan(res.body);
+                // extra checks bound to this specific test scenario
+                expect(res.body).to.have.property("balance", payloads.ValidCreation_DebitCardNoName.balance);
+            });*/
+        });
+    });
+    // #endregion PUT Loan
     // #region GET Loans
     describe("When Fetching Loans", function() {
         describe("Given no filter", function() {
