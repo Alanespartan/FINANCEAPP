@@ -55,7 +55,7 @@ router.post("/", async (req, res, next) => {
         }
 
         // run individual check on payload attributes, if no error is thrown here then payload values are ok
-        RunPayloadsParamsChecks(user, options, "create", options.name);
+        await RunPayloadsParamsChecks(user, options, "create", options.name);
 
         // save new loan in db
         const newLoan = new Loan(options, user.id);
