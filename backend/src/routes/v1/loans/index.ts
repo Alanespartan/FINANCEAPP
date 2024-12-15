@@ -132,21 +132,21 @@ router.get("/", async (req, res, next) => {
         const { archived, isFinished, payFrequency } = req.query;
 
         // Validate query parameters
-        const archivedFilter     = validateQueryParams(archived,     "boolean", "archived") as boolean;
-        const isFinishedFilter   = validateQueryParams(isFinished,   "boolean", "isFinished") as boolean;
-        const payFrequencyFilter = validateQueryParams(payFrequency, "number",  "payFrequency") as number;
+        const archivedFilter     = validateQueryParams(archived,     "boolean", "archived");
+        const isFinishedFilter   = validateQueryParams(isFinished,   "boolean", "isFinished");
+        const payFrequencyFilter = validateQueryParams(payFrequency, "number",  "payFrequency");
 
         // Apply filters
         let loans = user.getLoans();
         if(archivedFilter !== undefined) {
-            loans = loans.filter((loan) => loan.archived === archivedFilter);
+            loans = loans.filter((loan) => loan.archived === archivedFilter as boolean);
         }
         if(isFinishedFilter !== undefined) {
-            loans = loans.filter((loan) => loan.isFinished === isFinishedFilter);
+            loans = loans.filter((loan) => loan.isFinished === isFinishedFilter as boolean);
         }
         if(payFrequencyFilter !== undefined) {
-            if(payFrequencyFilter && !isValidPayFrequency(payFrequencyFilter)) {
-                throw new BadRequestError("Invalid payFrequency value.");
+            if(!isValidPayFrequency(payFrequencyFilter as number)) {
+                throw new BadRequestError(`Invalid 'payFrequency' value: ${payFrequencyFilter} expected one of: [0, 1, 2, 3]`);
             }
             loans = loans.filter((loan) => loan.payFrequency === payFrequencyFilter);
         }
@@ -258,7 +258,7 @@ router.put("/:id", async (req, res, next) => {
         }
 
         // run individual check on payload attributes, if no error is thrown here then payload values are ok
-        RunPayloadsParamsChecks(user, options, "update", user.getLoanById(parsedId).name);
+        await RunPayloadsParamsChecks(user, options, "update", user.getLoanById(parsedId).name);
 
         // update the in-memory object properties directly for future operations
         const toUpdate = user.setOptionsIntoLoan(parsedId, options);

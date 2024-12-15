@@ -12,7 +12,7 @@ export type HeaderOption<H extends string> = H | [H, string];
 * @throws BadRequestError if the value doesn't match the expected type
 * @returns Object containing headers.
 */
-export function validateQueryParams(param: any, type: "boolean" | "string" | "number", name: string) {
+export function validateQueryParams(param: any, type: "boolean" | "number", name: string) {
     if(param === undefined) return undefined;
     if(type === "boolean") {
         if(param === "true")  return true;

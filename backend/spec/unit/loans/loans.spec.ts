@@ -143,6 +143,41 @@ describe(`Testing API: ${loansPath}`, function() {
             });
         });
         describe("Given invalid filters", function() {
+            it("Then return '400 Bad Request Error' if archived filter is not boolean", async function() {
+                const res = await agent
+                    .get(loansPath)
+                    .query({ archived: [ true, false ] })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, "Invalid format for 'archived' query param, expected boolean.");
+            });
+            it("Then return '400 Bad Request Error' if isFinished filter is not boolean", async function() {
+                const res = await agent
+                    .get(loansPath)
+                    .query({ isFinished: -1 })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, "Invalid format for 'isFinished' query param, expected boolean.");
+            });
+            it("Then return '400 Bad Request Error' if payFrequency is not in correct number format", async function() {
+                const res = await agent
+                    .get(loansPath)
+                    .query({ payFrequency: "INCORRECT QUERY VALUE" })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, "Invalid format for 'payFrequency' query param, expected number.");
+            });
+            it("Then return '400 Bad Request Error' if payFrequency is not in correct number format", async function() {
+                const value = -1;
+                const res = await agent
+                    .get(loansPath)
+                    .query({ payFrequency: value })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Invalid 'payFrequency' value: ${value} expected one of: [0, 1, 2, 3]`);
+            });
+        });
+        describe("Given valid filters", function() {
             // TODO
         });
     });
