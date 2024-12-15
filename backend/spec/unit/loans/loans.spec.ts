@@ -39,6 +39,91 @@ describe(`Testing API: ${loansPath}`, function() {
                 });
             });
         });
+        describe("Given an invalid payload", function() {
+            it("Then return '400 Bad Request Error' if a malformed payload is used", async function() {
+                const res = await agent
+                    .post(loansPath)
+                    .send({
+                        incorrectProp1: "",
+                        nonExistingProp: 2
+                    })
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, "New loan cannot be created because a malformed payload was sent.");
+            });
+            it("Then return '400 Bad Request Error' if a non existing bank id is used", async function() {
+                const res = await agent
+                    .post(loansPath)
+                    .send(payloads.InvalidCreation_BankDoesNotExist)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${payloads.InvalidCreation_BankDoesNotExist.name}" cannot be created because an incorrect bank id was used in the request: ${payloads.InvalidCreation_BankDoesNotExist.bankId}.`);
+            });
+            it("Then return '400 Bad Request Error' if a loan already exists with the given name", async function() {
+                const res = await agent
+                    .post(loansPath)
+                    .send(payloads.InvalidCreation_DuplicatedLoan)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${payloads.InvalidCreation_DuplicatedLoan.name}" cannot be created because one with that name already exists.`);
+            });
+            it("Then return '400 Bad Request Error' if expiration date is incorrect", async function() {
+                const res = await agent
+                    .post(`${loansPath}`)
+                    .send(payloads.InvalidCreation_ExpirationDateIsIncorrect)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${payloads.InvalidCreation_ExpirationDateIsIncorrect.name}" cannot be created because expiration date "${payloads.InvalidCreation_ExpirationDateIsIncorrect.expires}" can't be less than today's date.`);
+            });
+            it("Then return '400 Bad Request Error' if borrowed amount is incorrect", async function() {
+                const res = await agent
+                    .post(`${loansPath}`)
+                    .send(payloads.InvalidCreation_BorrowedIsIncorrect)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${payloads.InvalidCreation_BorrowedIsIncorrect.name}" cannot be created because an incorrect "borrowed" value was used in the request: ${payloads.InvalidCreation_BorrowedIsIncorrect.borrowed}.`);
+            });
+            it("Then return '400 Bad Request Error' if fixed payment amount is incorrect", async function() {
+                const res = await agent
+                    .post(`${loansPath}`)
+                    .send(payloads.InvalidCreation_FixedPaymentAmountIsIncorrect)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${payloads.InvalidCreation_FixedPaymentAmountIsIncorrect.name}" cannot be created because an incorrect "fixedPaymentAmount" value was used in the request: ${payloads.InvalidCreation_FixedPaymentAmountIsIncorrect.fixedPaymentAmount}.`);
+            });
+            it("Then return '400 Bad Request Error' if interests to pay amount is incorrect", async function() {
+                const res = await agent
+                    .post(`${loansPath}`)
+                    .send(payloads.InvalidCreation_InterestsToPayIsIncorrect)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${payloads.InvalidCreation_InterestsToPayIsIncorrect.name}" cannot be created because an incorrect "interestsToPay" value was used in the request: ${payloads.InvalidCreation_InterestsToPayIsIncorrect.fixedPaymentAmount}.`);
+            });
+            it("Then return '400 Bad Request Error' if interests to pay amount is greater than borrowed money", async function() {
+                const res = await agent
+                    .post(`${loansPath}`)
+                    .send(payloads.InvalidCreation_InterestsToPayIsGreaterThanBorrowedMoney)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${payloads.InvalidCreation_InterestsToPayIsGreaterThanBorrowedMoney.name}" cannot be created because interests debt "${payloads.InvalidCreation_InterestsToPayIsGreaterThanBorrowedMoney.interestsToPay}" can't be greater than borrowed "${payloads.InvalidCreation_InterestsToPayIsGreaterThanBorrowedMoney.borrowed}" money.`);
+            });
+            it("Then return '400 Bad Request Error' if annual interest rate is incorrect", async function() {
+                const res = await agent
+                    .post(`${loansPath}`)
+                    .send(payloads.InvalidCreation_AnnualInterestRateIsIncorrect)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${payloads.InvalidCreation_AnnualInterestRateIsIncorrect.name}" cannot be created because an incorrect "annualInterestRate" value was used in the request: ${payloads.InvalidCreation_AnnualInterestRateIsIncorrect.annualInterestRate}.`);
+            });
+            it("Then return '400 Bad Request Error' if an invalid pay frequency type is used", async function() {
+                const res = await agent
+                    .post(loansPath)
+                    .send(payloads.InvalidCreation_PayFrequencyIsIncorrect)
+                    .expect(400)
+                    .expect("Content-Type", /json/);
+                expectBadRequestError(res.body, `Loan "${payloads.InvalidCreation_PayFrequencyIsIncorrect.name}" cannot be created because an incorrect pay frequency type was used in the request: ${payloads.InvalidCreation_PayFrequencyIsIncorrect.payFrequency}.`);
+            });
+        });
     });
     // #endregion POST Loan
     // #region GET Loans

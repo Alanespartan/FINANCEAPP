@@ -9,6 +9,9 @@ import { BadRequestError, ServerError } from "@errors";
 import { User } from "@entities";
 
 /**
+* @param {User} user User data to perform helper checks if needed
+* @param {CreateLoanPayload | UpdateLoanPayload} body Payload to analyze
+* @param {string} action Indicates what type of extra checks to do according to operation type
 * @param {string} toSaveName Its the loan to create/update name, used for customizing error messages if needed
 * @throws BadRequestError if invalid parameter value is found
 * @throws ServerError if developer makes a mistake invoking the function
@@ -23,7 +26,7 @@ export async function RunPayloadsParamsChecks(user: User, body: CreateLoanPayloa
         actionMessage = "created";
 
         if( !(await getBank(options.bankId)) ) {
-            throw new BadRequestError(`Loan "${options.name}" cannot be ${actionMessage} because an incorrect bank id was used in the request: ${options.bankId}.`);
+            throw new BadRequestError(`Loan "${options.name}" cannot be created because an incorrect bank id was used in the request: ${options.bankId}.`);
         }
     } else if(action === "update") {
         options = body as UpdateLoanPayload;
@@ -86,7 +89,10 @@ export async function RunPayloadsParamsChecks(user: User, body: CreateLoanPayloa
 
     // validate pay frequency value is correct
     if(options.payFrequency) {
-        // THIS IS VALIDATED IN verifyCreateLoanBody AND verifyUpdateLoanBody FUNCTIONS
+        // Check is number but also a valid entry in TPayFrequency numeric enum
+        if(!isValidPayFrequency(options.payFrequency)) {
+            throw new BadRequestError(`Loan "${toSaveName}" cannot be ${actionMessage} because an incorrect pay frequency type was used in the request: ${options.payFrequency}.`);
+        }
     }
 }
 
@@ -113,11 +119,9 @@ export function VerifyCreateLoanBody(body: unknown): body is CreateLoanPayload {
             case "fixedPaymentAmount":
             case "interestsToPay":
             case "annualInterestRate":
+            case "payFrequency":
             case "bankId":
                 if(typeof value !== "number") return false;
-                break;
-            case "payFrequency":
-                if(typeof value !== "number" || !isValidPayFrequency(value)) return false; // Check is number but also a valid entry in TPayFrequency numeric enum
                 break;
             default:
                 return false; // Unexpected key found
@@ -149,15 +153,13 @@ export function VerifyUpdateLoanBody(body: unknown): body is UpdateLoanPayload {
                 case "borrowed":
                 case "fixedPaymentAmount":
                 case "interestsToPay":
+                case "payFrequency":
                 case "annualInterestRate":
                     if(typeof value !== "number") return false;
                     break;
                 case "isFinished":
                 case "archived":
                     if(typeof value !== "boolean") return false;
-                    break;
-                case "payFrequency":
-                    if(typeof value !== "number" || !isValidPayFrequency(value)) return false; // Check is number but also a valid entry in TPayFrequency numeric enum
                     break;
                 default: return false; // Unexpected key found
             }
