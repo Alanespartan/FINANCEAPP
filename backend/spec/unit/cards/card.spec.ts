@@ -97,7 +97,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .send(payloads.InvalidCreation_DuplicatedCard)
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expectBadRequestError(res.body, `Card "${payloads.InvalidCreation_DuplicatedCard.cardNumber}" cannot be created because one with that name already exists.`);
+                expectBadRequestError(res.body, `Card "${payloads.InvalidCreation_DuplicatedCard.cardNumber}" cannot be created because one with that card number already exists.`);
             });
         });
         describe("Given an invalid payload for debit card", function() {
