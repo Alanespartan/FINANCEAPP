@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CreateLoanPayload, UpdateLoanPayload } from "@common/types/loans";
 import { ConvertToUTCTimestamp, isValidPayFrequency } from "@backend/utils/functions";
-import { getBank  } from "@entities/cards/functions/db";
+import { getBank } from "@entities/cards/functions/db";
 import { BadRequestError, ServerError } from "@errors";
 import { User } from "@entities";
 
