@@ -1,5 +1,5 @@
 import { BadRequestError } from "@errors";
-import { isValidCardType } from "@entities/cards/functions/util";
+import { IsValidCardType } from "@entities/cards/functions/util";
 import { TCardTypes } from "@common/types/cards";
 import { MixinsConstructor, Card, Bank } from "@entities";
 
@@ -34,7 +34,7 @@ export const AllCardsMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
          * @throws BadRequestError If provided type is invalid
          */
         public setType(this: Card, type: TCardTypes): void {
-            if(!isValidCardType(type)) {
+            if(!IsValidCardType(type)) {
                 throw new BadRequestError(`Invalid type (${type}) for creating a new card.`);
             }
             this.type = type;

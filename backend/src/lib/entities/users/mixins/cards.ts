@@ -1,4 +1,4 @@
-import { TCardFilters, UpdateCardPayload } from "@common/types/cards";
+import { TCardFilters, UpdateCardPayload, TCardTypes } from "@common/types/cards";
 import { MixinsConstructor, Card, User } from "@entities";
 import { filterNonNullableAttributes } from "@backend/utils/functions";
 
@@ -53,7 +53,17 @@ export const CardsMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
             // apply the new values from given options into desired card
             Object.entries(payload).forEach(([ key, value ]) => {
                 if(key in toUpdate) {
-                    toUpdate[key] = value;
+                    switch (key) {
+                        case "cardNumber":  toUpdate.cardNumber  = value as string; break;
+                        case "archived":    toUpdate.archived    = value as boolean; break;
+                        case "expires":     toUpdate.expires     = value as number; break;
+                        case "cutOffDate":  toUpdate.cutOffDate  = value as number; break;
+                        case "paymentDate": toUpdate.paymentDate = value as number; break;
+                        case "type":        toUpdate.type        = value as TCardTypes; break;
+                        case "limit":       toUpdate.limit       = value as number; break;
+                        case "name":        toUpdate.name        = value as string; break;
+                        case "isVoucher":   toUpdate.isVoucher   = value as boolean; break;
+                    }
                 }
             });
 

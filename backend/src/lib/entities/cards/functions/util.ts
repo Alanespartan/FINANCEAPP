@@ -6,21 +6,35 @@ import { TCardFilters, TCardTypes, OECardTypesFilters, UpdateCardPayload, Create
  * @param {unknown} body Body from create card request.
  * @returns bodyisCreateCardPayload wheter or not the body is valid
  */
-export function verifyCreateCardBody(body: unknown): body is CreateCardPayload {
-    if(typeof body !== "object") { return false; } // if body is not an object
-    if(!body) { return false; } // null or undefined
-    if(Object.entries(body).length === 0) { return false; } // if empty object {}
-    const parsed         = body as CreateCardPayload;
-    const validName      = parsed.name      ? typeof parsed.name      === "string"  ? true : false : true;
-    const validLimit     = parsed.limit     ? typeof parsed.limit     === "number"  ? true : false : true;
-    const validIsVoucher = parsed.isVoucher ? typeof parsed.isVoucher === "boolean" ? true : false : true;
+export function VerifyCreateCardBody(body: unknown): body is CreateCardPayload {
+    if(!body || typeof body !== "object") {
+        return false; // Reject null, undefined, or non-object values
+    }
 
-    return typeof parsed.cardNumber === "string"
-        && typeof parsed.type       === "number"
-        && typeof parsed.bankId     === "number"
-        && typeof parsed.balance    === "number"
-        && typeof parsed.expires    === "number"
-        && validName && validLimit && validIsVoucher;
+    const bodyOptions = Object.entries(body).map(([ key, ]) => key);
+
+    // Check if all required keys exist and have valid types
+    for(const key of bodyOptions) {
+        const value = (body as Record<string, unknown>)[key];
+
+        switch (key) {
+            case "name":
+                if(typeof value !== "string") return false;
+                break;
+            case "expires":
+            case "borrowed":
+            case "fixedPaymentAmount":
+            case "interestsToPay":
+            case "annualInterestRate":
+            case "payFrequency":
+            case "bankId":
+                if(typeof value !== "number") return false;
+                break;
+            default: return false; // Unexpected key found
+        }
+    }
+
+    return true;
 }
 
 /**
@@ -28,26 +42,43 @@ export function verifyCreateCardBody(body: unknown): body is CreateCardPayload {
  * @param {unknown} body Body from update card request.
  * @returns bodyisUpdateCardPayload wheter or not the body is valid
  */
-export function verifyUpdateCardBody(body: unknown): body is UpdateCardPayload {
-    if(typeof body !== "object") { return false; } // if body is not an object
-    if(!body) { return false; } // null or undefined
-    if(Object.entries(body).length === 0) { return false; } // if empty object {}
-    const parsed = body as UpdateCardPayload;
-    let count = 0;
-    if(parsed.cardNumber) { count++; if(typeof parsed.cardNumber !== "string") { return false; } }
-    if(parsed.name)       { count++; if(typeof parsed.name !== "string")       { return false; } }
-    if(parsed.limit)      { count++; if(typeof parsed.limit !== "number")      { return false; } }
-    if(parsed.type)       { count++; if(typeof parsed.type !== "number")       { return false; } }
-    if(parsed.expires)    { count++; if(typeof parsed.expires !== "number")    { return false; } }
-    if(parsed.archived)   { count++; if(typeof parsed.archived !== "boolean")  { return false; } }
-    if(parsed.isVoucher)  { count++; if(typeof parsed.isVoucher !== "boolean") { return false; } }
-    if(count === 0) { return false; } // if obj has keys but none is from update card payload interface
+export function VerifyUpdateCardBody(body: unknown): body is UpdateCardPayload {
+    if(!body || typeof body !== "object") {
+        return false; // Reject null, undefined, or non-object values
+    }
+
+    const bodyOptions = Object.entries(body).map(([ key, ]) => key);
+
+    // Validate optional fields
+    for(const key of bodyOptions) {
+        const value = (body as Record<string, unknown>)[key];
+        if(value !== undefined) {
+            switch (key) {
+                case "cardNumber":
+                case "name":
+                    if(typeof value !== "string") return false;
+                    break;
+                case "type":
+                case "expires":
+                case "limit":
+                case "cutOffDate":
+                case "paymentDate":
+                    if(typeof value !== "number") return false;
+                    break;
+                case "isVoucher":
+                case "archived":
+                    if(typeof value !== "boolean") return false;
+                    break;
+                default: return false; // Unexpected key found
+            }
+        }
+    }
 
     return true;
 }
 
 /** Helper function to check if the given value is a valid value from card filters enum. */
-export const isValidCardFilter = (value: number): value is TCardFilters => {
+export const IsValidCardFilter = (value: number): value is TCardFilters => {
     return value === OECardTypesFilters.ALL
         || value === OECardTypesFilters.DEBIT
         || value === OECardTypesFilters.CREDIT
@@ -55,7 +86,7 @@ export const isValidCardFilter = (value: number): value is TCardFilters => {
 };
 
 /** Helper function to check if the given value is a valid value from card types enum. */
-export const isValidCardType = (value: number): value is TCardTypes => {
+export const IsValidCardType = (value: number): value is TCardTypes => {
     return value === OECardTypesFilters.DEBIT
         || value === OECardTypesFilters.CREDIT
         || value === OECardTypesFilters.SERVICES;
