@@ -65,6 +65,10 @@ export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
 *                   type: number
 *                   example: 1732497156317
 *                   description: Expiration date in timestamp utc format.
+*               cutOffDate:
+*                   type: number
+*                   example: 23
+*                   description: The final day to record transactions in a financial statement.
 *               balance:
 *                   type: number
 *                   format: double
@@ -74,6 +78,10 @@ export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
 *                   $ref: "#/components/schemas/TCardTypes"
 *                   example: 2
 *                   description: Card Type (Debit = 1 | Credit = 2 | Services = 3)
+*               paymentDate:
+*                   type: number
+*                   example: 13
+*                   description: If card is credit, the final day to pay the monthly pending balance.
 *               archived:
 *                   type: boolean
 *                   example: false
@@ -100,8 +108,10 @@ export type TCardFilters = typeof OECardTypesFilters.ALL | TCardTypes;
 *               - cardNumber
 *               - name
 *               - expires
+*               - cutOffDate
 *               - balance
 *               - type
+*               - paymentDate
 *               - archived
 *               - limit
 *               - isVoucher
@@ -118,6 +128,8 @@ export interface ICard {
     name: string;
     /** Expiration date in timestamp format */
     expires: number;
+    /** The final day to record transactions in a financial statement.  */
+    cutOffDate: number;
     /** Available money in card */
     balance: number;
     /** Card Type (Debit = 1 | Credit = 2 | Services = 3) */
@@ -127,6 +139,8 @@ export interface ICard {
     /** DB Foreign Key - Bank ID */
     bankId: number;
 
+    /** If card is credit, the final day to pay the monthly pending balance. */
+    paymentDate: number;
     /** If card is active or not */
     archived: boolean;
     /** If card is credit, it must have a limit */
@@ -163,6 +177,10 @@ export interface SimpleCardOptions {
 *                   type: number
 *                   example: 1732497156317
 *                   description: Expiration date in timestamp format.
+*               cutOffDate:
+*                   type: number
+*                   example: 23
+*                   description: The final day to record transactions in a financial statement.
 *               type:
 *                   $ref: "#/components/schemas/TCardTypes"
 *                   example: 1
@@ -177,6 +195,10 @@ export interface SimpleCardOptions {
 *                   format: double
 *                   example: 4000.00
 *                   description: How many money the card has when created
+*               paymentDate:
+*                   type: number
+*                   example: 13
+*                   description: If card is credit, the final day to pay the monthly pending balance.
 *               name:
 *                   type: string
 *                   example: Visa Crédito BBVA Digital
@@ -192,6 +214,7 @@ export interface SimpleCardOptions {
 *           required:
 *               - cardNumber
 *               - expires
+*               - cutOffDate
 *               - type
 *               - bankId
 *               - balance
@@ -202,17 +225,21 @@ export interface CreateCardPayload {
     cardNumber: string;
     /** Expiration date in timestamp format */
     expires: number;
+    /** The final day to record transactions in a financial statement.  */
+    cutOffDate: number;
     /** The type of card, it can be either debit (1), credit (2) or service (3) card. */
     type: TCardTypes;
     /** DB Foreign Key - Bank ID */
     bankId: number;
     /** How many money the card has when created  */
     balance: number;
+    /** If card is credit, the final day to pay the monthly pending balance. */
+    paymentDate?: number;
     /** Users can assign a custom name to their cards */
     name?: string;
     /** If card is credit, how much is its limit */
     limit?: number;
-     /** Is card a voucher card given by employer? */
+    /** Is a voucher card given by employer? */
     isVoucher?: boolean;
 }
 
@@ -234,6 +261,14 @@ export interface CreateCardPayload {
 *                   type: number
 *                   example: 1869696000000
 *                   description: The expiration date of the card in timestamp format.
+*               cutOffDate:
+*                   type: number
+*                   example: 23
+*                   description: The final day to record transactions in a financial statement.
+*               paymentDate:
+*                   type: number
+*                   example: 13
+*                   description: If card is credit, the final day to pay the monthly pending balance.
 *               type:
 *                   $ref: "#/components/schemas/TCardTypes"
 *                   example: 1
@@ -267,4 +302,8 @@ export interface UpdateCardPayload {
     name?: string;
     /** Is card a voucher card given by employer? */
     isVoucher?: boolean;
+    /** The final day to record transactions in a financial statement.  */
+    cutOffDate?: number;
+    /** If card is credit, the final day to pay the monthly pending balance. */
+    paymentDate?: number;
 }

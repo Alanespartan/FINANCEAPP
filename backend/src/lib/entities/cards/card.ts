@@ -32,6 +32,11 @@ export class Card extends AllCardsMixin(CreditCardMixin(VoucherCardMixin(class {
     @Column({ default: false })
     public isVoucher!: boolean;
 
+    @Column()
+    public cutOffDate!: number;
+    @Column({ default: 1 })
+    public paymentDate!: number;
+
     // Many-to-One relationship: A card belongs to one user, but a user can have many cards
     @ManyToOne(() => User, (user) => user.cards, {
         nullable: false,
@@ -53,22 +58,20 @@ export class Card extends AllCardsMixin(CreditCardMixin(VoucherCardMixin(class {
     @Column()
     public bankId!: number; // Explicitly define the foreign key column
 
-    // Index signature allows using a string key to access properties
-    // Note: This might cause erros with prototype if not handled correctly!!
-    [key: string]: any;  // You can replace `any` with a more specific type if needed
-
     // TypeORM requires that entities have parameterless constructors (or constructors that can handle being called with no arguments).
     public constructor(options?: CreateCardPayload, userId?: number) {
         super();
         if(options) {
             // FROM PAYLOAD
-            this.name       = options.name ?? `Tarjeta ${options.cardNumber}`;
-            this.cardNumber = options.cardNumber;
-            this.balance    = options.balance;
-            this.type       = options.type;
-            this.expires    = ConvertToUTCTimestamp(options.expires);
-            this.isVoucher  = options.isVoucher ?? false;
-            this.limit      = options.limit ?? 0;
+            this.name        = options.name ?? `Tarjeta ${options.cardNumber}`;
+            this.cardNumber  = options.cardNumber;
+            this.balance     = options.balance;
+            this.type        = options.type;
+            this.cutOffDate  = options.cutOffDate;
+            this.isVoucher   = options.isVoucher ?? false;
+            this.limit       = options.limit ?? 0;
+            this.paymentDate = options.paymentDate ?? 1;
+            this.expires     = ConvertToUTCTimestamp(options.expires);
 
             // RELATIONSHIP ATTRIBUTES
             this.bankId = options.bankId;
@@ -96,6 +99,8 @@ export class Card extends AllCardsMixin(CreditCardMixin(VoucherCardMixin(class {
             bankId:     this.bankId,
             limit:      this.limit,
             isVoucher:  this.isVoucher,
+            cutOffDate: this.cutOffDate,
+            paymentDate: this.paymentDate
         };
     }
 }
