@@ -4,7 +4,7 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-This project is a personal finance management and organization tool, that aims to provide a comprehensive software solution that consolidates all the essential features users need to effectively manage their personal finances.
+This project is a personal finance management tool, that aims to provide a comprehensive software solution that consolidates all the essential features users need to effectively manage their finances.
 
 The application is designed to support a wide range of financial management capabilities, including:
 
