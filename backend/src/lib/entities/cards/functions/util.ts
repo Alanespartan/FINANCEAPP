@@ -7,7 +7,7 @@ import { ConvertToUTCTimestamp } from "@backend/utils/functions";
 
 /**
 * @param {User} user User data to perform helper checks if needed
-* @param {CreateLoanPayload | UpdateLoanPayload} body Payload to analyze
+* @param {CreateCardPayload | UpdateCardPayload} body Payload to analyze
 * @param {string} action Indicates what type of extra checks to do according to operation type
 * @param {string} toSaveName Its the card to create/update name, used for customizing error messages if needed
 * @throws BadRequestError if invalid parameter value is found
@@ -78,12 +78,12 @@ export async function RunPayloadsParamsChecks(user: User, body: CreateCardPayloa
 
             // the new cardNumber contains only numbers
             if(!( /^[0-9]+$/.test(options.cardNumber) )) {
-                throw new BadRequestError(`Card "${toSaveName}" cannot be updated because the new card number "${options.cardNumber}" can not contain non numeric chars.`);
+                throw new BadRequestError(`Card "${toSaveName}" cannot be ${actionMessage} because the new card number "${options.cardNumber}" can not contain non numeric chars.`);
             }
 
             // avoid creating a duplicate if a card with the new card number already exists
             if(user.hasCard(options.cardNumber)) {
-                throw new BadRequestError(`Card "${toSaveName}" cannot be updated because one with the new card number "${options.cardNumber}" already exists.`);
+                throw new BadRequestError(`Card "${toSaveName}" cannot be ${actionMessage} because one with the new card number "${options.cardNumber}" already exists.`);
             }
         }
 
@@ -91,7 +91,7 @@ export async function RunPayloadsParamsChecks(user: User, body: CreateCardPayloa
         if(options.expires) {
             // using UTC function for correct timestamp comparision
             if(ConvertToUTCTimestamp(options.expires) < ConvertToUTCTimestamp(new Date())) {
-                throw new BadRequestError(`Card "${toSaveName}" cannot be updated because new expiration date "${options.expires}" can't be less than today's date.`);
+                throw new BadRequestError(`Card "${toSaveName}" cannot be ${actionMessage} because new expiration date "${options.expires}" can't be less than today's date.`);
             }
         }
 
@@ -100,14 +100,14 @@ export async function RunPayloadsParamsChecks(user: User, body: CreateCardPayloa
         if(options.type) {
             typeModified = true;
             if(!IsValidCardType(options.type)) {
-                throw new BadRequestError(`Card "${toSaveName}" cannot be updated because an incorrect new card type was used in the request: ${options.type}.`);
+                throw new BadRequestError(`Card "${toSaveName}" cannot be ${actionMessage} because an incorrect new card type was used in the request: ${options.type}.`);
             }
 
             // if new type is debit card
             if(options.type === OECardTypesFilters.DEBIT) {
                 // ensure no limit was sent in the payload
                 if(options.limit) {
-                    throw new BadRequestError(`Card "${toSaveName}" cannot be updated to debit card because an incorrect card limit was used in the request: ${options.limit}.`);
+                    throw new BadRequestError(`Card "${toSaveName}" cannot be ${actionMessage} to debit card because an incorrect card limit was used in the request: ${options.limit}.`);
                 }
                 // avoid users modying limit of new debit card (previous credit card)
                 // and restart limit value to default 0 to avoid errors
@@ -118,15 +118,15 @@ export async function RunPayloadsParamsChecks(user: User, body: CreateCardPayloa
             if(options.type === OECardTypesFilters.CREDIT) {
                 // ensure a limit was sent in the payload
                 if(!options.limit) {
-                    throw new BadRequestError(`Card "${toSaveName}" cannot be updated to credit card because no limit value was given in the request.`);
+                    throw new BadRequestError(`Card "${toSaveName}" cannot be ${actionMessage} to credit card because no limit value was given in the request.`);
                 }
 
                 if(options.limit <= 0) {
-                    throw new BadRequestError(`Card "${toSaveName}" cannot be updated to credit card because an incorrect card limit was used in the request: ${options.limit}.`);
+                    throw new BadRequestError(`Card "${toSaveName}" cannot be ${actionMessage} to credit card because an incorrect card limit was used in the request: ${options.limit}.`);
                 }
 
                 if(options.isVoucher) {
-                    throw new BadRequestError(`Card "${toSaveName}" cannot be updated to credit card because it can not be categorized as voucher card.`);
+                    throw new BadRequestError(`Card "${toSaveName}" cannot be ${actionMessage} to credit card because it can not be categorized as voucher card.`);
                 }
 
                 // avoid users modying voucher state of new credit card (previous debit card)
@@ -139,11 +139,11 @@ export async function RunPayloadsParamsChecks(user: User, body: CreateCardPayloa
         if(options.limit && !typeModified) {
             // if user wants to set a limit to the given card to update but its not a credit card
             if(user.getCard(toSaveName).type !== OECardTypesFilters.CREDIT) {
-                throw new BadRequestError(`Card "${toSaveName}" cannot be updated because a card limit (${options.limit}) was used in the request to update a non credit card.`);
+                throw new BadRequestError(`Card "${toSaveName}" cannot be ${actionMessage} because a card limit (${options.limit}) was used in the request to update a non credit card.`);
             }
             // if the new limit of a credit card is less or equal to 0
             if(options.limit <= 0) {
-                throw new BadRequestError(`Credit card "${toSaveName}" cannot be updated because an incorrect card limit was used in the request: ${options.limit}.`);
+                throw new BadRequestError(`Credit card "${toSaveName}" cannot be ${actionMessage} because an incorrect card limit was used in the request: ${options.limit}.`);
             }
         }
 
@@ -151,22 +151,15 @@ export async function RunPayloadsParamsChecks(user: User, body: CreateCardPayloa
         if(options.isVoucher && !typeModified) {
             // if user wants to set a limit to the given card to update but its not a credit card
             if(user.getCard(toSaveName).type !== OECardTypesFilters.DEBIT) {
-                throw new BadRequestError(`Card "${toSaveName}" cannot be updated because it can not be categorized as voucher card.`);
+                throw new BadRequestError(`Card "${toSaveName}" cannot be ${actionMessage} because it can not be categorized as voucher card.`);
             }
         }
     } else {
-        throw new ServerError("An error occurred while analyzing loan request payload.");
+        throw new ServerError("An error occurred while analyzing card request payload.");
     }
 
     // check parameters found in both payloads (creation and update)
     options = body;
-
-    // avoid creating a duplicate if a loan with the given loan number already exists
-    if(options.name) {
-        if(user.hasLoan(options.name, "name")) {
-            throw new BadRequestError(`Loan "${toSaveName}" cannot be ${actionMessage} because one with that name already exists.`);
-        }
-    }
 }
 
 /**
@@ -186,16 +179,18 @@ export function VerifyCreateCardBody(body: unknown): body is CreateCardPayload {
         const value = (body as Record<string, unknown>)[key];
 
         switch (key) {
+            case "cardNumber":
             case "name":
                 if(typeof value !== "string") return false;
                 break;
             case "expires":
-            case "borrowed":
-            case "fixedPaymentAmount":
-            case "interestsToPay":
-            case "annualInterestRate":
-            case "payFrequency":
+            case "type":
             case "bankId":
+            case "balance":
+            case "cutOffDate":
+            case "paymentDate":
+            case "limit":
+            case "isVoucher":
                 if(typeof value !== "number") return false;
                 break;
             default: return false; // Unexpected key found

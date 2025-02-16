@@ -177,10 +177,6 @@ export interface SimpleCardOptions {
 *                   type: number
 *                   example: 1732497156317
 *                   description: Expiration date in timestamp format.
-*               cutOffDate:
-*                   type: number
-*                   example: 23
-*                   description: The final day to record transactions in a financial statement.
 *               type:
 *                   $ref: "#/components/schemas/TCardTypes"
 *                   example: 1
@@ -195,6 +191,10 @@ export interface SimpleCardOptions {
 *                   format: double
 *                   example: 4000.00
 *                   description: How many money the card has when created
+*               cutOffDate:
+*                   type: number
+*                   example: 23
+*                   description: The final day to record transactions in a financial statement.
 *               paymentDate:
 *                   type: number
 *                   example: 13
@@ -214,7 +214,6 @@ export interface SimpleCardOptions {
 *           required:
 *               - cardNumber
 *               - expires
-*               - cutOffDate
 *               - type
 *               - bankId
 *               - balance
@@ -225,14 +224,14 @@ export interface CreateCardPayload {
     cardNumber: string;
     /** Expiration date in timestamp format */
     expires: number;
-    /** The final day to record transactions in a financial statement.  */
-    cutOffDate: number;
     /** The type of card, it can be either debit (1), credit (2) or service (3) card. */
     type: TCardTypes;
     /** DB Foreign Key - Bank ID */
     bankId: number;
     /** How many money the card has when created  */
     balance: number;
+    /** If card is credit, the final day to record transactions in a financial statement. */
+    cutOffDate?: number;
     /** If card is credit, the final day to pay the monthly pending balance. */
     paymentDate?: number;
     /** Users can assign a custom name to their cards */
@@ -264,7 +263,7 @@ export interface CreateCardPayload {
 *               cutOffDate:
 *                   type: number
 *                   example: 23
-*                   description: The final day to record transactions in a financial statement.
+*                   description: If card is credit, the final day to record transactions in a financial statement.
 *               paymentDate:
 *                   type: number
 *                   example: 13
@@ -302,7 +301,7 @@ export interface UpdateCardPayload {
     name?: string;
     /** Is card a voucher card given by employer? */
     isVoucher?: boolean;
-    /** The final day to record transactions in a financial statement.  */
+    /** If card is credit, the final day to record transactions in a financial statement.  */
     cutOffDate?: number;
     /** If card is credit, the final day to pay the monthly pending balance. */
     paymentDate?: number;

@@ -32,7 +32,7 @@ export class Card extends AllCardsMixin(CreditCardMixin(VoucherCardMixin(class {
     @Column({ default: false })
     public isVoucher!: boolean;
 
-    @Column()
+    @Column({ default: 1 })
     public cutOffDate!: number;
     @Column({ default: 1 })
     public paymentDate!: number;
@@ -67,7 +67,7 @@ export class Card extends AllCardsMixin(CreditCardMixin(VoucherCardMixin(class {
             this.cardNumber  = options.cardNumber;
             this.balance     = options.balance;
             this.type        = options.type;
-            this.cutOffDate  = options.cutOffDate;
+            this.cutOffDate  = options.cutOffDate ?? 1;
             this.isVoucher   = options.isVoucher ?? false;
             this.limit       = options.limit ?? 0;
             this.paymentDate = options.paymentDate ?? 1;
