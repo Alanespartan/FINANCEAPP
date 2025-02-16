@@ -23,6 +23,16 @@ if(!database) throw new ServerError("Must provide a database environment variabl
 
 import { User, Card, Loan, Bank, ExpenseCategory, ExpenseSubCategory } from "@entities";
 
+if(logging && (!User || !Card || !Loan || !Bank || !ExpenseCategory || !ExpenseSubCategory)) {
+    console.log("User Class:", User);
+    console.log("Card Class:", Card);
+    console.log("Loan Class:", Loan);
+    console.log("Bank Class:", Bank);
+    console.log("ExpenseCategory Class:", ExpenseCategory);
+    console.log("ExpenseSubCategory Class:", ExpenseSubCategory);
+    throw new ServerError("An error occurred trying to import some entities");
+}
+
 logger.info("Creating TypeORM Connection...");
 logger.info(`Type: ${type}`);
 logger.info(`Username: ${username}`);
