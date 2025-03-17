@@ -4,6 +4,7 @@ import { saveExpenseCategory } from "@entities/expenses/functions/db";
 import { verifyCreateExpenseCategoryBody, verifyUpdateExpenseCategoryBody } from "@entities/expenses/functions/util";
 import { ExpenseCategory } from "@entities";
 import { StringIsValidID } from "@backend/utils/functions";
+import { ValidateQueryParams } from "@backend/utils/requests";
 
 const router = Router();
 
@@ -91,23 +92,24 @@ router.post("/", async (req, res, next) => {
 router.get("/", async (req, res, next) => {
     try {
         const user = req.userData;
-        const onlyDefault = req.query.onlyDefault; // by default is always "FALSE" so ALL categories are fetched (if not modified by user in the front end)
+        // optional filters
+        const { onlyDefault } = req.query;
 
-        if(onlyDefault) {
-            if(typeof onlyDefault !== "string") {
-                throw new BadRequestError("Categories cannot be obtained because the onlyDefault filter provided was in an incorrect format.");
-            }
-            if(!(onlyDefault === "true" || onlyDefault === "false")) {
-                throw new BadRequestError(`Categories cannot be obtained because an incorrect onlyDefault filter was used in the request: ${onlyDefault}.`);
-            }
-            if((/true/).test(onlyDefault)) {
-                return res.status(200).json(user.getExpenseCategories().filter((ec) => ec.isDefault));
+        // validate query parameters
+        const onlyDefaultFilter = ValidateQueryParams(onlyDefault, "boolean",  "onlyDefault");
+
+        // apply filters
+        let categories = user.getExpenseCategories();
+        if(onlyDefaultFilter !== undefined) {
+            if(onlyDefaultFilter as boolean) {
+                categories = categories.filter((ec) => ec.isDefault);
             } else {
-                return res.status(200).json(user.getExpenseCategories().filter((ec) => !ec.isDefault));
+                categories = categories.filter((ec) => !ec.isDefault);
             }
         }
 
-        return res.status(200).json(user.getExpenseCategories());
+        // If no type given, default is to get all categories
+        return res.status(200).json(categories);
     } catch(error) { return next(error); }
 });
 // #endregion GET Categories

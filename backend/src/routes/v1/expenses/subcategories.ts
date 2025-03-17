@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { BadRequestError, NotFoundError } from "@errors";
-import { OETypesOfExpense }   from "@common/types/expenses";
+import { OETypesOfExpense, TExpenseTypeFilter }   from "@common/types/expenses";
 import { ExpenseSubCategory } from "@entities";
 import { saveExpenseCategory, saveExpenseSubCategory } from "@entities/expenses/functions/db";
 import {
@@ -8,6 +8,7 @@ import {
     isValidRealExpense, isValidExpenseSubCategoryFilter
 } from "@entities/expenses/functions/util";
 import { StringIsValidID } from "@backend/utils/functions";
+import { ValidateQueryParams } from "@backend/utils/requests";
 
 const router = Router();
 
@@ -112,23 +113,21 @@ router.post("/", async (req, res, next) => {
 router.get("/", async (req, res, next) => {
     try {
         const user = req.userData;
-        const type = req.query.type; // by default is always "ALL" expense sub categories (if not modified by user in the front end)
+        // optional filters
+        const { type } = req.query;
 
-        if(type) {
-            if(typeof type !== "string") {
-                throw new BadRequestError("Subcategories cannot be obtained because the type filter provided was in an incorrect format.");
+        // validate query parameters
+        const typeFilter = ValidateQueryParams(type, "number",  "type");
+
+        // apply filters
+        if(typeFilter !== undefined) {
+            if(!isValidExpenseSubCategoryFilter(typeFilter as number)) {
+                throw new BadRequestError(`Subcategories cannot be obtained because an incorrect type filter was used in the request: ${typeFilter}.`);
             }
-
-            // If no type given, default is to get all
-            const filterBy = parseInt(type);
-            if(!isValidExpenseSubCategoryFilter(filterBy)) {
-                throw new BadRequestError(`Subcategories cannot be obtained because an incorrect type filter was used in the request: ${filterBy}.`);
-            }
-
-            return res.status(200).json(user.getExpenseSubCategories(filterBy));
+            return res.status(200).json(user.getExpenseSubCategories(typeFilter as TExpenseTypeFilter));
         }
 
-        // If no type given, default is to get all
+        // If no type given, default is to get all sub categories
         return res.status(200).json(user.getExpenseSubCategories(OETypesOfExpense.ALL));
     } catch(error) { return next(error); }
 });

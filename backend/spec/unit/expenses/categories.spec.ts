@@ -100,22 +100,13 @@ describe(`Testing API: ${categoriesPath}`, function() {
             });
         });
         describe("Given an invalid onlyDefault filter", function() {
-            it("Then return '400 Bad Request Error' if onlyDefault filter is not in correct string format", async function() {
+            it("Then return '400 Bad Request Error' if onlyDefault filter is not in correct boolean string format", async function() {
                 const res = await agent
                     .get(categoriesPath)
                     .query({ onlyDefault: [ true, false ] })
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expectBadRequestError(res.body, "Categories cannot be obtained because the onlyDefault filter provided was in an incorrect format.");
-            });
-            it("Then return '400 Bad Request Error' if onlyDefault filter is incorrect boolean string", async function() {
-                const incorrectFilter = "truee";
-                const res = await agent
-                    .get(categoriesPath)
-                    .query({ onlyDefault: incorrectFilter })
-                    .expect(400)
-                    .expect("Content-Type", /json/);
-                expectBadRequestError(res.body, `Categories cannot be obtained because an incorrect onlyDefault filter was used in the request: ${incorrectFilter}.`);
+                expectBadRequestError(res.body, "Invalid format for 'onlyDefault' query param, expected boolean.");
             });
         });
         describe("Given a valid filter", function() {

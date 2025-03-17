@@ -111,7 +111,7 @@ describe(`Testing API: ${subCategoriesPath}`, function() {
                     .query({ type: [ true, false ] })
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expectBadRequestError(res.body, "Subcategories cannot be obtained because the type filter provided was in an incorrect format.");
+                expectBadRequestError(res.body, "Invalid format for 'type' query param, expected number.");
             });
             it("Then return '400 Bad Request Error' if type filter has incorrect value", async function() {
                 const incorrectFilter = -1;
