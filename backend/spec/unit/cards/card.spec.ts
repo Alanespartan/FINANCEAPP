@@ -312,14 +312,14 @@ describe(`Testing API: ${cardPath}`, function() {
         describe("Given an invalid payload", function() {
             it("Then return '400 Bad Request Error' if a malformed payload is used", async function() {
                 const res = await agent
-                    .put(`${cardPath}/MALFORMEDPAYLOAD`)
+                    .put(`${cardPath}/${payloads.ValidCreation_CreditCardSimple.cardNumber}`)
                     .send({
                         incorrectProp1: "",
                         nonExistingProp: 2
                     })
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expectBadRequestError(res.body, "Card \"MALFORMEDPAYLOAD\" cannot be updated because a malformed payload was sent.");
+                expectBadRequestError(res.body, `Card "${payloads.ValidCreation_CreditCardSimple.cardNumber}" cannot be updated because a malformed payload was sent.`);
             });
             it("Then return '400 Bad Request Error' if card number contains non numeric chars", async function() {
                 const res = await agent
