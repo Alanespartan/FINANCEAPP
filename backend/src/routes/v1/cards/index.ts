@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { OECardTypesFilters } from "@common/types/cards";
+import { OECardTypesFilters, TCardFilters } from "@common/types/cards";
 import { CreateExpenseSubCategoryPayload, OETypesOfExpense } from "@common/types/expenses";
 import { BadRequestError, NotFoundError, ServerError } from "@errors";
 import { Card, ExpenseSubCategory } from "@entities";
+import { ValidateQueryParams } from "@backend/utils/requests";
 import { RunPayloadsParamsChecks, VerifyCreateCardBody, VerifyUpdateCardBody, IsValidCardFilter } from "@entities/cards/functions/util";
 import { saveCard } from "@entities/cards/functions/db";
 import { getBank } from "@entities/banks/functions/db";
@@ -116,19 +117,22 @@ router.post("/", async (req, res, next) => {
 router.get("/", async (req, res, next) => {
     try {
         const user     = req.userData;
-        const cardType = req.query.cardType; // by default is always "ALL" cards (if not modified by user in the front end)
+        // optional filters
+        const { cardType } = req.query;
 
-        if(cardType && typeof cardType !== "string") {
-            throw new BadRequestError("Cards cannot be obtained because the card type filter provided was in an incorrect format.");
+        // validate query parameters
+        const cardTypeFilter = ValidateQueryParams(cardType, "number",  "cardType");
+
+        // apply filters
+        if(cardTypeFilter !== undefined) {
+            if(!IsValidCardFilter(cardTypeFilter as number)) {
+                throw new BadRequestError(`Cards cannot be obtained because an incorrect card type filter was used in the request: ${cardTypeFilter}.`);
+            }
+            return res.status(200).json(user.getCards(cardTypeFilter as TCardFilters));
         }
 
-        // If no cardType given, default is to get all
-        const filterBy = cardType ? parseInt(cardType) : OECardTypesFilters.ALL;
-        if(!IsValidCardFilter(filterBy)) {
-            throw new BadRequestError(`Cards cannot be obtained because an incorrect card type filter was used in the request: ${filterBy}.`);
-        }
-
-        return res.status(200).json(user.getCards(filterBy));
+        // If no card type given, default is to get all
+        return res.status(200).json(user.getCards(OECardTypesFilters.ALL));
     } catch(error) { return next(error); }
 });
 // #endregion GET Cards

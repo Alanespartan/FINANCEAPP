@@ -161,7 +161,7 @@ describe(`Testing API: ${cardPath}`, function() {
                     .query({ cardType: [ true, false ] })
                     .expect(400)
                     .expect("Content-Type", /json/);
-                expectBadRequestError(res.body, "Cards cannot be obtained because the card type filter provided was in an incorrect format.");
+                expectBadRequestError(res.body, "Invalid format for 'cardType' query param, expected number.");
             });
             it("Then return '400 Bad Request Error' if card type filter is -1", async function() {
                 const res = await agent
