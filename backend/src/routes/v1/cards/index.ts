@@ -229,7 +229,7 @@ router.put("/:cardNumber", async (req, res, next) => {
             throw new NotFoundError(`Card "${cardNumber}" cannot be updated because it does not exist in user data.`);
         }
 
-        /* CHECK PARENT CARDS CATEGORY AND CARD SUBCATEGORIE EXISTS */
+        /* CHECK PARENT CARDS CATEGORY AND CARD SUBCATEGORY EXISTS */
         if(!user.hasExpenseCategory("Cards", "name")) {
             // throw server error since users MUST NOT be able to delete default categories
             throw new ServerError(`Card "${cardNumber}" cannot be updated because default parent "Card" category does not exist.`);
@@ -237,8 +237,8 @@ router.put("/:cardNumber", async (req, res, next) => {
         const cardsCategory = user.getExpenseCategoryByName("Cards");
         // since card does exist, use its name to find the sub category
         if(!cardsCategory.hasExpenseSubCategory(user.getCard(cardNumber).name, "name")) {
-            // throw server error since every card must be a subcategorie attached to the cards parent category
-            throw new ServerError(`Card "${cardNumber}" cannot be updated because its expense sub categorie does not exist.`);
+            // throw server error since every card must be a sub category attached to the cards parent category
+            throw new ServerError(`Card "${cardNumber}" cannot be updated because its expense sub category does not exist.`);
         }
         const cardSubCategory = user.getExpenseSubCategoryByName(user.getCard(cardNumber).name);
 
@@ -250,7 +250,7 @@ router.put("/:cardNumber", async (req, res, next) => {
         // run individual check on payload attributes, if no error is thrown here then payload values are ok
         await RunPayloadsParamsChecks(user, options, "update", cardNumber);
 
-        // update cached card data using payload
+        // update the in-memory object properties directly for future operations
         const toUpdate = user.setOptionsIntoCard(cardNumber, options);
         // apply card changes in db using cached updated object
         const savedCard = await saveCard(toUpdate);
