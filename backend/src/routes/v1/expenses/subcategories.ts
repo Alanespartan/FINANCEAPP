@@ -5,7 +5,7 @@ import { ExpenseSubCategory } from "@entities";
 import { saveExpenseCategory, saveExpenseSubCategory } from "@entities/expenses/functions/db";
 import {
     verifyCreateExpenseSubCategoryBody, verifyUpdateExpenseSubCategoryBody,
-    isValidRealExpense, isValidExpenseSubCategoryFilter
+    IsValidRealExpense, IsValidExpenseSubCategoryFilter
 } from "@entities/expenses/functions/util";
 import { StringIsValidID } from "@backend/utils/functions";
 import { ValidateQueryParams } from "@backend/utils/requests";
@@ -47,7 +47,7 @@ router.post("/", async (req, res, next) => {
         }
 
         // avoid creating sub categories with incorrect type (cards and loans sub categories must be created on their respective endpoints)
-        if(!isValidRealExpense(options.type)) {
+        if(!IsValidRealExpense(options.type)) {
             throw new BadRequestError(`Subcategory "${options.name}" cannot be created because an incorrect type was used in the request: ${options.type}.`);
         }
 
@@ -121,7 +121,7 @@ router.get("/", async (req, res, next) => {
 
         // apply filters
         if(typeFilter !== undefined) {
-            if(!isValidExpenseSubCategoryFilter(typeFilter as number)) {
+            if(!IsValidExpenseSubCategoryFilter(typeFilter as number)) {
                 throw new BadRequestError(`Subcategories cannot be obtained because an incorrect type filter was used in the request: ${typeFilter}.`);
             }
             return res.status(200).json(user.getExpenseSubCategories(typeFilter as TExpenseTypeFilter));
@@ -237,7 +237,7 @@ router.put("/:id", async (req, res, next) => {
         }
 
         // avoid creating sub categories with incorrect type (cards and loans sub categories must be created on their respective endpoints)
-        if(!isValidRealExpense(user.getExpenseSubCategoryById(parsedId).type)) {
+        if(!IsValidRealExpense(user.getExpenseSubCategoryById(parsedId).type)) {
             throw new BadRequestError(`Subcategory "${parsedId}" cannot be updated because non real expense type sub categories can not be modified.`);
         }
 
