@@ -16,7 +16,7 @@ import {
 import { saveLoan } from "@entities/loans/functions/db";
 import { RunPayloadsParamsChecks, VerifyCreateLoanBody, VerifyUpdateLoanBody } from "@entities/loans/functions/util";
 import { Loan, ExpenseSubCategory } from "@entities";
-import { BadRequestError, NotFoundError } from "@errors";
+import { BadRequestError, NotFoundError, ServerError } from "@errors";
 
 const router = Router();
 
@@ -257,6 +257,19 @@ router.put("/:id", async (req, res, next) => {
             throw new NotFoundError(`Loan "${parsedId}" cannot be updated because it does not exist in user data.`);
         }
 
+        /* CHECK PARENT LOANS CATEGORY AND LOAN SUBCATEGORY EXISTS */
+        if(!user.hasExpenseCategory("Loans", "name")) {
+            // throw server error since users MUST NOT be able to delete default categories
+            throw new ServerError(`Loan "${parsedId}" cannot be updated because default parent "Loan" category does not exist.`);
+        }
+        const loansCategory = user.getExpenseCategoryByName("Loans");
+        // since loan does exist, use its name to find the sub category
+        if(!loansCategory.hasExpenseSubCategory(user.getLoanById(parsedId).name, "name")) {
+            // throw server error since every card must be a sub category attached to the cards parent category
+            throw new ServerError(`Loan "${parsedId}" cannot be updated because its expense sub category does not exist.`);
+        }
+        const loanSubCategory = user.getExpenseSubCategoryByName(user.getLoanById(parsedId).name);
+
         // check payload is in correct form
         if(!VerifyUpdateLoanBody(options)) {
             throw new BadRequestError(`Loan "${parsedId}" cannot be updated because a malformed payload was sent.`);
@@ -267,8 +280,14 @@ router.put("/:id", async (req, res, next) => {
 
         // update the in-memory object properties directly for future operations
         const toUpdate = user.setOptionsIntoLoan(parsedId, options);
-        // apply loan changes in db using updated object
+        // apply loan changes in db using cached updated object
         const savedLoan = await saveLoan(toUpdate);
+
+        // if loan name was updated, then update its sub category name
+        if(options.name) {
+            loanSubCategory.name = options.name; // this updates the value in memory
+            await saveExpenseSubCategory(loanSubCategory); // this updates the entity in the db
+        }
 
         return res.status(200).json(savedLoan.toInterfaceObject());
     } catch(error) { return next(error); }
