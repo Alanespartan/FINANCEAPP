@@ -296,7 +296,7 @@ describe(`Testing API: ${loansPath}`, function() {
             });
         });
         describe("Given invalid filters", function() {
-            it("Then return '400 Bad Request Error' if 'archived' filter is not boolean", async function() {
+            it("Then return '400 Bad Request Error' if 'archived' filter is not in correct boolean format", async function() {
                 const res = await agent
                     .get(loansPath)
                     .query({ archived: [ true, false ] })
@@ -304,7 +304,7 @@ describe(`Testing API: ${loansPath}`, function() {
                     .expect("Content-Type", /json/);
                 expectBadRequestError(res.body, "Invalid format for 'archived' query param, expected boolean.");
             });
-            it("Then return '400 Bad Request Error' if 'isFinished' filter is not boolean", async function() {
+            it("Then return '400 Bad Request Error' if 'isFinished' filter is not in correct boolean format", async function() {
                 const res = await agent
                     .get(loansPath)
                     .query({ isFinished: -1 })
