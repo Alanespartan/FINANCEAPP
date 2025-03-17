@@ -5,6 +5,7 @@ import { BadRequestError, NotFoundError, ServerError } from "@errors";
 import { Card, ExpenseSubCategory } from "@entities";
 import { RunPayloadsParamsChecks, VerifyCreateCardBody, VerifyUpdateCardBody, IsValidCardFilter } from "@entities/cards/functions/util";
 import { saveCard } from "@entities/cards/functions/db";
+import { getBank } from "@entities/banks/functions/db";
 import { saveExpenseCategory, saveExpenseSubCategory } from "@entities/expenses/functions/db";
 
 const router = Router();
@@ -42,6 +43,11 @@ router.post("/", async (req, res, next) => {
         // check payload is in correct form
         if(!VerifyCreateCardBody(options)) {
             throw new BadRequestError("New card cannot be created because a malformed payload was sent.");
+        }
+
+        // assigned bank does exist in db
+        if( !(await getBank(options.bankId)) ) {
+            throw new BadRequestError(`Card "${options.cardNumber}" cannot be created because an incorrect bank id was used in the request: ${options.bankId}.`);
         }
 
         // run individual check on payload attributes, if no error is thrown here then payload values are ok

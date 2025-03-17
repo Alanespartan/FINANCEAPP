@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CreateLoanPayload, UpdateLoanPayload } from "@common/types/loans";
 import { ConvertToUTCTimestamp, isValidPayFrequency } from "@backend/utils/functions";
-import { getBank } from "@entities/cards/functions/db";
 import { BadRequestError, ServerError } from "@errors";
 import { User } from "@entities";
 
@@ -21,10 +20,6 @@ export async function RunPayloadsParamsChecks(user: User, body: CreateLoanPayloa
     if(action === "create") {
         options = body as CreateLoanPayload;
         actionMessage = "created";
-
-        if( !(await getBank(options.bankId)) ) {
-            throw new BadRequestError(`Loan "${options.name}" cannot be created because an incorrect bank id was used in the request: ${options.bankId}.`);
-        }
     } else if(action === "update") {
         options = body as UpdateLoanPayload;
         actionMessage = "updated";

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { UpdateCardPayload } from "@common/types/cards";
-import DBContextSource, { cardStore, bankStore } from "@db";
+import DBContextSource, { cardStore } from "@db";
 import { filterNonNullableAttributes } from "@backend/utils/functions";
 import { Card } from "@entities";
 
@@ -18,19 +18,6 @@ export async function getByBank(bankId: number) {
             bank: {
                 id: bankId
             }
-        }
-    });
-}
-
-/** Get a bank entity from db using the given id
- * TODO BANK move this to dedicated file
- * @param bankId
- * @returns The desired bank information
- */
-export async function getBank(bankId: number) {
-    return await bankStore.findOne({
-        where: {
-            id: bankId
         }
     });
 }

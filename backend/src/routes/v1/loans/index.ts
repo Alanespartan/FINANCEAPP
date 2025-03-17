@@ -8,6 +8,7 @@ import {
     saveExpenseCategory,
     saveExpenseSubCategory
 } from "@entities/expenses/functions/db";
+import { getBank } from "@entities/banks/functions/db";
 import {
     CreateExpenseSubCategoryPayload,
     OETypesOfExpense
@@ -52,6 +53,10 @@ router.post("/", async (req, res, next) => {
         // check payload is in correct form
         if(!VerifyCreateLoanBody(options)) {
             throw new BadRequestError("New loan cannot be created because a malformed payload was sent.");
+        }
+
+        if( !(await getBank(options.bankId)) ) {
+            throw new BadRequestError(`Loan "${options.name}" cannot be created because an incorrect bank id was used in the request: ${options.bankId}.`);
         }
 
         // run individual check on payload attributes, if no error is thrown here then payload values are ok

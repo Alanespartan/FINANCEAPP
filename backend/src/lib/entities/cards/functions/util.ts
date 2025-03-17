@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TCardFilters, TCardTypes, OECardTypesFilters, UpdateCardPayload, CreateCardPayload } from "@common/types/cards";
-import { getBank } from "@entities/cards/functions/db"; // TODO MOVE THIS TO DB FILE OR BANK DEDICATED FILE
 import { BadRequestError, ServerError } from "@errors";
 import { User } from "@entities";
 import { ConvertToUTCTimestamp } from "@backend/utils/functions";
@@ -21,11 +20,6 @@ export async function RunPayloadsParamsChecks(user: User, body: CreateCardPayloa
     if(action === "create") {
         options = body as CreateCardPayload;
         actionMessage = "created";
-
-        // assigned bank does exist in db
-        if( !(await getBank(options.bankId)) ) {
-            throw new BadRequestError(`Card "${options.cardNumber}" cannot be created because an incorrect bank id was used in the request: ${options.bankId}.`);
-        }
 
         // normalizing the card number by removing white spaces and then validate the cardNumber contains only numbers
         options.cardNumber = options.cardNumber.replace(/\s+/g, "");
