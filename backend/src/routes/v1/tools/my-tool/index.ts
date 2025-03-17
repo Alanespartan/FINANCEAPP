@@ -1,7 +1,7 @@
 import { Logger } from "@common/types/logger";
 import {
-    validateRequestBody,
-    getHeaders
+    ValidateRequestBody,
+    GetHeaders
 } from "@backend/utils/requests";
 import { jobController} from "@backend/routes/utils/job";
 import { rxUsageFunction}  from "./functions";
@@ -12,7 +12,7 @@ const logger = new Logger("index.ts");
 
 /** Fix artifacts from a given module configuration */
 router.post("/fix-dng-links-module", async (req, res) => {
-    const { header1: newHeader1, header2 } = getHeaders(req,
+    const { header1: newHeader1, header2 } = GetHeaders(req,
         [ "header1", "Expected 'header1' header." ],
         [ "header2", "Expected 'header2' header." ],
     );
@@ -22,7 +22,7 @@ router.post("/fix-dng-links-module", async (req, res) => {
         { propName: "prop2", type: "undefined" }, // unknown[]
         { propName: "prop3", type: "undefined" }  // unknown[]
     ];
-    if(validateRequestBody(req.body, expected)) {
+    if(ValidateRequestBody(req.body, expected)) {
         const prop1 = req.body.prop1;
         const prop2 = JSON.parse(req.body.prop2) as unknown[];
         const prop3 = JSON.parse(req.body.prop3) as unknown[];

@@ -5,14 +5,14 @@ import { Request } from "express";
 export type HeaderOption<H extends string> = H | [H, string];
 
 /**
-* Helper to validate and cast query parameters. Handles type conversion for query parameters since req.query always contains strings or undefined.
+* Helper function to validate and cast query parameters. Handles type conversion for query parameters since req.query always contains strings or undefined.
 * @param  {any} param Param type object from req object.
 * @param  {boolean | string | number} type Expected type of query parameter
 * @param  {string} name Name of query parameter
 * @throws BadRequestError if the value doesn't match the expected type
 * @returns Object containing headers.
 */
-export function validateQueryParams(param: any, type: "boolean" | "number", name: string) {
+export function ValidateQueryParams(param: any, type: "boolean" | "number", name: string) {
     if(param === undefined) return undefined;
     if(type === "boolean") {
         if(param === "true")  return true;
@@ -34,7 +34,7 @@ export function validateQueryParams(param: any, type: "boolean" | "number", name
  * @throws BadRequestError Header is not present.
  * @returns Object containing headers.
  */
-export function getHeaders<H extends string>(req: Request, ...options: HeaderOption<H>[]): Record<H, string> {
+export function GetHeaders<H extends string>(req: Request, ...options: HeaderOption<H>[]): Record<H, string> {
     return Object.fromEntries(options.map((opt) => {
         const header = typeof opt === "string" ? opt : opt[0];
         const value = req.get(header);
@@ -46,7 +46,7 @@ export function getHeaders<H extends string>(req: Request, ...options: HeaderOpt
     })) as Record<H, string>;
 }
 
-export function validateRequestBody(body: any, expected: { propName: string, type: string }[]): boolean {
+export function ValidateRequestBody(body: any, expected: { propName: string, type: string }[]): boolean {
     if(typeof body !== "object"
     || Object.keys(body).length === 0)      { throw new BadRequestError("No body was sent."); }
     expected.forEach((prop) => {
@@ -60,7 +60,7 @@ export function validateRequestBody(body: any, expected: { propName: string, typ
     return true;
 }
 
-export function validateRequestParams(params: any, expected: string[]): boolean {
+export function ValidateRequestParams(params: any, expected: string[]): boolean {
     if(typeof params !== "object"
     || Object.keys(params).length === 0)      { throw new BadRequestError("No parameters were sent."); }
     expected.forEach((param) => {
