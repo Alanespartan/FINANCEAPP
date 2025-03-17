@@ -3,7 +3,7 @@ import {
     IsValidPayFrequency,
     StringIsValidID
 } from "@backend/utils/functions";
-import { validateQueryParams } from "@backend/utils/requests";
+import { ValidateQueryParams } from "@backend/utils/requests";
 import {
     saveExpenseCategory,
     saveExpenseSubCategory
@@ -137,9 +137,9 @@ router.get("/", async (req, res, next) => {
         const { archived, isFinished, payFrequency } = req.query;
 
         // Validate query parameters
-        const archivedFilter     = validateQueryParams(archived,     "boolean", "archived");
-        const isFinishedFilter   = validateQueryParams(isFinished,   "boolean", "isFinished");
-        const payFrequencyFilter = validateQueryParams(payFrequency, "number",  "payFrequency");
+        const archivedFilter     = ValidateQueryParams(archived,     "boolean", "archived");
+        const isFinishedFilter   = ValidateQueryParams(isFinished,   "boolean", "isFinished");
+        const payFrequencyFilter = ValidateQueryParams(payFrequency, "number",  "payFrequency");
 
         // Apply filters
         let loans = user.getLoans();
