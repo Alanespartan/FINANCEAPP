@@ -184,8 +184,10 @@ export function VerifyCreateCardBody(body: unknown): body is CreateCardPayload {
             case "cutOffDate":
             case "paymentDate":
             case "limit":
-            case "isVoucher":
                 if(typeof value !== "number") return false;
+                break;
+            case "isVoucher":
+                if(typeof value !== "boolean") return false;
                 break;
             default: return false; // Unexpected key found
         }
