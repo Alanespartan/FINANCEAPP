@@ -7,7 +7,7 @@ import {
     verifyCreateExpenseSubCategoryBody, verifyUpdateExpenseSubCategoryBody,
     isValidRealExpense, isValidExpenseSubCategoryFilter
 } from "@entities/expenses/functions/util";
-import { stringIsValidID } from "@backend/utils/functions";
+import { StringIsValidID } from "@backend/utils/functions";
 
 const router = Router();
 
@@ -168,7 +168,7 @@ router.get("/:id", async (req, res, next) => {
         const id   = req.params.id;
 
         // check if given id is in correct form
-        if(!stringIsValidID(id)) {
+        if(!StringIsValidID(id)) {
             throw new BadRequestError(`Subcategory cannot be obtained because the provided id "${id}" was in an incorrect format.`);
         }
 
@@ -222,7 +222,7 @@ router.put("/:id", async (req, res, next) => {
         const id      = req.params.id;
 
         // check if given id is in correct form
-        if(!stringIsValidID(id)) {
+        if(!StringIsValidID(id)) {
             throw new BadRequestError(`Subcategory cannot be updated because the provided id "${id}" was in an incorrect format.`);
         }
 

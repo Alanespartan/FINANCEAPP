@@ -1,6 +1,6 @@
 import { TCardFilters, UpdateCardPayload, TCardTypes } from "@common/types/cards";
 import { MixinsConstructor, Card, User } from "@entities";
-import { filterNonNullableAttributes } from "@backend/utils/functions";
+import { FilterNonNullableAttributes } from "@backend/utils/functions";
 
 export const CardsMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
     return class extends Base {
@@ -49,7 +49,7 @@ export const CardsMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
             const toUpdate = this.getCard(cardNumber) as Card;
 
             // build payload from non null/undefined options
-            const payload = filterNonNullableAttributes(options);
+            const payload = FilterNonNullableAttributes(options);
             // apply the new values from given options into desired card
             Object.entries(payload).forEach(([ key, value ]) => {
                 if(key in toUpdate) {

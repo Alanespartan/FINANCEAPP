@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {
-    isValidPayFrequency,
-    stringIsValidID
+    IsValidPayFrequency,
+    StringIsValidID
 } from "@backend/utils/functions";
 import { validateQueryParams } from "@backend/utils/requests";
 import {
@@ -150,7 +150,7 @@ router.get("/", async (req, res, next) => {
             loans = loans.filter((loan) => loan.isFinished === isFinishedFilter as boolean);
         }
         if(payFrequencyFilter !== undefined) {
-            if(!isValidPayFrequency(payFrequencyFilter as number)) {
+            if(!IsValidPayFrequency(payFrequencyFilter as number)) {
                 throw new BadRequestError(`Invalid 'payFrequency' value: ${payFrequencyFilter} expected one of: [0, 1, 2, 3]`);
             }
             loans = loans.filter((loan) => loan.payFrequency === payFrequencyFilter);
@@ -193,7 +193,7 @@ router.get("/:id", async (req, res, next) => {
         const id   = req.params.id;
 
         // check if given id is in correct form
-        if(!stringIsValidID(id)) {
+        if(!StringIsValidID(id)) {
             throw new BadRequestError(`Loan cannot be obtained because the provided id "${id}" was in an incorrect format.`);
         }
 
@@ -247,7 +247,7 @@ router.put("/:id", async (req, res, next) => {
         const id      = req.params.id;
 
         // check if given id is in correct form
-        if(!stringIsValidID(id)) {
+        if(!StringIsValidID(id)) {
             throw new BadRequestError(`Loan cannot be updated because the provided id "${id}" was in an incorrect format.`);
         }
 

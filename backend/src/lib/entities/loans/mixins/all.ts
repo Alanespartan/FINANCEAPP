@@ -1,5 +1,5 @@
 import { BadRequestError } from "@errors";
-import { isValidPayFrequency } from "@backend/utils/functions";
+import { IsValidPayFrequency } from "@backend/utils/functions";
 import { MixinsConstructor, Loan, Bank } from "@entities";
 import { TPayFrequency } from "@common/types/util";
 
@@ -58,7 +58,7 @@ export const AllLoansMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
          * @throws BadRequestError If provided value is invalid
          */
         public setPayFrequency(this: Loan, payFrequency: TPayFrequency): void {
-            if(!isValidPayFrequency(payFrequency)) {
+            if(!IsValidPayFrequency(payFrequency)) {
                 throw new BadRequestError(`Invalid pay frequency (${payFrequency}) for creating/updating a loan.`);
             }
             this.payFrequency = payFrequency;

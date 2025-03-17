@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { UpdateCardPayload } from "@common/types/cards";
 import DBContextSource, { cardStore } from "@db";
-import { filterNonNullableAttributes } from "@backend/utils/functions";
+import { FilterNonNullableAttributes } from "@backend/utils/functions";
 import { Card } from "@entities";
 
 export async function getByCardNumber(cardNumber: string) {
@@ -49,7 +49,7 @@ export async function saveCard(toSave: Card) {
 */
 export async function updateCard(cardId: number, options: UpdateCardPayload) {
     // build payload to update card from non null/undefined options
-    const payload = filterNonNullableAttributes(options);
+    const payload = FilterNonNullableAttributes(options);
     await cardStore.update(cardId, payload);
 }
 

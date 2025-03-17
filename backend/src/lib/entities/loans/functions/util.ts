@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CreateLoanPayload, UpdateLoanPayload } from "@common/types/loans";
-import { ConvertToUTCTimestamp, isValidPayFrequency } from "@backend/utils/functions";
+import { ConvertToUTCTimestamp, IsValidPayFrequency } from "@backend/utils/functions";
 import { BadRequestError, ServerError } from "@errors";
 import { User } from "@entities";
 
@@ -82,7 +82,7 @@ export async function RunPayloadsParamsChecks(user: User, body: CreateLoanPayloa
     // validate pay frequency value is correct
     if(options.payFrequency) {
         // Check is number but also a valid entry in TPayFrequency numeric enum
-        if(!isValidPayFrequency(options.payFrequency)) {
+        if(!IsValidPayFrequency(options.payFrequency)) {
             throw new BadRequestError(`Loan "${toSaveName}" cannot be ${actionMessage} because an incorrect pay frequency type was used in the request: ${options.payFrequency}.`);
         }
     }

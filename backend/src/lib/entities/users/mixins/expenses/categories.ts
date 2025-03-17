@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { UpdateExpenseCategoryPayload } from "@common/types/expenses";
 import { MixinsConstructor, ExpenseCategory, User } from "@entities";
-import { filterNonNullableAttributes } from "@backend/utils/functions";
+import { FilterNonNullableAttributes } from "@backend/utils/functions";
 
 export const ExpenseCategoriesMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
     return class extends Base {
@@ -59,7 +59,7 @@ export const ExpenseCategoriesMixin = <TBase extends MixinsConstructor>(Base: TB
             const toUpdate = this.getExpenseCategoryById(id);
 
             // build payload from non null/undefined options
-            const payload = filterNonNullableAttributes(options);
+            const payload = FilterNonNullableAttributes(options);
             // apply the new values from given options into desired expense category
             Object.entries(payload).forEach(([ key, value ]) => {
                 if(key in toUpdate) {

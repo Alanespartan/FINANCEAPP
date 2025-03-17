@@ -7,7 +7,7 @@ import { TPayFrequency, OEPayFrequency } from "@common/types/util";
  * @param  {number} chunkSize Size of each chunk.
  * @returns Array of the segments of the original array.
  */
-export function chunkArray<T>(array: T[], chunkSize: number): T[][] {
+export function ChunkArray<T>(array: T[], chunkSize: number): T[][] {
     if(chunkSize === 1) { return array.map((value) => [ value ]); }
 
     const chunks: T[][] = new Array(Math.ceil(array.length / chunkSize));
@@ -38,17 +38,17 @@ export function ConvertToUTCTimestamp(date?: string | Date | number) {
 }
 
 /** Validates the given id in string format is a positive integer. */
-export function stringIsValidID(stringId: string) {
+export function StringIsValidID(stringId: string) {
     return /^[1-9]\d*$/.test(stringId);
 }
 
 /** Validates the given string is a number either positive or negative and with or without decimal numbers. */
-export function stringIsValidNumber(stringId: string) {
+export function StringIsValidNumber(stringId: string) {
     return /^[+-]?\d+(\.\d+)?$/.test(stringId);
 }
 
 /** Helper function to check if the given value is a valid value from pay frequency enum. */
-export const isValidPayFrequency = (value: number): value is TPayFrequency => {
+export const IsValidPayFrequency = (value: number): value is TPayFrequency => {
     return value === OEPayFrequency.SemiWeekly
         || value === OEPayFrequency.Weekly
         || value === OEPayFrequency.SemiMonthly
@@ -56,7 +56,7 @@ export const isValidPayFrequency = (value: number): value is TPayFrequency => {
 };
 
 /** Helper function to remove null|undefined attributes from given object. */
-export function filterNonNullableAttributes(options: any) {
+export function FilterNonNullableAttributes(options: any) {
     // Create a new object with only defined keys
     return Object.entries(options).reduce((acc, [ key, value ]) => {
         if(value !== undefined && value !== null) {

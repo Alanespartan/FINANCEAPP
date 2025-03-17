@@ -3,7 +3,7 @@ import { BadRequestError, NotFoundError } from "@errors";
 import { saveExpenseCategory } from "@entities/expenses/functions/db";
 import { verifyCreateExpenseCategoryBody, verifyUpdateExpenseCategoryBody } from "@entities/expenses/functions/util";
 import { ExpenseCategory } from "@entities";
-import { stringIsValidID } from "@backend/utils/functions";
+import { StringIsValidID } from "@backend/utils/functions";
 
 const router = Router();
 
@@ -146,7 +146,7 @@ router.get("/:id", async (req, res, next) => {
         const id   = req.params.id;
 
         // check if given id is in correct form
-        if(!stringIsValidID(id)) {
+        if(!StringIsValidID(id)) {
             throw new BadRequestError(`Category cannot be obtained because the provided id "${id}" was in an incorrect format.`);
         }
 
@@ -200,7 +200,7 @@ router.put("/:id", async (req, res, next) => {
         const id      = req.params.id;
 
         // check if given id is in correct form
-        if(!stringIsValidID(id)) {
+        if(!StringIsValidID(id)) {
             throw new BadRequestError(`Category cannot be updated because the provided id "${id}" was in an incorrect format.`);
         }
 

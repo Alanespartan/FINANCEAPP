@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { loanStore } from "@db";
-import { filterNonNullableAttributes } from "@backend/utils/functions";
+import { FilterNonNullableAttributes } from "@backend/utils/functions";
 import { Loan } from "@entities";
 
 export async function getById(loanId: number) {
@@ -48,6 +48,6 @@ export async function saveLoan(toSave: Loan) {
 */
 export async function updateLoan(loanId: number, options: any) {
     // build payload to update loan from non null/undefined options
-    const payload = filterNonNullableAttributes(options);
+    const payload = FilterNonNullableAttributes(options);
     await loanStore.update(loanId, payload);
 }

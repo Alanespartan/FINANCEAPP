@@ -1,4 +1,4 @@
-import { filterNonNullableAttributes } from "@backend/utils/functions";
+import { FilterNonNullableAttributes } from "@backend/utils/functions";
 import { UpdateLoanPayload } from "@common/types/loans";
 import { TPayFrequency } from "@common/types/util";
 import { MixinsConstructor, Loan, User } from "@entities";
@@ -59,7 +59,7 @@ export const LoansMixin = <TBase extends MixinsConstructor>(Base: TBase) => {
             const toUpdate = this.getLoanById(id);
 
             // build payload from non null/undefined options
-            const payload = filterNonNullableAttributes(options);
+            const payload = FilterNonNullableAttributes(options);
             // apply the new values from given options into desired loan
             Object.entries(payload).forEach(([ key, value ]) => {
                 if(key in toUpdate) {
